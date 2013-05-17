@@ -1,0 +1,231 @@
+html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden;}
+*{font-family: "Albany AMT", sans-serif;font-size:10px;margin:0;padding:0;list-style:none;}
+i.floatSeparator{display:block;clear:both;}
+
+body > img.logo{position:absolute;z-index:10;bottom:20px;right:20px;}
+div#null{position:absolute;height:0px;width:0px;overflow:hidden;}
+div#lainMenu{position:absolute;top:20px;left:15px;z-index:5;}
+div#lainMenu > div{position:relative;padding:2px 10px;background:white;border-radius:3px;cursor:pointer;display:inline-block;margin-right:10px;}
+div#lainMenu > div > h1{font-weight:normal;}
+div#lainMenu > div > ul{display:none;position:absolute;left:0;top:22px;background:white;border-radius:3px;padding:5px 0;}
+div#lainMenu > div > ul > li{padding:2px 10px;padding-left:22px;margin:0 10px;white-space:nowrap;line-height:18px;}
+div#lainMenu > div > ul > li:hover{color:#999;}
+div#lainMenu > div.visible > ul{display:block;}
+div#lainMenu > div#lainAppsMenu > ul > li{background:URL(../images/icons/page_gear.png) left center no-repeat;}
+div#lainMenu > div#lainPlacesMenu > ul > li{background:URL(../images/icons/database.png) left center no-repeat;}
+div#lainMenu > div#lainPlacesMenu > ul > li:last-child{background-position:8px center;border:1px dashed #AAA;padding:2px 8px 2px 30px;border-radius:5px;margin:8px 10px 4px 10px;}
+div#lainMenu > div#lainPlacesMenu > ul > li > i:first-child{display:none;}
+
+div#systemTray{position:absolute;top:0;right:80px;}
+div#systemTray > div,div#systemTray > li{display:inline-block;position:relative;width:20px;height:20px;background-position:center;background-repeat:no-repeat;}
+div#systemTray > div > .wodInfo,div#systemTray > li > .wodInfo{top:20px;}
+/*ul.list > li.alt{background-color:#ebe8e3;}*/
+ul.list > li:nth-child(even){background-color:#ebe8e3;}
+
+div#lainBackground{position:absolute;left:0;top:0;width:100%;height:100%;z-index:10;background:#453c3a;background-position:center;}
+div#lainBackground img{width:100%;height:100%;position:absolute;top:0;left:0;}
+div#lainDesktop{position:absolute;left:0;top:0;width:100%;height:100%;z-index:20;}
+div#lainDesktop b.lainLeyend{color:white;padding:0 5px;}
+div#lainDesktop div#lainFlowIcon{position:absolute;top:0;z-index:100;}
+div#lainDesktop div#lainFlowIcon > *{position:absolute;}
+div#lainDesktop div#lainFlowIcon > div#selectionSquare{position:absolute;border:1px solid blue;width:0px;height:0px;background:red;opacity:.6;}
+div#lainDesktop ul#lainIcons{position:absolute;top:15px;z-index:4;color:white;}
+div#lainDesktop ul#lainIcons > li{position:absolute;}
+div#lainDesktop ul#lainWindows{position:absolute;top:0;height:0;width:0;z-index:5;}
+div#lainDesktop ul#lainWindows > li{position:absolute;height:0;width:0;}
+div#lainDesktop ul#lainWindows > li > div{position:absolute;}
+
+
+div.iconCanvasDecorator{border-top:1px solid #515151;border-bottom:1px solid #686868;}
+ul.iconCanvas{padding:0 5px;background:white;}
+ul.iconCanvas > li{position:relative;}
+ul.fileListDetailed > li{position:relative;min-height:32px;}
+ul.fileListDetailed > li > img:first-child{width:32px;height:32px;position:absolute;}
+ul.fileListDetailed > li > div.content{margin-left:40px;}
+ul.fileListDetailed > li > div.content > h4{padding-top:4px;}
+
+li.desktop_icon{position:absolute;display:inline-block;width:80px;height:50px;list-style:none;padding:10px 0;cursor:default;}
+li.desktop_icon > i:first-child{display:none;}
+li.desktop_icon > div.icon32_imgHolder{text-align:center;height:32px;}
+li.desktop_icon > div.icon32_textHolder{position:absolute;width:100%;text-align:center;word-wrap:break-word;}
+li.desktop_icon img{width:32px;height:32px;margin:auto;}
+li.desktop_icon.iconSelected{z-index:10;}
+li.desktop_icon.iconSelected > div.icon32_imgHolder{}
+li.desktop_icon.iconSelected > div.icon32_textHolder{background:#3169b6;color:white;border-radius:3px;}
+ul.icon_contextMenu{color:black;padding:5px 0;position:absolute;z-index:200;background:white;border-radius:3px;box-shadow:0px 1px 5px #000000;}
+ul.icon_contextMenu > hr{margin:0 3px;border:0;border-bottom:1px solid #999;}
+ul.icon_contextMenu > li{padding:2px 10px;padding-left:22px;margin:0 10px;white-space:nowrap;line-height:18px;background-position:left center;background-repeat:no-repeat;}
+ul.icon_contextMenu > li:hover{color:#999;}
+ul.icon_contextMenu > li.separator{border-bottom:1px solid #eee;border-top:1px solid #bbb;height:0px;font-size:0;overflow:hidden;padding:0;}
+ul.icon_contextMenu > li.disabled{opacity:.5;color:#AAA;}
+ul.icon_contextMenu > li.disabled:hover{color:#AAA;}
+ul.icon_contextMenu > li.noSensitive{color:#333;}
+ul.icon_contextMenu > li.noSensitive:hover{color:#333;}
+img.icon32_generic{background:URL(../images/iconSet/text-x-generic.png) no-repeat;}
+img.icon32_folder{background:URL(../images/iconSet/folder.png) no-repeat;}
+img.icon32_application\/ogg{background:URL(../images/iconSet/audio-x-vorbis+ogg.png) no-repeat;}
+img.icon32_image\/jpeg{background:URL(../images/iconSet/image-jpeg.png) no-repeat;}
+img.icon32_image\/png{background:URL(../images/iconSet/image-png.png) no-repeat;}
+
+	table.dataTable{width:100%;border-top:1px solid #d1d1d1;border-bottom:1px solid #c4c6c8;margin-bottom:5px;}
+	table.dataTable thead tr.dataRow{height:17px;background:URL(../images/wod/dataTable_thead.png) repeat-x;line-height:16px;}
+	table.dataTable thead tr.dataRow > td{border-top:1px solid #707070;}
+	table.dataTable thead tr.dataRow > td.dataCell{font-weight:bold;color:#454545;}
+	table.dataTable thead tr.dataRow > td.dataCell:first-child{padding-left:5px;}
+	table.dataTable tr.dataRow{position:relative;background:white;}
+	table.dataTable tr.dataRow td.data{position:relative;}
+	table.dataTable tbody > tr.dataRow{background-color:#fff;}
+	table.dataTable tbody > tr.dataRow.alt{background-color:#eee;}
+
+	table.dataTable tbody > tr.dataRow td.dataCell{padding:0 5px;border-left:1px dotted #949494;}
+	table.dataTable tbody > tr.dataRow td.dataCell:first-child{padding:0 5px;border-right:1px dotted #949494;border-left:0;}
+
+	table.dataTable tbody > tr.dataRow td.dataCellMain{width:100%;padding:0;border:0;padding-left:5px;background-color:#eee;}
+	table.dataTable tbody > tr.dataRow td.dataCellMain:first-child{padding-left:16px;background:#eee URL(../images/icons/bullet_blue.png) center left no-repeat;}
+	table.dataTable tbody > tr.dataRow.alt td.dataCellMain{background-color:#ddd;}
+
+	/*===INI-defaultTHEME===*/
+	.wodTheme{position:relative;}
+	.wodTheme .wodThemeHeaderLeft{background:URL(../images/wod/wodSquares.png) left top no-repeat;padding-left:9px;height:8px;font-size:0;}
+	.wodTheme .wodThemeHeaderRight{background:URL(../images/wod/wodSquares.png) right -8px no-repeat;padding-right:9px;height:8px;font-size:0;}
+	.wodTheme .wodThemeHeaderCenter{background:URL(../images/wod/wodVs.png) top repeat-x;height:8px;font-size:0;}
+
+	.wodTheme .wodThemeTitleLeft{background:URL(../images/wod/wodHs.png) left top repeat-y;padding-left:9px;font-size:0;}
+	.wodTheme .wodThemeTitleRight{background:URL(../images/wod/wodHs.png) right top repeat-y;padding-right:9px;font-size:0;}
+	.wodTheme .wodThemeTitleCenter{position:relative;background:#bdbdbd;font-size:0;height:15px;overflow:hidden;}
+	.wodTheme .wodThemeTitleCenter h1{cursor:default;line-height:15px;font-size:10px;}
+	.wodTheme .wodThemeTitleCenter > img.wodThemeTitleButton{position:absolute;}
+	.wodTheme .wodThemeTitleCenter > img.wodButtonClose{right:0;top:0;width:16px;height:15px;background:URL(../images/wod/wodButton.png) left top no-repeat;}
+
+	.wodTheme .wodThemeContainerLeft{background:URL(../images/wod/wodHs.png) left top repeat-y;padding-left:6px;font-size:0;}
+	.wodTheme .wodThemeContainerRight{background:URL(../images/wod/wodHs.png) right top repeat-y;padding-right:6px;font-size:0;}
+	.wodTheme .wodThemeContainerCenter{padding-top:2px;padding-bottom:5px;background:#bdbdbd;font-size:0;}
+
+	.wodTheme .wodThemeFooterLeft{background:URL(../images/wod/wodSquares.png) left -16px no-repeat;padding-left:9px;font-size:0;}
+	.wodTheme .wodThemeFooterRight{background:URL(../images/wod/wodSquares.png) right -26px no-repeat;padding-right:9px;font-size:0;}
+	.wodTheme .wodThemeFooterCenter{clear:both;background:URL(../images/wod/wodVs.png) bottom repeat-x;height:10px;font-size:0;}
+
+	.wodTheme .wodThemeContainerCenter div.wodTabCanvas{background:URL(../images/wod/wodTabCanvas.png) top repeat-x;height:22px;padding:0 5px;}
+	.wodTheme .wodThemeContainerCenter li.wodTabSelected{display:block;float:left;color:#282828;font-weight:bold;cursor:default;}
+	.wodTheme .wodThemeContainerCenter li.wodTabSelected div.wodTabLeft{background:URL(../images/wod/wodTabCanvas.png) left -22px no-repeat;height:22px;padding-left:5px;}
+	.wodTheme .wodThemeContainerCenter li.wodTabSelected div.wodTabCenter{background:URL(../images/wod/wodTabCanvas.png) left -44px repeat-x;height:22px;text-align:center;width:80px;line-height:19px;}
+	.wodTheme .wodThemeContainerCenter li.wodTabSelected div.wodTabRight{background:URL(../images/wod/wodTabCanvas.png) right -66px no-repeat;height:22px;padding-right:5px;}
+
+	.wodTheme .wodThemeContainerCenter li.wodTab{display:block;float:left;color:#282828;font-weight:bold;cursor:default;}
+	.wodTheme .wodThemeContainerCenter li.wodTab div.wodTabLeft{background:URL(../images/wod/wodTabCanvas.png) left -88px no-repeat;height:22px;padding-left:5px;}
+	.wodTheme .wodThemeContainerCenter li.wodTab div.wodTabCenter{background:URL(../images/wod/wodTabCanvas.png) left -110px repeat-x;height:22px;text-align:center;width:80px;line-height:21px;}
+	.wodTheme .wodThemeContainerCenter li.wodTab div.wodTabRight{background:URL(../images/wod/wodTabCanvas.png) right -132px no-repeat;height:22px;padding-right:5px;}
+
+	.wodTheme .wodThemeContainerCenter ul.wodMenuHolder{border-bottom:1px solid #999;padding:3px 0;margin-bottom:4px;}
+	.wodTheme .wodThemeContainerCenter ul.wodMenuHolder > li{display:inline-block;padding:0 5px;cursor:pointer;}
+	.wodTheme .wodThemeContainerCenter ul.wodMenuHolder > li > ul{position:absolute;display:none;color:black;padding:5px 0;background:white;border-radius:3px;}
+	.wodTheme .wodThemeContainerCenter ul.wodMenuHolder > li.selected > ul{display:block;}
+	.wodTheme .wodThemeContainerCenter ul.wodMenuHolder > li.selected > ul > li{padding:2px 10px;padding-left:22px;margin:0 10px;white-space:nowrap;line-height:18px;background-position:left center;background-repeat:no-repeat;}
+	.wodTheme .wodThemeContainerCenter ul.wodMenuHolder > li.selected > ul > li:hover{color:#999;}
+	/*===FIN-defaultTHEME===*/
+
+/*===INI-defaultINFO===*/
+div#iInfo{position:absolute;top:0;height:1px;width:100%;}
+div.wodInfo{position:absolute;cursor:default;top:10px;font-size:10px;color:#666;}
+div.wodInfo > .wodInfoIndicator{position:relative;top:5px;height:13px;background:URL(../images/info/infoI.png) 30px top no-repeat;font-size:0;z-index:2;}
+div.wodInfo > .wodInfoBorder{border-width:7px 7px 8px;-moz-border-image:URL(../images/info/infoN.png) 7 7 8;-webkit-border-image:URL(../images/info/infoN.png) 7 7 8;position:relative;}
+div.wodInfo .wodInfoContainer{padding:3px 3px 2px 3px;}
+div.wodInfo .wodInfoContainer > *:first-child{margin:0;padding:0;}
+div.wodInfo .wodInfoContainer.loading{background:URL(../images/load.gif) 3px center no-repeat;padding-left:24px;}
+/*===FIN-defaultINFO===*/
+
+ul.systemForm{}
+ul.systemForm > li{}
+ul.systemForm > li > span:first-child{position:absolute;}
+ul.systemForm > li > div{margin-left:50%;}
+
+	/*===INI-buttons===*/
+ul.buttonHolder{text-align:right;}
+ul.buttonHolder *{font-size:inherit;}
+ul.buttonHolder > li.button{display:inline-block;}
+ul.buttonHolder > li.button > div{margin:0 10px;}
+ul.buttonHolder > li.gnomeButton{line-height:19px;text-align:center;cursor:default;color:#666;-moz-border-image:URL(../images/buttons/LI_gnomeButtonUnpressed.png) 3 4 3 4 round round;-webkit-border-image:URL(../images/buttons/LI_gnomeButtonUnpressed.png) 3 4 3 4 round round;border-width:3px 4px;}
+ul.buttonHolder > li.gnomeButton:active{-moz-border-image:URL(../images/buttons/LI_gnomeButtonPressed.png) 3 4 3 4 round round;-webkit-border-image:URL(../images/buttons/LI_gnomeButtonPressed.png) 3 4 3 4 round round;border-width:3px 4px;}
+
+ul.buttonHolder > li.gnomeButtonMini{line-height:9px;font-size:9px;text-align:center;cursor:default;color:#666;border-width:3px;-moz-border-image:URL(../images/buttons/LI_gnomeButtonMiniUnpressed.png) 3;-webkit-border-image:URL(../images/buttons/LI_gnomeButtonUnpressed.png) 3;}
+ul.buttonHolder > li.gnomeButtonMini:active{border-width:3px;-moz-border-image:URL(../images/buttons/LI_gnomeButtonMiniPressed.png) 3;-webkit-border-image:URL(../images/buttons/LI_gnomeButtonPressed.png) 3;}
+
+
+
+	.wodButtonMenu{padding:0 5px;margin-bottom:5px;}
+	.wodButtonMenu > div{display:inline-block;height:20px;line-height:20px;padding:0 1px;border:1px solid #4f4f4f;border-radius:3px;box-shadow:0 1px 0 #dcdcdc;background:URL(../images/buttons/buttonMenuBg.png) repeat-x;}
+	.wodButtonMenu > div:active{box-shadow: inset 0px 1px 5px #555;}
+	.wodButtonMenu > div > img.icon{width:20px;height:20px;}
+
+	.wodThemeContainerCenter div.buttonHeader{clear:both;padding:3px 0;}
+	.wodThemeContainerCenter div.buttonHeader div.button{float:left;}
+
+	.wodInfoContainerCenter div.buttonFooter{clear:both;padding-top:3px;}
+	.wodInfoContainerCenter div.buttonFooter div.buttonFooterNode{position:relative;float:right;height:20px;line-height:20px;background:#e3e3e3;padding:0 5px;margin-left:5px;cursor:pointer;}
+
+		div.buttonHolder div.button{display:inline-block;}
+		/*osxPe*/
+		div.osxPeButtonUnpressed{line-height:20px;cursor:default;color:#494a4d;}
+		div.osxPeButtonUnpressed div.buttonLeft:first-child{background:URL(../images/buttons/osxPeButtonUnpressed.png) left top no-repeat;height:22px;padding-left:4px;}
+		div.osxPeButtonUnpressed div.buttonRight:first-child{background:URL(../images/buttons/osxPeButtonUnpressed.png) right -22px no-repeat;height:22px;padding-right:4px;text-align:center;}
+		div.osxPeButtonUnpressed div.buttonCenter:first-child{background:URL(../images/buttons/osxPeButtonUnpressed.png) left -44px repeat-x;height:22px;padding:0 2px;font-size:10px;}
+
+		div.osxPeButtonPressed{line-height:20px;cursor:default;color:#494a4d;}
+		div.osxPeButtonPressed div.buttonLeft:first-child{background:URL(../images/buttons/osxPeButtonPressed.png) left top no-repeat;height:22px;padding-left:4px;}
+		div.osxPeButtonPressed div.buttonRight:first-child{background:URL(../images/buttons/osxPeButtonPressed.png) right -22px no-repeat;height:22px;padding-right:4px;text-align:center;}
+		div.osxPeButtonPressed div.buttonCenter:first-child{background:URL(../images/buttons/osxPeButtonPressed.png) left -44px repeat-x;height:22px;padding:0 2px;font-size:10px;}
+		/*GNOME*/
+		div.gnomeButtonUnpressed{line-height:27px;text-align:center;cursor:default;color:#666;}
+		div.gnomeButtonUnpressed div.buttonLeft{background:URL(../images/buttons/gnomeButtonUnpressed.png) left top no-repeat;height:26px;padding-left:4px;}
+		div.gnomeButtonUnpressed div.buttonRight{background:URL(../images/buttons/gnomeButtonUnpressed.png) right -26px no-repeat;height:26px;padding-right:4px;}
+		div.gnomeButtonUnpressed div.buttonCenter{background:URL(../images/buttons/gnomeButtonUnpressed.png) left -52px repeat-x;height:26px;padding:0 4px;font-size:10px;}
+
+		div.gnomeButtonPressed{line-height:27px;text-align:center;cursor:default;color:#666;}
+		div.gnomeButtonPressed div.buttonLeft{background:URL(../images/buttons/gnomeButtonPressed.png) left top no-repeat;height:26px;padding-left:4px;}
+		div.gnomeButtonPressed div.buttonRight{background:URL(../images/buttons/gnomeButtonPressed.png) right -26px no-repeat;height:26px;padding-right:4px;}
+		div.gnomeButtonPressed div.buttonCenter{background:URL(../images/buttons/gnomeButtonPressed.png) left -52px repeat-x;height:26px;padding:0 4px;font-size:10px;}
+		/*GNOME-mini*/
+		div.gnomeButtonMiniUnpressed{line-height:16px;text-align:center;cursor:default;color:#666;}
+		div.gnomeButtonMiniUnpressed div.buttonLeft{background:URL(../images/buttons/gnomeButtonMiniUnpressed.png) left top no-repeat;height:15px;padding-left:4px;}
+		div.gnomeButtonMiniUnpressed div.buttonRight{background:URL(../images/buttons/gnomeButtonMiniUnpressed.png) right -15px no-repeat;height:15px;padding-right:4px;}
+		div.gnomeButtonMiniUnpressed div.buttonCenter{background:URL(../images/buttons/gnomeButtonMiniUnpressed.png) left -30px repeat-x;height:15px;padding:0 3px;font-size:9px;}
+
+		div.gnomeButtonMiniPressed{line-height:16px;text-align:center;cursor:default;color:#666;}
+		div.gnomeButtonMiniPressed div.buttonLeft{background:URL(../images/buttons/gnomeButtonMiniPressed.png) left top no-repeat;height:15px;padding-left:4px;}
+		div.gnomeButtonMiniPressed div.buttonRight{background:URL(../images/buttons/gnomeButtonMiniPressed.png) right -15px no-repeat;height:15px;padding-right:4px;}
+		div.gnomeButtonMiniPressed div.buttonCenter{background:URL(../images/buttons/gnomeButtonMiniPressed.png) left -30px repeat-x;height:15px;padding:0 3px;font-size:9px;}
+	/*===FIN-buttons===*/
+
+	div#mouseTrayIcon{position:absolute;right:180px;top:1px;width:20px;height:20px;}
+	div#mouseTrayIcon img{background:URL(../images/devices/mouse.png) no-repeat;width:20px;height:20px;}
+
+.lainExplorer_explorerBody{position:relative;}
+.lainExplorer_sidePanel{width:140px;position:absolute;top:0;padding-top:5px;overflow-x:hidden;}
+.lainExplorer_sidePanel > li{line-height:18px;padding-left:30px;background-position:11px center;background-repeat:no-repeat;cursor:default;}
+.lainExplorer_iconHolder{margin-left:120px;}
+
+.icon{height:16px;width:16px;background-position:center;background-repeat:no-repeat;}
+.icon_application_cascade{background-image:URL(../images/icons/application_cascade.png) !important;}
+.icon_applications_system{background-image:URL(../images/icons/applications_system.png) !important;}
+.icon_bin{background-image:URL(../images/icons/user-trash.png) !important;}
+.icon_control_centre{background-image:URL(../images/icons/control_centre.png) !important;}
+.icon_copy{background-image:URL(../images/icons/copy.png) !important;}
+.icon_cut{background-image:URL(../images/icons/cut.png) !important;}
+.icon_database{background-image:URL(../images/icons/database.png) !important;}
+.icon_desktop{background-image:URL(../images/icons/user-desktop.png) !important;}
+.icon_drive_remote{background-image:URL(../images/icons/drive_remote.png) !important;}
+.icon_drive_reveal{background-image:URL(../images/icons/drive_remote.png) !important;}
+.icon_drive_ubuntuone{background-image:URL(../images/icons/ubuntuone.png) !important;}
+.icon_emblem_updating{background-image:URL(../images/icons/emblem_updating.png) !important;}
+.icon_folder{background-image:URL(../images/icons/folder.png) !important;}
+.icon_folder_add{background-image:URL(../images/icons/folder_add.png) !important;}
+.icon_insert_link{background-image:URL(../images/icons/insert_link.png) !important;}
+.icon_object_flip_horizontal{background-image:URL(../images/icons/object-flip-horizontal.png) !important;}
+.icon_object_flip_vertical{background-image:URL(../images/icons/object-flip-vertical.png) !important;}
+.icon_package_new{background-image:URL(../images/icons/package_new.png) !important;}
+.icon_page_white{background-image:URL(../images/icons/page_white.png) !important;}
+.icon_paste{background-image:URL(../images/icons/paste.png) !important;}
+.icon_token_uponelevel{background-image:URL(../images/icons/token_uponelevel.png) !important;}
+.icon_trash{background-image:URL(../images/icons/user-trash.png) !important;}
+.icon_page_gear{background-image:URL(../images/icons/page_gear.png) !important;}
+.icon_ubuntuone{background-image:URL(../images/icons/ubuntuone.png) !important;}

@@ -122,6 +122,10 @@
 
 		$lastID = $db->lastInsertRowID();
 		if(!$r && $db->lastErrorCode() == 19 && count($tableKeys)){
+			if(substr($db->lastErrorMsg(),0,7) == 'column '){
+				$columnName = substr($db->lastErrorMsg(),7,-14);
+				if(!isset($tableKeys[$columnName])){return array('OK'=>$r,'id'=>$lastID,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);}
+			}
 			$query = 'UPDATE \''.$tableName.'\' SET ';
 			$tableKeysValues = array_keys($tableKeys);
 			foreach($array as $key=>$value){if(isset($tableKeys[$key])){continue;}$query .= '\''.$key.'\'=\''.$value.'\',';}
@@ -140,7 +144,6 @@
 	}
 
 	function sqlite3_getSingle($tableName = false,$whereClause = false,$params = array()){
-		include_once('inc_databaseSqlite3.php');
 		if(!isset($params['indexBy'])){$params['indexBy'] = 'id';}
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['SQLITE3']['database'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
 		$selectString = '*';if(isset($params['selectString'])){$selectString = $params['selectString'];}
@@ -155,7 +158,6 @@
 		return $row;
 	}
 	function sqlite3_getWhere($tableName = false,$whereClause = false,$params = array()){
-		include_once('inc_databaseSqlite3.php');
 		if(!isset($params['indexBy'])){$params['indexBy'] = 'id';}
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['DB_FILMCATALOG'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
 		$selectString = '*';if(isset($params['selectString'])){$selectString = $params['selectString'];}

@@ -1,0 +1,35 @@
+	html,body{width:100%;height:100%;margin:0;padding:0;}
+	body{overflow:hidden;}
+	*{font-family: "Albany AMT", sans-serif;font-size:10px;margin:0;padding:0;}
+	div.inputBlock{background:white;width:250px;margin:auto;}
+	a > img{border:0;}
+
+	div.backgroundHolder{background:URL(r/images/index/blue.png) center;left:0;position:absolute;width:100%;height:100%;}
+	div#clockWidget{position:absolute;top:10px;right:10px;padding:2px 10px;background:white;-moz-border-radius:3px;}
+
+	.loginGlass{cursor:default;}
+	.loginGlass .loginGlassHeaderLeft{background:URL(r/images/login/loginGlassSquares.png) left top no-repeat;height:8px;padding-left:8px;font-size:0;}
+	.loginGlass .loginGlassHeaderRight{background:URL(r/images/login/loginGlassSquares.png) right -8px no-repeat;height:8px;padding-right:8px;font-size:0;}
+	.loginGlass .loginGlassHeaderCenter{background:URL(r/images/login/loginGlassVs.png) top repeat-x;height:8px;font-size:0;}
+	.loginGlass .loginGlassContainerLeft{background:URL(r/images/login/loginGlassHLeft.png) left repeat-y;padding-left:8px;font-size:0;}
+	.loginGlass .loginGlassContainerRight{background:URL(r/images/login/loginGlassHRight.png) right repeat-y;padding-right:8px;font-size:0;}
+	.loginGlass .loginGlassContainerCenter{padding:3px;padding-top:0;background:URL(r/images/login/bg.png);font-size:10px;min-width:120px;}
+	.loginGlass .loginGlassFooterLeft{background:URL(r/images/login/loginGlassSquares.png) left -16px no-repeat;height:10px;padding-left:8px;font-size:0;}
+	.loginGlass .loginGlassFooterRight{background:URL(r/images/login/loginGlassSquares.png) right -26px no-repeat;height:10px;padding-right:8px;font-size:0;}
+	.loginGlass .loginGlassFooterCenter{background:URL(r/images/login/loginGlassVs.png) bottom repeat-x;height:10px;font-size:0;}
+
+	.loginWhite{}
+	.loginWhite .loginWhiteHeaderLeft{background:URL(r/images/login/loginWhiteSquares.png) left top no-repeat;height:7px;padding-left:8px;font-size:0;}
+	.loginWhite .loginWhiteHeaderRight{background:URL(r/images/login/loginWhiteSquares.png) right -7px no-repeat;height:7px;padding-right:8px;font-size:0;}
+	.loginWhite .loginWhiteHeaderCenter{background:URL(r/images/login/loginWhiteVs.png) top repeat-x;height:7px;font-size:0;}
+	.loginGlass .loginWhiteContainerLeft{background:URL(r/images/login/loginWhiteHLeft.png) left repeat-y;padding-left:8px;font-size:0;}
+	.loginGlass .loginWhiteContainerRight{background:URL(r/images/login/loginWhiteHRight.png) right repeat-y;padding-right:8px;font-size:0;}
+	.loginGlass .loginWhiteContainerCenter{padding:5px 3px;background:white;font-size:10px;min-width:120px;}
+	.loginGlass .loginWhiteFooterLeft{background:URL(r/images/login/loginWhiteSquares.png) left -14px no-repeat;height:10px;padding-left:8px;font-size:0;}
+	.loginGlass .loginWhiteFooterRight{background:URL(r/images/login/loginWhiteSquares.png) right -24px no-repeat;height:10px;padding-right:8px;font-size:0;}
+	.loginGlass .loginWhiteFooterCenter{background:URL(r/images/login/loginWhiteVs.png) bottom repeat-x;height:10px;font-size:0;}
+	.loginGlass .loginWhiteContainerCenter hr{margin:20px 0;border:0;border-top:1px solid #AAA;}
+
+	div#loginLine{position:relative;line-height:20px;}
+	div#loginLine input{position:absolute;width:255px;right:0;top:0;}
+	form#finalForm{position:absolute;top:0;left:0;width:0;height:0;visibility:hidden;}

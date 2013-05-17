@@ -1,5 +1,6 @@
 <?php
-	$GLOBALS['tables']['systemUsers'] = array('_userMail_'=>'TEXT NOT NULL','userName'=>'TEXT NOT NULL','userAlias'=>'TEXT NOT NULL','userRegistered'=>'TEXT NOT NULL'
+	$GLOBALS['tables']['systemUsers'] = array('_userMail_'=>'TEXT NOT NULL','userPass'=>'TEXT NOT NULL','userWord'=>'TEXT NOT NULL',
+		'userName'=>'TEXT NOT NULL','userRegistered'=>'TEXT NOT NULL',
 		'userBirthday'=>'TEXT','userGender'=>'TEXT','userNick'=>'TEXT','userWeb'=>'TEXT','userBio'=>'TEXT','userPhrase'=>'TEXT','userModes'=>'TEXT',
 		'userStatus'=>'TEXT','userTags'=>'TEXT','userCode'=>'TEXT');
 	$GLOBALS['api']['users'] = array('db'=>'../db/api.users.db','table'=>'systemUsers');
@@ -9,7 +10,36 @@
 	 * repositorio único porque se saturaría por las reiteradas peticiones
 	 * de los distintos usuarios.
 	 */
+	function users_create($data,$db = false){
+		$valid = array('userName'=>0,'userBirth'=>0,'userMail'=>0,'userPass'=>0,'userGender'=>0,'userNick'=>0);
+		include_once('inc.strings.php');
+		foreach($data as $k=>$v){if(!isset($valid[$k])){unset($data[$k]);continue;}$data[$k] = strings_UTF8Encode($v);}
+		$pass_a = array('?','$','¿','!','¡','{','}');
+	    	$pass_b = array('a','e','i','o','u','b','c','d','f','g','h','j','k','l','m','n','p','q','r','s','t','v','w','x','y','z');
+		$magicWordPre = '';for($a=0; $a<4; $a++){$magicWordPre .= $pass_a[array_rand($pass_a)];$magicWordPre .= $pass_b[array_rand($pass_b)];}
 
+		/* Necesitamos tener la conexión con la base de datos desde aquí para las comprobaciones de algunos campos */
+		$shouldClose = false;if($db == false){$db = sqlite3_open($GLOBALS['api']['users']['db']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
+		$data['userName'] = preg_replace('/[^a-zA-ZáéíóúÁÉÍÓÚ ,]*/','',$data['userName']);
+		if(empty($data['userName'])){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>1,'errorDescription'=>'NAME_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		if(!preg_match('/^[a-z0-9\._\+\-]+@[a-z0-9\.\-]+\.[a-z]{2,6}$/',$data['userMail'])){return array('errorCode'=>1,'errorDescription'=>'EMAIL_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		/* Comprobamos mail duplicado */
+		if(users_getSingle('(userMail = \''.$data['userMail'].'\')',array('db'=>$db))){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>1,'errorDescription'=>'EMAIL_DUPLICATED','file'=>__FILE__,'line'=>__LINE__);}
+		if(!isset($data['userPass']) || empty($data['userPass'])){$data['userPass'] = '';for($a=0; $a<6; $a++){$data['userPass'] .= $pass_a[array_rand($pass_a)];$data['userPass'] .= $pass_b[array_rand($pass_b)];}}
+		$data['userPass'] = sha1($data['userPass']);
+
+		if(!isset($data['userNick']) || empty($data['userNick'])){$data['userNick'] = sha1($data['userMail'].$data['userName']);}
+		$date = date('Y-m-d H:i:s');
+		$userCode = users_helper_generateCode($data['userMail']);
+		$data = array_merge($data,array('userWord'=>$magicWordPre,'userRegistered'=>$date,'userStatus'=>0,'userModes'=>',regular,','userCode'=>$userCode));
+
+		$r = sqlite3_insertIntoTable($GLOBALS['api']['users']['table'],$data,$db);
+		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
+		$user = users_getSingle('(userMail = \''.$data['userMail'].'\')',array('db'=>$db));
+		$user = array_merge($user,array('userCode'=>$userCode));
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('OK'=>false,'errno'=>$GLOBALS['DB_LAST_ERRNO'],'error'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['users']['table']);sqlite3_close($db);}
+		return $user;
+	}
 	function users_getSingle($whereClause = false,$params = array()){
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['users']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
 		$r = sqlite3_getSingle($GLOBALS['api']['users']['table'],$whereClause,$params);
@@ -22,4 +52,6 @@
 		if($shouldClose){sqlite3_close($params['db']);}
 		return $r;
 	}
+
+	function users_helper_generateCode($userMail){$userCode = sha1($userMail.time().date('Y-m-d H:i:s'));return $userCode;}
 ?>
