@@ -27,7 +27,7 @@ var _littleDrag = {
 		}
 
 		/* Si es una ventana, escondemos el contenido para mejorar el rendimiento */
-		if(elem.className.match(/wodTheme/)){_desktop.window_contract(elem);}
+		if(elem.className.match(/wodern/)){_desktop.window_contract(elem);}
 
 		/* Salvamos los callbacks previos */
 		if(elem.onmouseup){elem.oldOnmouseup = elem.onmouseup;}
@@ -52,7 +52,7 @@ var _littleDrag = {
 		document.removeEventListener('mouseup',elem.mouseUpHandler,true);
 
 		/* Si es una ventana, la expandemos para ver el contenido */
-		if(elem.className.match(/wodTheme/)){_desktop.window_expand(elem);}
+		if(elem.className.match(/wodern/)){_desktop.window_expand(elem);}
 
 		if(elem.className.match(/wodIcon/)){
 			var fake = elem;elem = elem.innerElem;
