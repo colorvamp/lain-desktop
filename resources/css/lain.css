@@ -1,5 +1,6 @@
 html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden;}
 *{font-family: "Albany AMT", sans-serif;font-size:10px;margin:0;padding:0;list-style:none;}
+a{text-decoration:none;}
 i.floatSeparator{display:block;clear:both;}
 .hidden{display:none;}
 
@@ -31,9 +32,13 @@ div#lainMenu > div#lainPlacesMenu > ul > li{background:URL(../images/icons/datab
 div#lainMenu > div#lainPlacesMenu > ul > li:last-child{background-position:8px center;border:1px dashed #AAA;padding:2px 8px 2px 30px;border-radius:5px;margin:8px 10px 4px 10px;}
 div#lainMenu > div#lainPlacesMenu > ul > li > i:first-child{display:none;}
 
-div#systemTray{position:absolute;top:0;right:80px;}
-div#systemTray > div,div#systemTray > li{display:inline-block;position:relative;width:20px;height:20px;background-position:center;background-repeat:no-repeat;}
-div#systemTray > div > .wodInfo,div#systemTray > li > .wodInfo{top:20px;}
+ul#systemTray{position:absolute;top:0;right:0px;font-size:11px;padding-right:10px;line-height:20px;color:white;}
+ul#systemTray > li{display:inline-block;position:relative;background-position:center;background-repeat:no-repeat;font-size:inherit;}
+ul#systemTray > li > div.perm{white-space:nowrap;font-size:inherit;cursor:pointer;}
+ul#systemTray > li > div.perm a{color:inherit;font-size:inherit;}
+ul#systemTray > li > div.perm i{font-size:inherit;}
+
+
 /*ul.list > li.alt{background-color:#ebe8e3;}*/
 ul.list > li:nth-child(even){background-color:#ebe8e3;}
 

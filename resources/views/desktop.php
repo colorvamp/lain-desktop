@@ -16,7 +16,7 @@
 			<div id='lainPlacesMenu' onclick='menu_switch(this);'>
 				<h1>Places</h1>
 				<ul id='lainPlacesMenu_itemList'>
-					<li class='icon_desktop' onclick='launchApp("lainExplorer",launchApp_createHolder("lainExplorer"),"/");'>Desktop</li>
+					<li class='icon_desktop' onclick='launchApp("lainExplorer",launchApp_createHolder("lainExplorer"),"native:drive:/");'>Desktop</li>
 					<?php //echo desktop_placesToCanvas(); ?>
 					<li class='icon_insert_link dropLeyend'>Drop folders here</li>
 				</ul>
@@ -24,7 +24,9 @@
 		</div>
 		<div id="mouseTrayIcon"><img onclick="_desktop.mouse_controlDialog();" src='r/images/t.gif'/></div>
 		<div id='lainFlowIcon'></div>
-		<div id='systemTray'></div>
+		<ul id='systemTray'>
+			<li><div class="perm"><a href="{%baseURL%}logout"><i class="icon-user"></i> {%user_userName%}</a></div></li>
+		</ul>
 		<ul id="lainIcons">{%HTML_icons%}</ul>
 		<ul id='lainWindows'></ul>
 <div id='log' style='position:absolute;top:0;right:0;background:white;z-index:1000;'></div>

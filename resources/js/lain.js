@@ -659,11 +659,14 @@ var _iface = {
 		});
 	},
 	reveal_folder_create: function(fileName,fileRoute,callback){
-		var params = {'command':'folder_create','fileName':fileName,'fileRoute':fileRoute};
-		ajaxPetition('r/PHP/API_fileManager.php',$toUrl(params),function(ajax){
-			var r = jsonDecode(ajax.responseText);
-			if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
-			if(callback){callback(r.data);}
+		var params = {'command':'folder_create','fileName':base64.encode(fileName),'fileRoute':base64.encode(fileRoute)};
+		ajaxPetition('r/PHP/api.fs.php',$toUrl(params),function(ajax){var r = jsonDecode(ajax.responseText);
+			if(typeof r.errorDescription != 'undefined'){
+				//FIXME: TODO
+				alert(ajax.responseText);
+				return;	
+			}
+			if(callback){callback(r);}
 		});
 	},
 	reveal_file_cache: function(file,callback){

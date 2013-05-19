@@ -58,7 +58,7 @@ $C('LI',{className:'icon_folder_add',innerHTML:'Create new folder',onclick:funct
 
 		var wNum = iconCanvas.id.match(/lainExplorer([0-9]+)_iconCanvas/)[1];
 		var t = $_('wod_lainExplorer'+wNum+'_title',{innerHTML:'Lain File Explorer - '+path});
-		ajaxPetition(this.vars.apiURL,'command=folder_list&path='+base64.encode(path),function(ajax){
+		ajaxPetition(this.vars.apiURL,'command=folder_list&fileRoute='+base64.encode(path),function(ajax){
 			var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
 			iconCanvas.empty();
 			iconCanvas.innerPath = path;
