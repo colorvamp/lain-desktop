@@ -139,6 +139,7 @@ var _desktop = {
 
 		document.addEventListener('dragover',_desktop.signals_dragover,true);
 		document.addEventListener('drop',_desktop.signals_drop,true);
+		window.addEventListener('resize',_desktop.signals_resize,true);
 		_desktop.icons_organize();
 		lWindows = $_('lainWindows');
 	},
@@ -168,16 +169,15 @@ var _desktop = {
 		launchApp('systemControlCentre',false);
 		launchApp('systemReveal',false);
 	},
-	desktop_signals_resize: function(e){
+	signals_resize: function(e){
 		if(window.resizeTimer){clearTimeout(window.resizeTimer);window.resizeTimer = false;}
-		window.resizeTimer = setTimeout(function(){_desktop.desktop_signals_resizeEnd(e);},500);
+		window.resizeTimer = setTimeout(function(){_desktop.signals_resizeEnd(e);},500);
 	},
-	desktop_signals_resizeEnd: function(e){
+	signals_resizeEnd: function(e){
 		window.resizeTimer = false;
 		extend(_desktop.vars,{'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight});
-		extend(VAR_lain,{'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight});
-		this.icons_organize();
-		this.background_init();
+		_desktop.icons_organize();
+		//_desktop.background_init();
 	},
 	desktop_signals_keyPress: function(e){
 		/* ENTER */if(e.keyCode == 13){
