@@ -133,7 +133,7 @@ function launchApp_createHolder(appName){
 var _desktop = {
 	vars: {},
 	init: function(){
-		this.vars = {'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight,'yOffset':30,'window_top':false,'wHighestZ':0,'currentContextMenu':false,
+		_desktop.vars = {'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight,'yOffset':30,'window_top':false,'wHighestZ':0,'currentContextMenu':false,
 			'fileOperation':false,'fileOrig':false,'fileDest':false,'fileSelection':$A([]),
 			'input_presedKeys':$A([]),'input_shorcutKeys':{}};
 
@@ -174,7 +174,7 @@ var _desktop = {
 	},
 	desktop_signals_resizeEnd: function(e){
 		window.resizeTimer = false;
-		extend(this.vars,{'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight});
+		extend(_desktop.vars,{'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight});
 		extend(VAR_lain,{'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight});
 		this.icons_organize();
 		this.background_init();
@@ -397,10 +397,10 @@ var _desktop = {
 	window_loadRelativePosition: function(id){
 		var c = unescape(cookieTake('position:'+id));
 		//FIXME: esto no está correcto, no deberíamos asumir 400 y 100 tan alegremente
-		if(!c || !(c = jsonDecode(c))){return {'left':( Math.random()*(VAR_lain.bodyWidth-400) ),'top':( Math.random()*(VAR_lain.bodyHeight-100) )};}
-		var wLeft = (c.left < c.right) ? c.left : (this.vars.bodyWidth-(parseInt(c.right)+parseInt(c.width)));
-		var wTop = (c.top < c.bottom) ? c.top : (this.vars.bodyHeight-(parseInt(c.bottom)+parseInt(c.height)));
-		if(wTop < 0 || wTop > (this.vars.bodyHeight-20)){wTop = 0;}
+		if(!c || !(c = jsonDecode(c))){return {'left':( Math.random()*(_desktop.vars.bodyWidth-400) ),'top':( Math.random()*(_desktop.vars.bodyHeight-100) )};}
+		var wLeft = (c.left < c.right) ? c.left : (_desktop.vars.bodyWidth-(parseInt(c.right)+parseInt(c.width)));
+		var wTop = (c.top < c.bottom) ? c.top : (_desktop.vars.bodyHeight-(parseInt(c.bottom)+parseInt(c.height)));
+		if(wTop < 0 || wTop > (_desktop.vars.bodyHeight-20)){wTop = 0;}
 		return {'left':wLeft,'top':wTop,'width':c.width,'height':c.height};
 	},
 	window_saveRelativePosition: function(elem){

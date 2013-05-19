@@ -67,6 +67,18 @@
 		return $f;
 	}
 
+	function fs_file_stream($fileName,$fileRoute){
+		if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
+		$fileRoute = fs_helper_parsePath($fileRoute);
+		if($fileRoute === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		if(!is_dir($fileRoute)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
+		$targetFile = $fileRoute.$fileName;
+		if(!file_exists($targetFile)){return array('errorDescription'=>'FILE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
+
+		//FIXME: falta el mimetype
+		readfile($targetFile);exit;
+	}
+
 	function fs_transfer_fragment($fileName,$filePath,$base64string_sum,$base64string_len,$fragment_string,$fragment_num,$fragment_sum){
 		$tmpPath = $GLOBALS['api']['fs']['tmp'];
 		$tmpPath = $tmpPath.$base64string_sum.'/';if(!file_exists($tmpPath)){$oldmask = umask(0);$r = @mkdir($tmpPath,0777,1);umask($oldmask);}

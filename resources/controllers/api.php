@@ -20,6 +20,15 @@
 				echo json_encode($r);
 				break;
 		}}
+		if(func_num_args()){$args = func_get_args();$subcommand = array_shift($args);switch($subcommand){
+			case 'file_stream':
+				//FIXME: también hacerlo con un único argumento
+				foreach($args as $k=>$arg){$args[$k] = base64_decode(str_replace(' ','+',$args[$k]));}
+				list($fileName,$fileRoute) = $args;
+				$r = fs_file_stream($fileName,$fileRoute);
+				print_r($r);
+				break;
+		}}
 		exit;
 	}
 ?>
