@@ -1,6 +1,6 @@
 var lainExplorer = new Class({
 	init: function(holder,params){
-		if(!VAR_apps['lainExplorer']){this.vars = {apiURL:'r/PHP/api.fs.php',wCounter:0,wHolder:holder,wList:$A([]),cList:$A([])};}
+		if(!VAR_apps['lainExplorer']){this.vars = {apiURL:'api/fs',wCounter:0,wHolder:holder,wList:$A([]),cList:$A([])};}
 		if(params && params.tagName && params.tagName == 'LI'){var iProp = _desktop.icon_getProperties(params);this.createExplorer(iProp.fileRoute+iProp.fileName);return;}
 		if(params && params.constructor == String){this.createExplorer(params);return;}
 	},
@@ -58,7 +58,7 @@ $C('LI',{className:'icon_folder_add',innerHTML:'Create new folder',onclick:funct
 
 		var wNum = iconCanvas.id.match(/lainExplorer([0-9]+)_iconCanvas/)[1];
 		var t = $_('wod_lainExplorer'+wNum+'_title',{innerHTML:'Lain File Explorer - '+path});
-		ajaxPetition(this.vars.apiURL,'command=folder_list&fileRoute='+base64.encode(path),function(ajax){
+		ajaxPetition(this.vars.apiURL,'subcommand=folder_list&fileRoute='+base64.encode(path),function(ajax){
 			var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
 			iconCanvas.empty();
 			iconCanvas.innerPath = path;

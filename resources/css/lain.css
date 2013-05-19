@@ -17,6 +17,13 @@ i.floatSeparator{display:block;clear:both;}
 .whiteBox{position:absolute;background:white;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.6);}
 .whiteBox.middleInd:before{content:' ';position:relative;top:-21px;width:0;height:0;border:8px solid;border-color:transparent transparent white transparent;}
 /*END-whiteBox*/
+/*INI-wodInfo*/
+div.wodInfo{position:absolute;min-width:200px;background:white;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.6);}
+div.wodInfo .wodInfoIndicator{position:absolute;top:-16px;left:calc(50% - 4px);width:0;height:0;border:8px solid;border-color:transparent transparent white transparent;}
+div.wodInfo .wodInfoContainer{padding:3px 3px 2px 3px;}
+div.wodInfo .wodInfoContainer > *:first-child{margin:0;padding:0;}
+div.wodInfo .wodInfoContainer.loading{background:URL(../images/load.gif) 3px center no-repeat;padding-left:24px;}
+/*FIN-wodInfo*/
 
 body > img.logo{position:absolute;z-index:10;bottom:20px;right:20px;}
 div#null{position:absolute;height:0px;width:0px;overflow:hidden;}
@@ -33,7 +40,7 @@ div#lainMenu > div#lainPlacesMenu > ul > li:last-child{background-position:8px c
 div#lainMenu > div#lainPlacesMenu > ul > li > i:first-child{display:none;}
 
 ul#systemTray{position:absolute;top:0;right:0px;font-size:11px;padding-right:10px;line-height:20px;color:white;}
-ul#systemTray > li{display:inline-block;position:relative;background-position:center;background-repeat:no-repeat;font-size:inherit;}
+ul#systemTray > li{float:right;position:relative;background-position:center;background-repeat:no-repeat;font-size:inherit;}
 ul#systemTray > li > div.perm{white-space:nowrap;font-size:inherit;cursor:pointer;}
 ul#systemTray > li > div.perm a{color:inherit;font-size:inherit;}
 ul#systemTray > li > div.perm i{font-size:inherit;}
@@ -145,15 +152,7 @@ img.icon32_image\/png{background:URL(../images/iconSet/image-png.png) no-repeat;
 
 	/*===FIN-defaultTHEME===*/
 
-/*===INI-defaultINFO===*/
-div#iInfo{position:absolute;top:0;height:1px;width:100%;}
-div.wodInfo{position:absolute;cursor:default;top:10px;font-size:10px;color:#666;}
-div.wodInfo > .wodInfoIndicator{position:relative;top:5px;height:13px;background:URL(../images/info/infoI.png) 30px top no-repeat;font-size:0;z-index:2;}
-div.wodInfo > .wodInfoBorder{border-width:7px 7px 8px;-moz-border-image:URL(../images/info/infoN.png) 7 7 8;-webkit-border-image:URL(../images/info/infoN.png) 7 7 8;position:relative;}
-div.wodInfo .wodInfoContainer{padding:3px 3px 2px 3px;}
-div.wodInfo .wodInfoContainer > *:first-child{margin:0;padding:0;}
-div.wodInfo .wodInfoContainer.loading{background:URL(../images/load.gif) 3px center no-repeat;padding-left:24px;}
-/*===FIN-defaultINFO===*/
+
 
 ul.systemForm{}
 ul.systemForm > li{}

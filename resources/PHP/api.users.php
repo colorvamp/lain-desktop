@@ -74,7 +74,7 @@
 	}
 	function users_isLogged($db = false){
 		if(isset($GLOBALS['user']) && is_array($GLOBALS['user'])){return true;}
-		if(isset($_SESSION['user']) && is_array($_SESSION['user'])){$GLOBALS['user'] = $_SESSION['user'];$GLOBALS['userPath'] = '../db/users/'.base64_encode($_SESSION['user']['userMail']).'/';return true;}
+		if(isset($_SESSION['user']) && is_array($_SESSION['user'])){$GLOBALS['user'] = $_SESSION['user'];$GLOBALS['userPath'] = '../db/users/'.$_SESSION['user']['userMail'].'/';return true;}
 		//FIXME: faltaría revisar cookies
 		return false;
 	}

@@ -206,19 +206,12 @@
 
 		var w = $C('DIV',style,holder);
 		var d = w.infoIndicator = $C('DIV',{className:'wodInfoIndicator'},w);
-		var b = $C('DIV',{className:'wodInfoBorder'},w);
-		w.infoContainer = $C('DIV',{className:'wodInfoContainer','infoWindow':w,id:'info_'+id+'_container','.position':'relative'},b);
-
-		var indicatorOffsetLeft = ((indicatorOffsetLeft) ? indicatorOffsetLeft : 20);
-		if(indicatorOffsetLeft!='center'){if(indicatorOffsetLeft < 0){indicatorOffsetLeft = w.offsetWidth+indicatorOffsetLeft;};indicatorOffsetLeft+='px';}
-		w.infoIndicator.style.backgroundPosition = indicatorOffsetLeft+' top';
+		w.infoContainer = $C('DIV',{className:'wodInfoContainer','infoWindow':w,id:'info_'+id+'_container','.position':'relative'},w);
 
 		if(gnomeButton){w.afterRemove = function(){holder.parentNode.className = oldClassName;}}
 		var pos = $getOffsetPosition(w);var rpos = ($T('BODY')[0].offsetWidth)-pos.left-pos.width;
 		/* If the infoBox is out the page, fix it to the right border */
-		if(rpos < VAR_wodInfo.marginRight){w.style.left = w.offsetLeft+rpos-VAR_wodInfo.marginRight+'px';w.infoIndicator.style.backgroundPosition = parseInt(indicatorOffsetLeft)+(rpos*-1)+VAR_wodInfo.marginRight+'px top';}
-		/* Quedará centrado si en las opciones de estilo pasamos wodIndicator:middle */
-		if(style.wodIndicator && style.wodIndicator == 'middle'){var holderPos = $getOffsetPosition(holder);var wMid = (pos.width/2);var pMid = (holderPos.width/2);w.style.left = (pMid-wMid)+'px';}
+		if(rpos < VAR_wodInfo.marginRight){w.style.left = w.offsetLeft+rpos-VAR_wodInfo.marginRight+'px';d.style.left = (Math.abs(w.offsetLeft)-4+VAR_wodInfo.marginRight)+'px';}
 		return w;
 	}
 	function info_destroy(el,ev){

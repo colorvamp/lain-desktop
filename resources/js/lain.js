@@ -136,8 +136,24 @@ var _desktop = {
 		this.vars = {'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight,'yOffset':30,'window_top':false,'wHighestZ':0,'currentContextMenu':false,
 			'fileOperation':false,'fileOrig':false,'fileDest':false,'fileSelection':$A([]),
 			'input_presedKeys':$A([]),'input_shorcutKeys':{}};
+
+		document.addEventListener('dragover',_desktop.signals_dragover,true);
+		document.addEventListener('drop',_desktop.signals_drop,true);
 		_desktop.icons_organize();
 		lWindows = $_('lainWindows');
+	},
+	signals_dragover: function(e){e.preventDefault();return false;},
+	signals_drop: function(e){
+		e.preventDefault();
+		var h = $_('tray_desktop_progress');
+		info_create('tray_desktop_progress',{},h);
+
+		var dt = e.dataTransfer;var files = dt.files;
+		$each(files,function(k,file){uploadChain.appendFile(file,{'fileName':file.name,'fileRoute':'native:drive:/','callback':false,'progressBar':false,'progressCounter':false});});
+		uploadChain.onUploadEnd = function(){eFadeout(info,function(el){el.parentNode.removeChild(el);});};
+		uploadChain.upload_processFile();
+
+		return false;
 	},
 	desktop_signals_load: function(){
 		var ths = this;
@@ -677,5 +693,60 @@ var _iface = {
 			if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
 			if(callback){callback(r.data);}
 		});
+	}
+};
+
+var uploadChain = {
+	vars: {files:[],currentFile:false,uploadQueue:[]},
+	onUploadEnd: function(){},
+	appendFile: function(file,data){uploadChain.vars.files.push({'file':file,'data':data});},
+	upload_processFile: function(){
+		if(uploadChain.vars.files.length < 1){uploadChain.onUploadEnd();return true;}
+		var file = uploadChain.vars.files.shift();
+		var reader = new FileReader();
+		reader.onloadend = function(){uploadChain.upload_processFile_onloadend(reader.result,file.data);};
+		reader.readAsDataURL(file.file);
+		return true;
+	},
+	upload_processFile_onloadend: function(result,data){
+		var base64string = result.replace(/^[^,]*,/,'');
+		var base64string_sum = md5(base64string);
+		var base64string_len = base64string.length;
+		var fragment_len = 100000;
+		var i = 0;var c = 0;while(i < base64string_len){
+			var top = i+fragment_len;if(top > base64string_len){top = base64string_len;}
+			var fragment_string = base64string.substring(i,top);
+			var fragment_sum = md5(fragment_string);
+			var node = {'fileName':data.fileName,'fileRoute':data.fileRoute,'fragment_num':c,'base64string_sum':base64string_sum,'base64string_len':base64string_len,'fragment_string':fragment_string,'fragment_sum':fragment_sum,'fragment_len':fragment_len};
+			if(data.progressBar){node.progressBar = data.progressBar;}
+			if(data.progressCounter){node.progressCounter = data.progressCounter;}
+			if(data.onUploadEnd){node.onUploadEnd = data.onUploadEnd;}
+			uploadChain.vars.uploadQueue.push(node);
+			i+=fragment_len;
+			c++;
+		}
+		uploadChain.upload_fragment(uploadChain.vars.uploadQueue[0]);
+	},
+	upload_fragment: function(node){
+		var p = {'subcommand':'transfer_fragment','fileName':node.fileName,'fileRoute':node.fileRoute,'fragment_num':node.fragment_num,'base64string_sum':node.base64string_sum,'base64string_len':node.base64string_len,'fragment_string':node.fragment_string,'fragment_sum':node.fragment_sum,'fragment_len':node.fragment_len};
+		ajaxPetition('api/fs',$toUrl(p),function(ajax){uploadChain.upload_fragment_callback(ajax,node);});
+	},
+	upload_fragment_callback: function(ajax,node){
+		var r = jsonDecode(ajax.responseText);
+		/*if(parseInt(r.errorCode)>0){switch(r.errorDescription){
+			case 'FRAGMENT_ALREADY_EXISTS':r = node.fragment_len;break;
+			case 'IMAGE_ALREADY_IN_GALLERY':uploadChain.upload_processFile();return;
+			default:alert(print_r(r));return;
+		}}*/
+		var actualSize = parseInt(r.totalSize);
+		var progress = $round((actualSize/parseInt(node.base64string_len))*100);
+		if(node.progressBar){node.progressBar.style.width = progress+'%';}
+		if(node.progressCounter){node.progressCounter.innerHTML = progress+'%';}
+		var c = node.fragment_num+1;if(!r.image_sum && uploadChain.vars.uploadQueue[c]){return uploadChain.upload_fragment(uploadChain.vars.uploadQueue[c]);}
+		if(node.onUploadEnd){do{
+			//var out = {'galleryName':node.galleryName,'image_sum':r.data.image_sum};
+			//if(typeof node.onUploadEnd == 'function'){node.onUploadEnd(out);break;}
+			//if(typeof node.onUploadEnd == 'string'){var func = window;var funcSplit = p.callback.split('.');for(i = 0;i < funcSplit.length;i++){func = func[funcSplit[i]];}func(out);}
+		}while(false);}
 	}
 };
