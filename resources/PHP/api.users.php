@@ -52,6 +52,27 @@
 		if($shouldClose){sqlite3_close($params['db']);}
 		return $r;
 	}
-
 	function users_helper_generateCode($userMail){$userCode = sha1($userMail.time().date('Y-m-d H:i:s'));return $userCode;}
+	function users_login($userMail,$userPass,$db = false){
+		if(empty($userMail)){return false;}
+		$userPass = sha1($userPass);
+
+		$shouldClose = false;if($db == false){$db = sqlite3_open($GLOBALS['api']['users']['db']);$shouldClose = true;}
+		$user = users_getSingle('(userMail = \''.$db->escapeString($userMail).'\' AND userPass = \''.$db->escapeString($userPass).'\')',array('db'=>$db));
+		if(!$user){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>1,'errorDescription'=>'WRONG_USER_OR_PASS','file'=>__FILE__,'line'=>__LINE__);}
+		/* Puede que el usuario no esté confirmado, en dicho caso no se permite loguear */
+		if(!isset($user['userStatus']) || empty($user['userStatus'])){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>1,'errorDescription'=>'USER_NOT_ACTIVE','file'=>__FILE__,'line'=>__LINE__);}
+		//FIXME: TODO
+		//$user = users_update($user['id'],array('userIP'=>$_SERVER['REMOTE_ADDR'],'userLastLogin'=>date('Y-m-d H:i:s')),$db,true);
+		if($shouldClose){sqlite3_close($db);}
+		if(isset($user['errorDescription'])){return $user;}
+		$_SESSION['user'] = $GLOBALS['user'] = $user;
+		return $user;
+	}
+	function users_isLogged($db = false){
+		if(isset($GLOBALS['user']) && is_array($GLOBALS['user'])){return true;}
+		if(isset($_SESSION['user']) && is_array($_SESSION['user'])){return true;}
+		//FIXME: faltaría revisar cookies
+		return false;
+	}
 ?>

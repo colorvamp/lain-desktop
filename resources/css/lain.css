@@ -1,6 +1,21 @@
 html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden;}
 *{font-family: "Albany AMT", sans-serif;font-size:10px;margin:0;padding:0;list-style:none;}
 i.floatSeparator{display:block;clear:both;}
+.hidden{display:none;}
+
+/*INI-login*/
+.loginForm{position:absolute;top:0;left:0;width:100%;height:100%;background-color:#4173dd;}
+.loginForm > .userGrid{position:absolute;top:25%;width:100%;text-align:center;}
+.loginForm > .userGrid > .user{display:inline-block;}
+.loginForm > .userGrid > .user .image{display:inline-block;background-color:white;padding:4px;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.6);}
+.loginForm > .userGrid > .user .image img{}
+.loginForm > .userGrid > .user .name{padding:6px 0;color:white;font-weight:bold;}
+.loginForm > .userGrid > .user .whiteBox{width:180px;margin-top:10px;}
+/*END-login*/
+/*INI-whiteBox*/
+.whiteBox{position:absolute;background:white;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.6);}
+.whiteBox.middleInd:before{content:' ';position:relative;top:-21px;width:0;height:0;border:8px solid;border-color:transparent transparent white transparent;}
+/*END-whiteBox*/
 
 body > img.logo{position:absolute;z-index:10;bottom:20px;right:20px;}
 div#null{position:absolute;height:0px;width:0px;overflow:hidden;}

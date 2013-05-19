@@ -7,5 +7,6 @@
 	<script type="text/javascript" src="{%baseURL%}r/js/lain.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/littleDrag.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/base64.js"></script>
+	{%BLOG_SCRIPTS%}
 </head>
 <body onload="if(window._desktop.init){window._desktop.init();}">{%MAIN%}</body>

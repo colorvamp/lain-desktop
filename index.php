@@ -37,14 +37,9 @@
 	$VAR_loggerUser = false;
 
 	include_once('inc.common.php');
-/*include_once('API_users.php');
-include_once('inc_userSecurity.php');
-$GLOBALS['COMMON']['TEMPLATEPATH'] = '../ASSIS/views/';
-$GLOBALS['COMMON']['JSPATH'] = '../ASSIS/js/';
-$GLOBALS['COMMON']['BASE'] = 'base';
-if($GLOBALS['userSecurity']['errorCode'] === 0){$VAR_loggerUser = true;users_init();}
-common_init();
-$GLOBALS['currentPage'] = 1;*/
+	include_once('api.users.php');
+	$r = users_isLogged();
+	if(!$r && $params != '/login'){header('Location: '.$GLOBALS['baseURL'].'login');exit;}
 
 	do{
 		/* Obtenemos la paginación */
@@ -71,8 +66,6 @@ $GLOBALS['currentPage'] = 1;*/
 		if(isset($unshift)){array_unshift($params,$unshift);}
 		$command = $controller.'_main';if(function_exists($command)){break;}
 	}while(false);
-//$GLOBALS['TEMPLATE']['JS_controller'] = '';
-//if(file_exists($GLOBALS['COMMON']['JSPATH'].$controller.'.js')){$GLOBALS['TEMPLATE']['JS_controller'] = '<script type="text/javascript" src="{%assisURL%}js/'.$controller.'.js"></script>';}
 	$r = call_user_func_array($command,$params);
 
 	echo $GLOBALS['OUTPUT'];exit;

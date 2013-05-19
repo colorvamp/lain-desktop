@@ -1,0 +1,11 @@
+IndexIgnore *
+DirectorySlash Off
+RewriteEngine On
+Options -Indexes
+
+RewriteRule .*\.(db)$ - [F,NC]
+RewriteRule . - [E=R:]
+RewriteCond %{HTTP_HOST} !^localhost
+RewriteRule . - [E=R:/]
+
+RewriteRule ^(.*)$ %{ENV:R}index.php [L]

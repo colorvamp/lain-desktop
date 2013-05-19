@@ -13,4 +13,27 @@
 
 		common_renderTemplate('desktop');
 	}
+
+	function index_login(){
+		$TEMPLATE = &$GLOBALS['TEMPLATE'];
+		if(users_isLogged()){header('Location: '.$GLOBALS['baseURL']);exit;}
+
+		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
+			case 'userLogin':
+				$r = users_login($_POST['userMail'],$_POST['userPass']);
+				echo json_encode($r);
+				exit;
+		}}
+
+		/* get all the users */
+		$users = users_getWhere(1,array('indexBy'=>'userMail'));
+		$usersGrid = '';
+		foreach($users as $user){
+			$user['loginName'] = $user['userName'];
+			$usersGrid .= common_loadSnippet('snippets/login.user',$user);
+		}
+		$TEMPLATE['usersGrid'] = $usersGrid;
+		$TEMPLATE['BLOG_SCRIPTS'][] = '{%baseURL%}r/js/login.js';
+		common_renderTemplate('login');
+	}
 ?>
