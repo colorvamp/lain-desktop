@@ -117,13 +117,12 @@ function menu_switch(el){
 
 var VAR_apps = {};
 var VAR_appsPath = 'resources/apps/';
-function launchApp(appName,holder,params,remoteAppPath){
-	var ap = (remoteAppPath) ? remoteAppPath : VAR_appsPath;
+function launchApp(appName,holder,params){
+	var pool = 'r/apps/';
 	if(VAR_apps[appName]){VAR_apps[appName].init(holder,params);return;}
-	$each(['js','css'],function(k,v){include_once(ap+appName+'/index.'+v,v);});
-	$execWhenTrue("!isEmpty(window['"+appName+"'])",function(){VAR_apps[appName] = new window[appName](holder,params ? params : null);});
+	$each(['js','css'],function(k,v){include_once(pool+appName+'/index.'+v,v);});
+	$execWhenExists('VAR_apps.'+appName+'.init',[holder,params]);
 }
-/* Overload of launchApp_createHolder */
 function launchApp_createHolder(appName){
 	var h = false;var holderName = 'holder_'+appName;
 	$each(lWindows.childNodes,function(el){if(el.id == holderName){h = el;}});
@@ -141,6 +140,7 @@ var _desktop = {
 		_desktop.vars.cacheSeed = Math.random()*1000;
 		document.addEventListener('dragover',_desktop.signals_dragover,true);
 		document.addEventListener('drop',_desktop.signals_drop,true);
+		document.addEventListener('mousedown',_desktop.signals_mousedown,true);
 		window.addEventListener('resize',_desktop.signals_resize,true);
 		_desktop.signals_resizeEnd();
 		lWindows = $_('lainWindows');
@@ -190,14 +190,6 @@ var _desktop = {
 		var ths = this;
 		window.oncontextmenu = function(e){return ths.desktop_mouseRightClick(e);};
 		var a = $_('lainPlacesMenu_itemList',{'onDropElement':this.menu_places_mouseDown});
-		this.background_init();
-		this.icons_organize();
-
-		launchApp('lainExplorer',launchApp_createHolder('lainExplorer'));
-		launchApp('systemMonitor',false);
-		launchApp('systemTrash',false);
-		launchApp('systemControlCentre',false);
-		launchApp('systemReveal',false);
 	},
 	signals_resize: function(e){
 		if(window.resizeTimer){clearTimeout(window.resizeTimer);window.resizeTimer = false;}
@@ -270,20 +262,20 @@ var _desktop = {
 		w.input_shorcutKey[keyCodes.length][keyCodes] = callback;
 	},
 	desktop_mouseClick: function(e){
-		if(this.vars.currentContextMenu){this.vars.currentContextMenu.parentNode.removeChild(this.vars.currentContextMenu);this.vars.currentContextMenu = false;}
+		if(_desktop.vars.currentContextMenu){_desktop.vars.currentContextMenu.parentNode.removeChild(_desktop.vars.currentContextMenu);_desktop.vars.currentContextMenu = false;}
 		
 	},
-	desktop_mouseDown: function(e){
-		if(this.vars.currentContextMenu){this.vars.currentContextMenu.parentNode.removeChild(this.vars.currentContextMenu);this.vars.currentContextMenu = false;}
+	signals_mousedown: function(e){
+		if(_desktop.vars.currentContextMenu){_desktop.vars.currentContextMenu.parentNode.removeChild(_desktop.vars.currentContextMenu);_desktop.vars.currentContextMenu = false;}
 
 		if(e.target.tagName == 'INPUT'){return true;}
 		if((e.target.tagName == 'LI' || e.target.parentNode.tagName == 'LI') && e.target.className.match(/button/)){return true;}
-		if(e.target.id == 'lainDesktop'){e.preventDefault();this.desktop_selection_start(e);return true;}
+		if(e.target.id == 'lainDesktop'){e.preventDefault();_desktop.desktop_selection_start(e);return true;}
 
 		/* If the control key is pressed we should check multi selection */
 		if(!e.ctrlKey){
-			this.vars.fileSelection.each(function(el){el.onUnSelect();});
-			this.vars.fileSelection.empty();
+			_desktop.vars.fileSelection.each(function(el){el.onUnSelect();});
+			_desktop.vars.fileSelection.empty();
 		}
 		/* Icon selection - Right clic can't start a file selection */
 		if(e.which != 3 && e.target && e.target.className.match(/^icon32_/)){
@@ -527,7 +519,7 @@ var _desktop = {
 	icon_mouseup: function(e,elem){
 		var ws = [];
 		$A(lWindows.childNodes).each(function(elem){if(!elem.firstChild){return;}
-			$A(elem.childNodes).each(function(el){if(el.className && el.className.match(/^wodTheme dragable/)){ws.push(el);}});
+			$A(elem.childNodes).each(function(el){if(el.className && el.className.match(/^wodern/)){ws.push(el);}});
 		});
 		ws.push($_('lainPlacesMenu_itemList'));
 

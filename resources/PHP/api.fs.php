@@ -29,7 +29,7 @@
 		$path = fs_helper_parsePath($path);
 		if($path === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 		if(!is_dir($path)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
-		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? substr($path,0,strlen($GLOBALS['api']['fs']['serverCage'])) : $path;
+		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? substr($path,strlen(realpath($GLOBALS['api']['fs']['root']))) : $path;
 
 		$files = $folders = array();
 		if($handle = opendir($path)){
@@ -53,7 +53,7 @@
 		$path = fs_helper_parsePath($path);
 		if($path === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 		if(!is_dir($path)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
-		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? substr($path,0,strlen($GLOBALS['api']['fs']['serverCage'])) : $path;
+		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? substr($path,strlen(realpath($GLOBALS['api']['fs']['root']))) : $path;
 
 		$fileName = str_replace(array('/'),'',$fileName);
 		$targetFolder = $path.$fileName;
@@ -65,6 +65,35 @@
 		$fileData = stat($targetFolder);
 		$f = array('fileName'=>$fileName,'fileRoute'=>'native:drive:'.$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);
 		return $f;
+	}
+
+	function fs_file_move($files,$destRoute){
+		/* $files could be json_encoded */
+		if(is_string($files)){$files = json_decode($files,1);if($files !== NULL){
+			//FIXME:
+		}}
+
+		if(strpos($destRoute,'native:drive:') === 0){$destRoute = substr($destRoute,13);}
+		$destRoute = fs_helper_parsePath($destRoute);
+		if($destRoute === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		if(!is_dir($destRoute)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
+
+		$fileRoutes = array();
+		foreach($files as $file){$fileRoutes[$file['fileRoute']][] = $file;}
+		foreach($fileRoutes as $fileRoute=>$files){
+			if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
+			$fileRoute = fs_helper_parsePath($fileRoute);
+			if($fileRoute === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+			if(!is_dir($fileRoute)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
+			foreach($files as $file){
+				$sourceFile = $fileRoute.$file['fileName'];
+				$targetFile = $destRoute.$file['fileName'];
+				$r = @rename($sourceFile,$targetFile);
+				if(!$r){return array('errorDescription'=>'UNKNOWN_ERROR_WHILE_MOVING'.' '.$sourceFile.' to '.$targetFile,'file'=>__FILE__,'line'=>__LINE__);}
+			}
+		}
+
+		return true;
 	}
 
 	function fs_file_stream($fileName,$fileRoute){

@@ -11,6 +11,7 @@
 					<li onclick="launchApp('greenEnergy',launchApp_createHolder('greenEnergy'));">green Energy</li>
 					<li onclick="launchApp('lainJukebox',launchApp_createHolder('lainJukebox'));">Lain Jukebox</li>
 					<li onclick="launchApp('melodiamePlayer',launchApp_createHolder('melodiamePlayer'));">Melodiame Player</li>
+					<li onclick="launchApp('synaptic',launchApp_createHolder('synaptic'));">Synaptic</li>
 				</ul>
 			</div>
 			<div id='lainPlacesMenu' onclick='menu_switch(this);'>

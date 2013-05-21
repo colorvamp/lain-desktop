@@ -1,8 +1,8 @@
-var lainExplorer = new Class({
+VAR_apps.lainExplorer = {
 	init: function(holder,params){
-		if(!VAR_apps['lainExplorer']){this.vars = {apiURL:'api/fs',wCounter:0,wHolder:holder,wList:$A([]),cList:$A([])};}
-		if(params && params.tagName && params.tagName == 'LI'){var iProp = _desktop.icon_getProperties(params);this.createExplorer(iProp.fileRoute+iProp.fileName);return;}
-		if(params && params.constructor == String){this.createExplorer(params);return;}
+		if(!VAR_apps.lainExplorer.vars){VAR_apps.lainExplorer.vars = {apiURL:'api/fs',wCounter:0,wHolder:holder,wList:$A([]),cList:$A([])};}
+		if(params && params.tagName && params.tagName == 'LI'){var iProp = _desktop.icon_getProperties(params);VAR_apps.lainExplorer.createExplorer(iProp.fileRoute+iProp.fileName);return;}
+		if(params && params.constructor == String){VAR_apps.lainExplorer.createExplorer(params);return;}
 	},
 	appKill: function(){this.vars.wList.each(function(w){window_destroy(w);}.bind(this));},
 	wList_removeElem: function(el){this.vars.wList.each(function(w,n){if(w == el){this.vars.wList.splice(n,1);}}.bind(this));},
@@ -156,12 +156,12 @@ if(destPath[0] == '/'){destPath = 'native:drive:'+destPath;}
 		//alert("from " + origPath + " to " + destPath);
 		var files = [];
 		files.push(iProp);
-		//ajaxPetition(this.vars.apiURL,'command=moveFile&path='+origPath+elemName+'&dest='+destPath,function(ajax){
-		ajaxPetition(this.vars.apiURL,'command=moveFile&files='+jsonEncode(files)+'&dest='+destPath,function(ajax){
-			var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
+		//FIXME: solo enviar fileName y fileRoute por cada file
+		ajaxPetition(this.vars.apiURL,'subcommand=file_move&files='+base64.encode(jsonEncode(files))+'&destRoute='+base64.encode(destPath),function(ajax){
+			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 //FIXME: cambiar el sistema
 //alert(print_r(r));
 			_desktop.icon_move(iconElem,iconCanvas);
 		}.bind(this));
 	}
-});
+};

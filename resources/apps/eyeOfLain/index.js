@@ -1,9 +1,9 @@
-var eyeOfLain = new Class({
+VAR_apps.eyeOfLain = {
 	init: function(holder,params){
-		if(!VAR_apps['eyeOfLain']){this.vars = {wCounter:0,wHolder:holder,wList:$A([]),cList:$A([])};}
-		if(params && params.tagName && params.tagName == 'LI'){this.createViewer(params);return;}
+		if(!VAR_apps.eyeOfLain.vars){VAR_apps.eyeOfLain.vars = {wCounter:0,wHolder:holder,wList:$A([]),cList:$A([])};}
+		if(params && params.tagName && params.tagName == 'LI'){VAR_apps.eyeOfLain.createViewer(params);return;}
 	},
-	appKill: function(){this.vars.wList.each(function(w){window_destroy(w);}.bind(this));},
+	appKill: function(){VAR_apps.eyeOfLain.vars.wList.each(function(w){window_destroy(w);});},
 	wList_removeElem: function(el){this.vars.wList.each(function(w,n){if(w == el){this.vars.wList.splice(n,1);}}.bind(this));},
 	onDropElement: function(iconElem,w){
 		var iProp = _desktop.icon_getProperties(iconElem);
@@ -83,4 +83,4 @@ var eyeOfLain = new Class({
 		var candidate = (w.storage_imageElements[find+1]) ? w.storage_imageElements[find+1] : w.storage_imageElements[0];
 		this.viewer_loadElement(candidate,w);
 	}
-});
+};
