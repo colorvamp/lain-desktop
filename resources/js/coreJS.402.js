@@ -4,7 +4,7 @@
 		elem = extend(elem,{
 			$T: function(tag){ return this.getElementsByTagName(tag); },
 			$B: function(obj){for(var o in obj){if(o.indexOf('.')==0){this.style[o.replace(/^./,'')] = obj[o];continue;}this[o] = obj[o];}return this;},
-			$_C: function(c){ return this.getElementsByClassName(c); },
+			$L: function(c){ return this.getElementsByClassName(c); },
 			$P: function(p){/* p = {tagName:false,className:false} */if(p.tagName){p.tagName = p.tagName.toUpperCase();}var el = this;if(p.className){p.className = new RegExp(p.className);}while(el.parentNode && ((p.tagName && el.tagName!=p.tagName) || (p.className && !el.className.match(p.className)))){el = el.parentNode;}if(!el.parentNode){return false;}return $fix(el);},
 			empty: function(){while(this.firstChild){this.removeChild(this.firstChild);}return this;},
 			isChildNodeOf: function(parent){var isChild = false;var child = this;while(child.parentNode && !isChild){if(child.parentNode == parent){var isChild = true;continue;}child = child.parentNode;}return isChild;},
@@ -211,7 +211,7 @@
 		if(gnomeButton){w.afterRemove = function(){holder.parentNode.className = oldClassName;}}
 		var pos = $getOffsetPosition(w);var rpos = ($T('BODY')[0].offsetWidth)-pos.left-pos.width;
 		/* If the infoBox is out the page, fix it to the right border */
-		if(rpos < VAR_wodInfo.marginRight){w.style.left = w.offsetLeft+rpos-VAR_wodInfo.marginRight+'px';d.style.left = (Math.abs(w.offsetLeft)-4+VAR_wodInfo.marginRight)+'px';}
+		if(rpos < VAR_wodInfo.marginRight){w.style.left = w.offsetLeft+rpos-VAR_wodInfo.marginRight+'px';d.style.left = (Math.abs(w.offsetLeft)-VAR_wodInfo.marginRight)+'px';}
 		return w;
 	}
 	function info_destroy(el,ev){
@@ -221,6 +221,13 @@
 		el.parentNode.removeChild(el);
 		if(ev){ev.stopPropagation();}
 		afterRemove();
+	}
+	function info_reflow(w){
+		while(w.parentNode && w.className!='wodInfo'){w = w.parentNode;}if(!w.parentNode){return;}
+		var i = w.infoIndicator;
+		var pos = $getOffsetPosition(w);var rpos = ($T('BODY')[0].offsetWidth)-pos.left-pos.width;
+		if(rpos < VAR_wodInfo.marginRight){w.style.left = w.offsetLeft+rpos-VAR_wodInfo.marginRight+'px';i.style.left = (Math.abs(w.offsetLeft)-VAR_wodInfo.marginRight)+'px';}
+		return w;
 	}
 	function info_transition(c,n){
 		/* c (current) & n (next) must be type wodInfoContainer */
@@ -354,6 +361,35 @@
 		},time/interval);
 	}
 	function eEaseReset(elem){elem.$B({'.visibility':'visible','.overflow':'auto','.opacity':1,'.height':'auto'});}
+	function eEasePrepare(elem){elem.$B({'.visibility':'hidden','.overflow':'hidden','.opacity':0,'.height':0});}
+	function eEaseEnter(el,params){
+		if(!params){params = {};}
+		if(!params.time){params.time = 1000;}
+		if(!params.interval){params.interval = 50;}
+		var currentHeight = el.offsetHeight;
+		eEaseReset(el);var targetHeight = el.offsetHeight;eEasePrepare(el);
+		var heightChange = (targetHeight-currentHeight);var t = 0;
+		eFadein(el);
+		el.eEaseEnter = setInterval(function(){
+			var w = easeInOutCubic(t,currentHeight,heightChange,params.time);
+			t += params.interval;el.style.height = w+'px';
+			if(t >= params.time){el.style.height = targetHeight+'px';clearInterval(el.eEaseEnter);el.eEaseEnter = false;if(params.callback){params.callback(el);}}
+		},params.time/params.interval);
+	}
+	function eEaseLeave(el,params){
+		if(!params){params = {};}
+		if(!params.time){params.time = 1000;}
+		if(!params.interval){params.interval = 50;}
+		var currentHeight = el.offsetHeight;
+		var heightChange = (currentHeight*-1);var t = 0;
+		el.style.height = currentHeight+'px';el.style.overflow = 'hidden';
+		eFadeout(el);
+		el.eEaseLeave = setInterval(function(){
+			var w = easeInOutCubic(t,currentHeight,heightChange,params.time);
+			t += params.interval;el.style.height = w+'px';
+			if(t >= params.time){el.style.height = 0;clearInterval(el.eEaseLeave);el.eEaseLeave = false;if(params.callback){params.callback(el);}}
+		},params.time/params.interval);
+	}
 	function eTransition(c,n){
 		/* c (current) & n (next) */
 		var i = c.parentNode;i.$B({'.overflow':'hidden','.position':'relative'});n.$B({'.position':'absolute','.top':'0','.left':'0','.width':c.innerWidth()+'px'/*,'.visibility':'hidden'*/});i.appendChild(n);var oldHeight = c.innerHeight();var newHeight = n.innerHeight();var on = n.offsetHeight;

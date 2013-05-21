@@ -137,6 +137,7 @@ var _desktop = {
 			'fileOperation':false,'fileOrig':false,'fileDest':false,'fileSelection':$A([]),
 			'input_presedKeys':$A([]),'input_shorcutKeys':{}};
 
+		VAR_wodInfo.marginRight = 4;
 		document.addEventListener('dragover',_desktop.signals_dragover,true);
 		document.addEventListener('drop',_desktop.signals_drop,true);
 		window.addEventListener('resize',_desktop.signals_resize,true);
@@ -147,11 +148,39 @@ var _desktop = {
 	signals_drop: function(e){
 		e.preventDefault();
 		var h = $_('tray_desktop_progress');
-		info_create('tray_desktop_progress',{},h);
+		var info = info_create('tray_desktop_progress',{},h);
+		var h = info.infoContainer;
 
 		var dt = e.dataTransfer;var files = dt.files;
-		$each(files,function(k,file){uploadChain.appendFile(file,{'fileName':file.name,'fileRoute':'native:drive:/','callback':false,'progressBar':false,'progressCounter':false});});
-		uploadChain.onUploadEnd = function(){eFadeout(info,function(el){el.parentNode.removeChild(el);});};
+		$each(files,function(k,file){
+			var fd = $C('DIV',{className:'fileTransferNode','.height':0},h);
+			var c = $C('DIV',{className:'fileTransferMargin'},fd);
+			$C('DIV',{className:'title',innerHTML:'Copying "'+file.name+'" to "Desktop"'},c);
+			var line = $C('DIV',{className:'size'},c);
+				var curS = $C('SPAN',{innerHTML:'0 bytes'},line);
+				$C('SPAN',{innerHTML:' of '+_desktop.helper_bytesToSize(file.size)+' - '},line);
+				var uplT = $C('SPAN',{innerHTML:''},line);//TODO: '6 minutes left'
+				var uplS = $C('SPAN',{innerHTML:'(0 KB/s)'},line);
+			var pbar = $C('DIV',{className:'progressBar'},c);
+			var pbgr = $C('DIV',{className:'background'},pbar);
+			var pfgr = $C('DIV',{className:'foreground'},pbar);
+			eEaseEnter(fd);
+			$uploadUpdate = function(node){
+				curS.innerHTML = _desktop.helper_bytesToSize(node.fragment_actualSize);
+				var timeLapse = node.fragment_timeEnd-node.fragment_timeLast;
+				var seconds = timeLapse/1000;var uploadRate = _desktop.helper_bytesToSize(node.fragment_len/seconds)+'/sec';
+				uplS.innerHTML = '('+uploadRate+')';
+				var progress = $round((node.fragment_actualSize/parseInt(node.base64string_len))*100);
+				pfgr.style.width = progress+'%';
+			};
+			$uploadEnd = function(){
+				eEaseLeave(fd,{'callback':function(el){el.parentNode.removeChild(el);}});
+			};
+			uploadChain.appendFile(file,{'fileName':file.name,'fileRoute':'native:drive:/','fileSize':file.size,'onUploadUpdate':$uploadUpdate,'onUploadEnd':$uploadEnd});
+		});
+		info_reflow(info);
+
+		uploadChain.onUploadEnd = function(){};
 		uploadChain.upload_processFile();
 
 		return false;
@@ -657,9 +686,14 @@ var _desktop = {
 			eFadein(i,function(){if(prev){b.removeChild(prev);}},15);
 		});
 	},
-	background_set: function(iconElem){var ths = this;_iface.desktop_setBackground(iconElem,function(){ths.background_init(true);});}
+	background_set: function(iconElem){var ths = this;_iface.desktop_setBackground(iconElem,function(){ths.background_init(true);});},
+	helper_bytesToSize: function(bytes){
+		var sizes = ['Bytes','KB','MB','GB','TB'];
+		if(bytes == 0){return 'n/a';}
+		var i = parseInt(Math.floor(Math.log(bytes)/Math.log(1024)));
+		return Math.round(bytes/Math.pow(1024,i),2)+' '+sizes[i];
+	}
 };
-_desktop.init();
 
 var _iface = {
 	vars: {},
@@ -703,6 +737,7 @@ var uploadChain = {
 	upload_processFile: function(){
 		if(uploadChain.vars.files.length < 1){uploadChain.onUploadEnd();return true;}
 		var file = uploadChain.vars.files.shift();
+		//FIXME: usar blob: https://developer.mozilla.org/en-US/docs/Web/API/Blob http://kongaraju.blogspot.com.es/2012/07/large-file-upload-more-than-1gb-using.html
 		var reader = new FileReader();
 		reader.onloadend = function(){uploadChain.upload_processFile_onloadend(reader.result,file.data);};
 		reader.readAsDataURL(file.file);
@@ -717,9 +752,9 @@ var uploadChain = {
 			var top = i+fragment_len;if(top > base64string_len){top = base64string_len;}
 			var fragment_string = base64string.substring(i,top);
 			var fragment_sum = md5(fragment_string);
+			//FIXME: no trozear aqui
 			var node = {'fileName':data.fileName,'fileRoute':data.fileRoute,'fragment_num':c,'base64string_sum':base64string_sum,'base64string_len':base64string_len,'fragment_string':fragment_string,'fragment_sum':fragment_sum,'fragment_len':fragment_len};
-			if(data.progressBar){node.progressBar = data.progressBar;}
-			if(data.progressCounter){node.progressCounter = data.progressCounter;}
+			if(data.onUploadUpdate){node.onUploadUpdate = data.onUploadUpdate;}
 			if(data.onUploadEnd){node.onUploadEnd = data.onUploadEnd;}
 			uploadChain.vars.uploadQueue.push(node);
 			i+=fragment_len;
@@ -728,25 +763,31 @@ var uploadChain = {
 		uploadChain.upload_fragment(uploadChain.vars.uploadQueue[0]);
 	},
 	upload_fragment: function(node){
+		node.fragment_timeLast = new Date();
 		var p = {'subcommand':'transfer_fragment','fileName':node.fileName,'fileRoute':node.fileRoute,'fragment_num':node.fragment_num,'base64string_sum':node.base64string_sum,'base64string_len':node.base64string_len,'fragment_string':node.fragment_string,'fragment_sum':node.fragment_sum,'fragment_len':node.fragment_len};
 		ajaxPetition('api/fs',$toUrl(p),function(ajax){uploadChain.upload_fragment_callback(ajax,node);});
 	},
 	upload_fragment_callback: function(ajax,node){
 		var r = jsonDecode(ajax.responseText);
-		/*if(parseInt(r.errorCode)>0){switch(r.errorDescription){
-			case 'FRAGMENT_ALREADY_EXISTS':r = node.fragment_len;break;
-			case 'IMAGE_ALREADY_IN_GALLERY':uploadChain.upload_processFile();return;
+		if(r.errorDescription){switch(r.errorDescription){
+			//case 'FRAGMENT_ALREADY_EXISTS':r = node.fragment_len;break;
+			//case 'FILE_ALREADY_EXISTS':uploadChain.upload_processFile();return;
 			default:alert(print_r(r));return;
-		}}*/
+		}}
 		var actualSize = parseInt(r.totalSize);
-		var progress = $round((actualSize/parseInt(node.base64string_len))*100);
-		if(node.progressBar){node.progressBar.style.width = progress+'%';}
-		if(node.progressCounter){node.progressCounter.innerHTML = progress+'%';}
+		var timeEnd = new Date();/* miliseconds */
+		if(node.onUploadUpdate){do{
+			/* Free memory */node.fragment_string = false;
+			var nodeBack = extend(node,{'fragment_actualSize':actualSize,'fragment_timeEnd':timeEnd});
+			if(typeof node.onUploadUpdate == 'function'){node.onUploadUpdate(nodeBack);break;}
+			if(typeof node.onUploadEnd == 'string'){var func = window;var funcSplit = p.callback.split('.');for(i = 0;i < funcSplit.length;i++){func = func[funcSplit[i]];}func(nodeBack);}
+		}while(false);}
 		var c = node.fragment_num+1;if(!r.image_sum && uploadChain.vars.uploadQueue[c]){return uploadChain.upload_fragment(uploadChain.vars.uploadQueue[c]);}
 		if(node.onUploadEnd){do{
-			//var out = {'galleryName':node.galleryName,'image_sum':r.data.image_sum};
-			//if(typeof node.onUploadEnd == 'function'){node.onUploadEnd(out);break;}
-			//if(typeof node.onUploadEnd == 'string'){var func = window;var funcSplit = p.callback.split('.');for(i = 0;i < funcSplit.length;i++){func = func[funcSplit[i]];}func(out);}
+			/* Free memory */node.fragment_string = false;
+			if(typeof node.onUploadEnd == 'function'){node.onUploadEnd(node);break;}
+			if(typeof node.onUploadEnd == 'string'){var func = window;var funcSplit = p.callback.split('.');for(i = 0;i < funcSplit.length;i++){func = func[funcSplit[i]];}func(node);}
 		}while(false);}
-	}
+	},
+	helper_bytesToSize: function(bytes){var sizes = ['Bytes','KB','MB','GB','TB'];if(bytes == 0){return 'n/a';}var i = parseInt(Math.floor(Math.log(bytes)/Math.log(1024)));return Math.round(bytes/Math.pow(1024,i),2)+' '+sizes[i];}
 };

@@ -124,10 +124,11 @@
 
 		/* Comprobamos si debemos unificar, tenemos en totalsize el valor total de los ficharos antes
 		 * de salvar este último fragmento, solo necesitamos sumarle el tamaño */
-		$totalSize += filesize($tmpPath.$fragmentName);
+		$fragmentSize = filesize($tmpPath.$fragmentName);
+		$totalSize += $fragmentSize;
 		if($totalSize == $base64string_len){return fs_transfer_unify($base64string_sum);}
 
-		return array('totalSize'=>$totalSize);
+		return array('fragmentSize'=>$fragmentSize,'totalSize'=>$totalSize);
 	}
 	function fs_transfer_unify($base64string_sum){
 		$tmpPath = $GLOBALS['api']['fs']['tmp'];

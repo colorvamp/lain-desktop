@@ -20,10 +20,21 @@ i.floatSeparator{display:block;clear:both;}
 /*INI-wodInfo*/
 div.wodInfo{position:absolute;min-width:200px;background:white;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.6);}
 div.wodInfo .wodInfoIndicator{position:absolute;top:-16px;left:calc(50% - 4px);width:0;height:0;border:8px solid;border-color:transparent transparent white transparent;}
-div.wodInfo .wodInfoContainer{padding:3px 3px 2px 3px;}
+div.wodInfo .wodInfoContainer{color:black;padding:3px 3px 2px 3px;}
 div.wodInfo .wodInfoContainer > *:first-child{margin:0;padding:0;}
 div.wodInfo .wodInfoContainer.loading{background:URL(../images/load.gif) 3px center no-repeat;padding-left:24px;}
-/*FIN-wodInfo*/
+/*END-wodInfo*/
+/*INI-wodInfo-custom*/
+.wodInfoContainer .fileTransferNode{overflow:hidden;}
+.wodInfoContainer .fileTransferNode .fileTransferMargin{padding:4px;}
+.wodInfoContainer .fileTransferNode .title{white-space:nowrap;}
+.wodInfoContainer .fileTransferNode .size{white-space:nowrap;}
+/*END-wodInfo-custom*/
+.progressBar{position:relative;width:100%;overflow:hidden;}
+.progressBar > div{box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;}
+.progressBar > .background{position:absolute;width:100%;min-height:12px;border-style:solid;border-width:5px 6px;-moz-border-image:url(../images/progressBar_background.png) 5 6 stretch;-o-border-image: url(../images/progressBar_background.png) 5 6 stretch;border-image:url(../images/progressBar_background.png) 5 6 fill stretch;-webkit-border-image:url(../images/progressBar_background.png) 5 6 stretch;}
+.progressBar > .foreground{position:relative;width:0%;min-height:12px;border-style:solid;border-width:5px 6px;-moz-border-image:url(../images/progressBar_foreground.png) 5 6 stretch;-o-border-image: url(../images/progressBar_foreground.png) 5 6 stretch;border-image:url(../images/progressBar_foreground.png) 5 6 fill stretch;-webkit-border-image:url(../images/progressBar_foreground.png) 5 6 stretch;}
+
 
 body > img.logo{position:absolute;z-index:10;bottom:20px;right:20px;}
 div#null{position:absolute;height:0px;width:0px;overflow:hidden;}
