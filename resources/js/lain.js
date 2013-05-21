@@ -138,10 +138,11 @@ var _desktop = {
 			'input_presedKeys':$A([]),'input_shorcutKeys':{}};
 
 		VAR_wodInfo.marginRight = 4;
+		_desktop.vars.cacheSeed = Math.random()*1000;
 		document.addEventListener('dragover',_desktop.signals_dragover,true);
 		document.addEventListener('drop',_desktop.signals_drop,true);
 		window.addEventListener('resize',_desktop.signals_resize,true);
-		_desktop.icons_organize();
+		_desktop.signals_resizeEnd();
 		lWindows = $_('lainWindows');
 	},
 	signals_dragover: function(e){e.preventDefault();return false;},
@@ -206,7 +207,7 @@ var _desktop = {
 		window.resizeTimer = false;
 		extend(_desktop.vars,{'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight});
 		_desktop.icons_organize();
-		//_desktop.background_init();
+		_desktop.background_init();
 	},
 	desktop_signals_keyPress: function(e){
 		/* ENTER */if(e.keyCode == 13){
@@ -675,8 +676,8 @@ var _desktop = {
 	systemTray_create: function(i){var systemTray = $_('systemTray');if(!systemTray){return false;}$C('LI',{id:i.id+'_trayIcon',className:i.className,onmousedown:function(e){},onclick:function(e){_desktop.systemTray_switch(this,e,i.onclick);}},systemTray);return true;},
 	systemTray_switch: function(li,e,callback){if(li.firstChild && li.firstChild.className == 'wodInfo'){info_destroy(li.firstChild,e);return;}callback(e);},
 	background_init: function(avoidCache){
-		var url = 'users/'+VAR_loggedUser.userAlias+'/db/desktop_background/main';
-		if(avoidCache){url+= '?rnd='+Math.random()*100;}
+		if(avoidCache){_desktop.vars.cacheSeed = Math.random()*1000;}
+		var url = 'api/desktop/background_get?rnd='+_desktop.vars.cacheSeed;
 		var b = $_('lainBackground');
 //FIXME: hay samples de 200, USARLOS
 		_lc.imageResize(url,this.vars.bodyWidth,this.vars.bodyHeight,'min',function(img){
@@ -686,7 +687,11 @@ var _desktop = {
 			eFadein(i,function(){if(prev){b.removeChild(prev);}},15);
 		});
 	},
-	background_set: function(iconElem){var ths = this;_iface.desktop_setBackground(iconElem,function(){ths.background_init(true);});},
+	background_set: function(iconElem){
+		var iProp = _desktop.icon_getProperties(iconElem);
+		var filePath = iProp.fileRoute+iProp.fileName;
+		ajaxPetition('api/desktop/background_set/'+base64.encode(filePath),'',function(ajax){_desktop.background_init(1);});
+	},
 	helper_bytesToSize: function(bytes){
 		var sizes = ['Bytes','KB','MB','GB','TB'];
 		if(bytes == 0){return 'n/a';}
