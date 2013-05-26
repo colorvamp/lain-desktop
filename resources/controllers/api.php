@@ -15,6 +15,10 @@
 				$r = fs_file_move(base64_decode($_POST['files']),base64_decode($_POST['destRoute']));
 				echo json_encode($r);
 				break;
+			case 'file_trash':
+				$r = fs_file_trash(base64_decode($_POST['files']));
+				echo json_encode($r);
+				break;
 			case 'transfer_fragment':
 				$neededParams = array('fileName','fileRoute','base64string_sum','base64string_len','fragment_string','fragment_num','fragment_sum');
 				foreach($neededParams as $param){

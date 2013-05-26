@@ -12,6 +12,22 @@ VAR_apps.synaptic = {
 		},VAR_apps.synaptic.vars.wHolder);
 		/* app conteniner */
 		h = w.windowContainer;
-		
+
+		var list = $C('DIV',{'className':'lainList'},h);
+		var table = $C('TABLE',{'className':'dataTable','cellPadding':0,'cellSpacing':0},list);
+		var thead = $C('TR',{},$C('THEAD',{},table));
+		var titles = ['Name','Installed Version','Last Version','Size','Description'];
+		$each(titles,function(k,title){$C('TD',{innerHTML:title},thead);});
+		var tbody = $C('TBODY',{},table);
+VAR_apps.synaptic.client_addRow(tbody,{'packetName':'0Ad'});
+VAR_apps.synaptic.client_addRow(tbody,{'packetName':'0Ad'});
+	},
+	client_addRow: function(tbody,row){
+		var tr = $C('TR',{},tbody);
+		var td = $C('TD',{innerHTML:row.packetName},tr);
+		var td = $C('TD',{innerHTML:row.packetName},tr);
+		var td = $C('TD',{innerHTML:row.packetName},tr);
+		var td = $C('TD',{innerHTML:row.packetName},tr);
+		var td = $C('TD',{innerHTML:row.packetName},tr);
 	}
 }

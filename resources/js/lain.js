@@ -141,6 +141,9 @@ var _desktop = {
 		document.addEventListener('dragover',_desktop.signals_dragover,true);
 		document.addEventListener('drop',_desktop.signals_drop,true);
 		document.addEventListener('mousedown',_desktop.signals_mousedown,true);
+		document.addEventListener('keydown',_desktop.desktop_signals_keyDown,true);
+		document.addEventListener('keyup',_desktop.desktop_signals_keyUp,true);
+		document.addEventListener('keypress',_desktop.desktop_signals_keyPress,true);
 		window.addEventListener('resize',_desktop.signals_resize,true);
 		_desktop.signals_resizeEnd();
 		lWindows = $_('lainWindows');
@@ -206,11 +209,11 @@ var _desktop = {
 			//FIXME: puede ser un intro porque se está canbiando el nombre de una carpeta
 			this.vars.fileSelection.each(function(elem){elem.launch();});
 		}
-		/* DEL */if(e.keyCode == 46){if(this.vars.fileSelection.length > 0){this.file_trash(this.vars.fileSelection);}}
+		/* DEL */if(e.keyCode == 46){if(_desktop.vars.fileSelection.length > 0){_desktop.file_trash(_desktop.vars.fileSelection);}}
 		/* LEFTCUR */if(e.keyCode == 37){
 			if(this.vars.fileSelection.length > 0){
-				var elem = this.vars.fileSelection[0];
-				if(this.vars.fileSelection.length == 1 && elem == elem.parentNode.firstChild){return;}
+				var elem = _desktop.vars.fileSelection[0];
+				if(_desktop.vars.fileSelection.length == 1 && elem == elem.parentNode.firstChild){return;}
 				this.vars.fileSelection.empty();
 				elem.onUnSelect();
 				if(elem.previousSibling){elem.previousSibling.onSelect();}
@@ -219,9 +222,9 @@ var _desktop = {
 		}
 		/* RIGHTCUR */if(e.keyCode == 39){
 			if(this.vars.fileSelection.length > 0){
-				var elem = this.vars.fileSelection[this.vars.fileSelection.length-1];
-				if(this.vars.fileSelection.length == 1 && elem == elem.parentNode.lastChild){return;}
-				this.vars.fileSelection.empty();
+				var elem = _desktop.vars.fileSelection[_desktop.vars.fileSelection.length-1];
+				if(_desktop.vars.fileSelection.length == 1 && elem == elem.parentNode.lastChild){return;}
+				_desktop.vars.fileSelection.empty();
 				elem.onUnSelect();
 				if(elem.nextSibling){elem.nextSibling.onSelect();}
 				else{elem.parentNode.lastChild.onSelect();}
@@ -229,8 +232,8 @@ var _desktop = {
 		}
 		/* F2 */if(e.keyCode == 113){
 			if(this.vars.fileSelection.length == 1){
-				var elem = this.vars.fileSelection[0];
-				var iProp = this.icon_getProperties(elem);
+				var elem = _desktop.vars.fileSelection[0];
+				var iProp = _desktop.icon_getProperties(elem);
 				var h = $fix(elem.lastChild).empty();
 				var iconName = iProp.fileName;
 				/* See icon_onUnSelect for more details */
@@ -240,11 +243,11 @@ var _desktop = {
 		//alert(e.keyCode);
 		//alert(e.ctrlKey);
 	},
-	desktop_signals_keyDown: function(e){this.vars.input_presedKeys.push(e.keyCode);this.vars.input_presedKeys.sort();this.desktop_shorcutKey_check();return false;},
-	desktop_signals_keyUp: function(e){this.vars.input_presedKeys.remove(e.keyCode);/*alert(this.vars.input_presedKeys.values());/**/return false;},
+	desktop_signals_keyDown: function(e){_desktop.vars.input_presedKeys.push(e.keyCode);_desktop.vars.input_presedKeys.sort();_desktop.desktop_shorcutKey_check();return false;},
+	desktop_signals_keyUp: function(e){_desktop.vars.input_presedKeys.remove(e.keyCode);/*alert(this.vars.input_presedKeys.values());/**/return false;},
 	desktop_shorcutKey_check: function(){
-		var inLen = this.vars.input_presedKeys.length;
-		var values = this.vars.input_presedKeys.values();
+		var inLen = _desktop.vars.input_presedKeys.length;
+		var values = _desktop.vars.input_presedKeys.values();
 		if(inLen > 3){return;}
 		if(inLen == 3){
 			/* CONTROL+SHIFT+B */
@@ -252,7 +255,7 @@ var _desktop = {
 			//return;
 		}
 
-		var w = this.vars.window_top;
+		var w = _desktop.vars.window_top;
 		if(!w || !w.input_shorcutKey){return;}
 		if(w.input_shorcutKey[inLen][values]){w.input_shorcutKey[inLen][values]();return;}
 	},
@@ -393,10 +396,11 @@ var _desktop = {
 		fSel.each(function(el){tSel.push(_desktop.icon_getProperties(el));});
 		tSel = jsonEncode(tSel);
 
-		ajaxPetition('r/PHP/API_fileManager.php','command=trashFile&files='+tSel,function(ajax){
-			var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
+		ajaxPetition('api/fs','subcommand=file_trash&files='+base64.encode(tSel),function(ajax){
+			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 			fSel.each(function(li){_desktop.icon_destroy(li);});
-			if(VAR_apps.systemTrash){VAR_apps.systemTrash.acquireFiles(fSel);}
+			//FIXME: TODO
+			//if(VAR_apps.systemTrash){VAR_apps.systemTrash.acquireFiles(fSel);}
 			//alert(print_r(r));
 		}.bind(this));
 	},

@@ -19,7 +19,7 @@
 		$magicWordPre = '';for($a=0; $a<4; $a++){$magicWordPre .= $pass_a[array_rand($pass_a)];$magicWordPre .= $pass_b[array_rand($pass_b)];}
 
 		/* Necesitamos tener la conexión con la base de datos desde aquí para las comprobaciones de algunos campos */
-		$shouldClose = false;if($db == false){$db = sqlite3_open($GLOBALS['api']['users']['db']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
+		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['users']['db']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
 		$data['userName'] = preg_replace('/[^a-zA-ZáéíóúÁÉÍÓÚ ,]*/','',$data['userName']);
 		if(empty($data['userName'])){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>1,'errorDescription'=>'NAME_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 		if(!preg_match('/^[a-z0-9\._\+\-]+@[a-z0-9\.\-]+\.[a-z]{2,6}$/',$data['userMail'])){return array('errorCode'=>1,'errorDescription'=>'EMAIL_ERROR','file'=>__FILE__,'line'=>__LINE__);}

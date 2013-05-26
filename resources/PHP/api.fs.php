@@ -1,5 +1,8 @@
 <?php
-	$GLOBALS['api']['fs'] = array('root'=>$GLOBALS['userPath'].'drive/','tmp'=>$GLOBALS['userPath'].'tmp/','serverCage'=>true);
+	$GLOBALS['tables']['trash'] = array('_id_'=>'INTEGER','fileHash'=>'TEXT NOT NULL','fileRoute'=>'TEXT NOT NULL','fileName'=>'TEXT NOT NULL',
+	'fileMime'=>'TEXT NOT NULL','fileSize'=>'INTEGER NOT NULL','filePermissions'=>'TEXT NOT NULL','fileChilds'=>'INTEGER NOT NULL','fileOwner'=>'TEXT NOT NULL','fileGroup'=>'TEXT NOT NULL',
+	'fileSizeLong'=>'INTEGER NOT NULL','fileDate'=>'TEXT NOT NULL','fileTime'=>'TEXT NOT NULL');
+	$GLOBALS['api']['fs'] = array('root'=>$GLOBALS['userPath'].'drive/','trash'=>$GLOBALS['userPath'].'trash/','tmp'=>$GLOBALS['userPath'].'tmp/','trashdb'=>$GLOBALS['userPath'].'trash.db','serverCage'=>true);
 
 	if(isset($_POST['command'])){
 		$command = $_POST['command'];unset($_POST['command']);
@@ -92,6 +95,38 @@
 				if(!$r){return array('errorDescription'=>'UNKNOWN_ERROR_WHILE_MOVING'.' '.$sourceFile.' to '.$targetFile,'file'=>__FILE__,'line'=>__LINE__);}
 			}
 		}
+
+		return true;
+	}
+
+	function fs_file_trash($files,$db = false){
+		/* $files could be json_encoded */
+		if(is_string($files)){$files = json_decode($files,1);if($files !== NULL){
+			//FIXME:
+		}}
+		if(!file_exists($GLOBALS['api']['fs']['trash'])){$oldmask = umask(0);$r = @mkdir($GLOBALS['api']['fs']['trash'],0777,1);umask($oldmask);}
+
+		$fileRoutes = array();
+		foreach($files as $file){$fileRoutes[$file['fileRoute']][] = $file;}
+
+		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['fs']['trashdb']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
+		foreach($fileRoutes as $fileRoute=>$files){
+			if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
+			$fileRoute = fs_helper_parsePath($fileRoute);
+			if($fileRoute === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+			if(!is_dir($fileRoute)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
+			foreach($files as $file){
+				$sourceFile = $fileRoute.$file['fileName'];
+				do{$fileHash = uniqid();$targetFile = $GLOBALS['api']['fs']['trash'].$fileHash;}while(false);
+				$r = rename($sourceFile,$targetFile);
+				if(!$r){return array('errorDescription'=>'UNKNOWN_ERROR_WHILE_MOVING'.' '.$sourceFile.' to '.$targetFile,'file'=>__FILE__,'line'=>__LINE__);}
+				$arr = array('fileHash'=>$fileHash,'fileRoute'=>$fileRoute,'fileMime'=>'application/x-empty','fileSize'=>11,'filePermissions'=>'a','fileChilds'=>'aa','fileOwner'=>'aa','fileGroup'=>'aa','fileSizeLong'=>'11',
+				'fileDate'=>'11','fileTime'=>'11','fileName'=>$file['fileName']);
+				$r = sqlite3_insertIntoTable('trash',$arr,$db);
+				if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
+			}
+		}
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('OK'=>false,'errno'=>$GLOBALS['DB_LAST_ERRNO'],'error'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
 
 		return true;
 	}
