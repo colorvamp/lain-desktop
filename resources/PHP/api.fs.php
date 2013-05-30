@@ -1,7 +1,7 @@
 <?php
-	$GLOBALS['tables']['trash'] = array('_id_'=>'INTEGER','fileHash'=>'TEXT NOT NULL','fileRoute'=>'TEXT NOT NULL','fileName'=>'TEXT NOT NULL',
+	$GLOBALS['tables']['trash'] = array('_fileHash_'=>'TEXT NOT NULL','fileRoute'=>'TEXT NOT NULL','fileName'=>'TEXT NOT NULL',
 	'fileMime'=>'TEXT NOT NULL','fileSize'=>'INTEGER NOT NULL','filePermissions'=>'TEXT NOT NULL','fileChilds'=>'INTEGER NOT NULL','fileOwner'=>'TEXT NOT NULL','fileGroup'=>'TEXT NOT NULL',
-	'fileSizeLong'=>'INTEGER NOT NULL','fileDate'=>'TEXT NOT NULL','fileTime'=>'TEXT NOT NULL');
+	'fileDate'=>'TEXT NOT NULL','fileTime'=>'TEXT NOT NULL');
 	$GLOBALS['api']['fs'] = array('root'=>$GLOBALS['userPath'].'drive/','trash'=>$GLOBALS['userPath'].'trash/','tmp'=>$GLOBALS['userPath'].'tmp/','trashdb'=>$GLOBALS['userPath'].'trash.db','serverCage'=>true);
 
 	if(isset($_POST['command'])){
@@ -19,35 +19,41 @@
 		$driveDir = $GLOBALS['api']['fs']['root'];
 		if(!file_exists($driveDir)){$oldmask = umask(0);$r = @mkdir($driveDir,0777,1);umask($oldmask);}
 		$path = realpath($driveDir.$path);
-		if($GLOBALS['api']['fs']['serverCage']){
-			$baseDir = realpath(getcwd().'/'.$driveDir);
-			if(substr($path,0,strlen($baseDir)) != $baseDir){return false;}
-		}
+		if($GLOBALS['api']['fs']['serverCage']){$baseDir = realpath(getcwd().'/'.$driveDir);if(substr($path,0,strlen($baseDir)) != $baseDir){return false;}}
 		return $path.'/';
 	}
 
-	function fs_folder_list($path = ''){
-		if($path == 'trash:///'){$path = '.trash/';}
-		if(strpos($path,'native:drive:') === 0){$path = substr($path,13);}
-		$path = fs_helper_parsePath($path);
-		if($path === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		if(!is_dir($path)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
-		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? substr($path,strlen(realpath($GLOBALS['api']['fs']['root']))) : $path;
+	function fs_helper_parsePath_trash($path){
+		$driveDir = $GLOBALS['api']['fs']['trash'];
+		if(!file_exists($driveDir)){$oldmask = umask(0);$r = @mkdir($driveDir,0777,1);umask($oldmask);}
+		$path = realpath($driveDir.$path);
+		if($GLOBALS['api']['fs']['serverCage']){$baseDir = realpath(getcwd().'/'.$driveDir);if(substr($path,0,strlen($baseDir)) != $baseDir){return false;}}
+		return $path.'/';
+	}
+
+	function fs_folder_list($fileRoute = ''){
+		if(strpos($fileRoute,'native:trash:') === 0){return fs_trash_list($fileRoute);}
+		if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
+		$filePath = fs_helper_parsePath($fileRoute);
+
+		if($filePath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		if(!is_dir($filePath)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
+		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? substr($fileRoute,strlen(realpath($GLOBALS['api']['fs']['root']))) : $fileRoute;
 
 		$files = $folders = array();
-		if($handle = opendir($path)){
+		if($handle = opendir($filePath)){
 			$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
 			while(false !== ($file = readdir($handle))){if($file[0] == '.'){continue;}
 				//echo $file.print_r(stat($driveDir.$file)).'\n';
-				$fileData = stat($path.$file);
-				if(is_dir($path.$file)){$folders[] = array('fileName'=>$file,'fileRoute'=>'native:drive:'.$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);continue;}
-				list($fileMimeType) = explode('; ',finfo_file($finfo,$path.$file));
+				$fileData = stat($filePath.$file);
+				if(is_dir($filePath.$file)){$folders[] = array('fileName'=>$file,'fileRoute'=>'native:drive:'.$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);continue;}
+				list($fileMimeType) = explode('; ',finfo_file($finfo,$filePath.$file));
 				$files[] = array('fileName'=>$file,'fileRoute'=>'native:drive:'.$fileRoute,'fileMime'=>$fileMimeType,'fileSize'=>$fileData['size'],'fileDateM'=>$fileData['mtime']);
 			}
 			finfo_close($finfo);
 			closedir($handle);
 		}
-
+//print_r($folders);exit;
 		sort($files);sort($folders);
 		return array('folders'=>$folders,'files'=>$files);
 	}
@@ -110,6 +116,7 @@
 		foreach($files as $file){$fileRoutes[$file['fileRoute']][] = $file;}
 
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['fs']['trashdb']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
+		$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
 		foreach($fileRoutes as $fileRoute=>$files){
 			if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
 			$fileRoute = fs_helper_parsePath($fileRoute);
@@ -120,12 +127,17 @@
 				do{$fileHash = uniqid();$targetFile = $GLOBALS['api']['fs']['trash'].$fileHash;}while(false);
 				$r = rename($sourceFile,$targetFile);
 				if(!$r){return array('errorDescription'=>'UNKNOWN_ERROR_WHILE_MOVING'.' '.$sourceFile.' to '.$targetFile,'file'=>__FILE__,'line'=>__LINE__);}
-				$arr = array('fileHash'=>$fileHash,'fileRoute'=>$fileRoute,'fileMime'=>'application/x-empty','fileSize'=>11,'filePermissions'=>'a','fileChilds'=>'aa','fileOwner'=>'aa','fileGroup'=>'aa','fileSizeLong'=>'11',
+
+				if(is_dir($targetFile)){$fileMimeType = 'folder';}
+				else{list($fileMimeType) = explode('; ',finfo_file($finfo,$targetFile));}
+
+				$arr = array('fileHash'=>$fileHash,'fileRoute'=>$fileRoute,'fileMime'=>$fileMimeType,'fileSize'=>11,'filePermissions'=>'a','fileChilds'=>'aa','fileOwner'=>'aa','fileGroup'=>'aa',
 				'fileDate'=>'11','fileTime'=>'11','fileName'=>$file['fileName']);
 				$r = sqlite3_insertIntoTable('trash',$arr,$db);
 				if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
 			}
 		}
+		finfo_close($finfo);
 		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('OK'=>false,'errno'=>$GLOBALS['DB_LAST_ERRNO'],'error'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
 
 		return true;
@@ -257,5 +269,66 @@ return false;
 		}closedir($handle);}
 		rmdir($path);
 		return true;
+	}
+
+	function fs_trash_list($fileRoute = false){
+		if(strpos($fileRoute,'native:trash:') !== 0){return fs_folder_list($fileRoute);}
+		$fileRoute = substr($fileRoute,13);
+		$p = strpos($fileRoute,'/',1);
+		/* It can be a hashed folder or just a filename */
+		$fileHash = ($p !== false) ? substr($fileRoute,0,$p) : $fileRoute;
+		if(empty($fileHash) || $fileHash == '/'){
+			$fileRows = fs_trash_getWhere(1);
+			$files = $folders = array();
+			foreach($fileRows as $fileRow){
+				//FIXME: fileDateM
+				$files[] = array('fileName'=>$fileRow['fileName'],'fileAlias'=>$fileRow['fileHash'],'fileRoute'=>'native:trash:/','fileMime'=>$fileRow['fileMime'],'fileSize'=>$fileRow['fileSize'],'fileDateM'=>'');
+			}
+			sort($files);sort($folders);
+			return array('folders'=>$folders,'files'=>$files);
+		}
+
+
+		if($fileHash[0] == '/'){$fileHash = substr($fileHash,1);}
+		$fileRow = fs_trash_getSingle('(fileHash = \''.$fileHash.'\')');
+		if(!$fileRow){return array('errorDescription'=>'FILE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
+		$filePath = fs_helper_parsePath_trash($fileRoute);
+
+		if($filePath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		if(!is_dir($filePath)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
+		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? substr($filePath,strlen(realpath($GLOBALS['api']['fs']['root']))) : $filePath;
+
+		$files = $folders = array();
+		if($handle = opendir($filePath)){
+			$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
+			while(false !== ($file = readdir($handle))){if($file[0] == '.'){continue;}
+				$fileData = stat($filePath.$file);
+				if(is_dir($filePath.$file)){$folders[] = array('fileName'=>$file,'fileRoute'=>'native:trash:'.$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);continue;}
+				list($fileMimeType) = explode('; ',finfo_file($finfo,$filePath.$file));
+				$files[] = array('fileName'=>$file,'fileRoute'=>'native:trash:'.$fileRoute,'fileMime'=>$fileMimeType,'fileSize'=>$fileData['size'],'fileDateM'=>$fileData['mtime']);
+			}
+			finfo_close($finfo);
+			closedir($handle);
+		}
+
+		sort($files);sort($folders);
+		return array('folders'=>$folders,'files'=>$files);
+	}
+
+	function fs_trash_getSingle($whereClause = false,$params = array()){
+		include_once('inc.sqlite3.php');
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['fs']['trashdb'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		if(!isset($params['indexBy'])){$params['indexBy'] = 'fileHash';}
+		$r = sqlite3_getSingle('trash',$whereClause,$params);
+		if($shouldClose){sqlite3_close($params['db']);}
+		return $r;
+	}
+	function fs_trash_getWhere($whereClause = false,$params = array()){
+		include_once('inc.sqlite3.php');
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['fs']['trashdb'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		if(!isset($params['indexBy'])){$params['indexBy'] = 'fileHash';}
+		$r = sqlite3_getWhere('trash',$whereClause,$params);
+		if($shouldClose){sqlite3_close($params['db']);}
+		return $r;
 	}
 ?>

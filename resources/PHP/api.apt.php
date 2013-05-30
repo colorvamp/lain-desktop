@@ -26,8 +26,64 @@
 		if($shouldClose){sqlite3_close($params['db']);}
 		return $r;
 	}
-	function apt_get_search($criteria){
-		
+	function apt_packages_getSingle($whereClause = false,$params = array()){
+		include_once('inc.sqlite3.php');
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['apt']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		if(!isset($params['indexBy'])){$params['indexBy'] = false;}
+		$r = sqlite3_getSingle($GLOBALS['api']['apt']['tablePackages'],$whereClause,$params);
+		if($shouldClose){sqlite3_close($params['db']);}
+		return $r;
+	}
+	function apt_packages_getWhere($whereClause = false,$params = array()){
+		include_once('inc.sqlite3.php');
+		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['apt']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		if(!isset($params['indexBy'])){$params['indexBy'] = false;}
+		$r = sqlite3_getWhere($GLOBALS['api']['apt']['tablePackages'],$whereClause,$params);
+		if($shouldClose){sqlite3_close($params['db']);}
+		return $r;
+	}
+
+	function apt_get_search($searchString){
+		$searchString = preg_replace('/[\']*/','',$searchString);if(empty($searchString) || strlen($searchString) < 3){$searchString = '';}
+		/* Search for packet name directly */
+		if(strpos($searchString,' ') === false){$searchQuery = '(package LIKE \'%'.$searchString.'%\')';$packages = apt_packages_getWhere($searchQuery);if($packages){return $packages;}}
+
+		$searchArray = array();
+		if(strpos($searchString,'"') !== false){
+			$pos = 0;$init = -1;$las = 0;
+			while(($pos = strpos($searchString,'"',$pos)) !== false){
+				if($pos === false){break;}
+				$pos++;if($init < 0){$str = substr($searchString,$las,($pos-$las-1));$searchArray = array_merge($searchArray,array_diff(array_unique(explode(' ',$str)),array('')));$init = $pos;}
+				else{$searchArray[] = substr($searchString,$init,($pos-$init-1));$init = -1;}
+				$las = $pos;
+			}
+			$str = substr($searchString,$las);$searchArray = array_merge($searchArray,array_diff(array_unique(explode(' ',$str)),array('')));
+		}else{
+			$searchArray = array_unique(explode(' ',$searchString));
+			$searchArrayCount = count($searchArray);
+			$a = $searchArray;$letterLimit = 3;
+			foreach($a as $k=>$p){if(strlen($a[$k]) < $letterLimit){unset($a[$k]);}}
+			if($a){$searchArray = $a;}
+		}
+
+		$searchQuery = '(';
+		/* If only a word given, we must search, even if is less than 3 letters */
+		foreach($searchArray as $element){$searchQuery .= '(package LIKE \'%'.$element.'%\') OR ';}
+		$totalStars = count($searchArray);$searchQuery = substr($searchQuery,0,-4);$searchQuery .= ')';
+
+		$packages = apt_packages_getWhere($searchQuery,array('limit'=>100));
+		/* The value of $i is decremental becaise we estimate that the first positions of words has
+		 * more weight in the search string */
+		foreach($packages as $hid=>$package){
+		    $i = $totalStars;$packages[$hid]['searchRate'] = 0;
+		    foreach($searchArray as $searchItem){$ret = strpos(strtolower($package['package']),strtolower($searchItem));if($ret !== false){$package[$hid]['package'] += $i;}$i--;}
+		}
+
+		/* If there is multiple packages, we order by searchRate */
+		$o = function($a,$b){if ($a['searchRate'] == $b['searchRate']){return 0;}return ($a['searchRate'] > $b['searchRate']) ? -1 : 1;};
+		if(count($packages)){usort($packages,$o);}
+
+		return $packages;
 	}
 
 //apt_get_update();

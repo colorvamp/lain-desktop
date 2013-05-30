@@ -55,4 +55,15 @@
 				exit;
 		}}
 	}
+
+	function api_apt(){
+		include_once('api.apt.php');
+		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
+			case 'packageSearch':
+				if(!isset($_POST['searchString']) || empty($_POST['searchString'])){break;}
+				$r = apt_get_search(base64_decode($_POST['searchString']));
+				echo json_encode($r);
+				break;
+		}}
+	}
 ?>

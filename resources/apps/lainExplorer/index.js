@@ -1,14 +1,16 @@
 VAR_apps.lainExplorer = {
 	init: function(holder,params){
 		if(!VAR_apps.lainExplorer.vars){VAR_apps.lainExplorer.vars = {apiURL:'api/fs',wCounter:0,wHolder:holder,wList:$A([]),cList:$A([])};}
-		if(params && params.tagName && params.tagName == 'LI'){var iProp = _desktop.icon_getProperties(params);VAR_apps.lainExplorer.createExplorer(iProp.fileRoute+iProp.fileName);return;}
+		//if(params && params.tagName && params.tagName == 'LI'){var iProp = _desktop.icon_getProperties(params);VAR_apps.lainExplorer.createExplorer(iProp.fileRoute+iProp.fileName);return;}
+		if(params && params.tagName && params.tagName == 'LI'){var iProp = _desktop.icon_getProperties(params);VAR_apps.lainExplorer.createExplorer(iProp);return;}
 		if(params && params.constructor == String){VAR_apps.lainExplorer.createExplorer(params);return;}
 	},
 	appKill: function(){this.vars.wList.each(function(w){window_destroy(w);}.bind(this));},
 	wList_removeElem: function(el){this.vars.wList.each(function(w,n){if(w == el){this.vars.wList.splice(n,1);}}.bind(this));},
 	createExplorer: function(path){
+//FIXME: hay que pasarlo a icon
 		var ths = this;
-		holder = this.vars.wHolder;
+		var holder = VAR_apps.lainExplorer.vars.wHolder;
 
 		var wNum = this.vars.wCounter;
 		var wPos = _desktop.window_loadRelativePosition('wod_lainExplorer'+wNum);
@@ -18,7 +20,6 @@ VAR_apps.lainExplorer = {
 		},holder);
 		this.vars.wList.push(w);
 		h = w.windowContainer;
-
 
 		/* INI-MENU */
 		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},h);
@@ -50,16 +51,24 @@ $C('LI',{className:'icon_folder_add',innerHTML:'Create new folder',onclick:funct
 		this.vars.wCounter++;
 	},
 	list: function(iconCanvas,path){
-		//FIXME: parsepath
-		var path = (path ? path : '/');
-		var reveal = path.match(/^(reveal|ubuone)/);
-		if(path != '/' && path[path.length-1] != '/'){path += '/';};
-		//if(!reveal && path != '/' && path[0] != '/'){path = '/'+path;}
+		var title = false;
+		if(typeof path == 'string'){
+			//FIXME: parsepath
+			var path = (path ? path : '/');
+			var reveal = path.match(/^(reveal|ubuone)/);
+			if(path != '/' && path[path.length-1] != '/'){path += '/';};
+			//if(!reveal && path != '/' && path[0] != '/'){path = '/'+path;}
+			title = path;
+		}else{
+			if(path.fileRoute != '/' && path.fileRoute[path.fileRoute.length-1] != '/'){path.fileRoute += '/';};
+			title = path.fileRoute+path.fileName;
+			path = path.fileRoute+((path.fileAlias) ? path.fileAlias : path.fileName);
+		}
 
 		var wNum = iconCanvas.id.match(/lainExplorer([0-9]+)_iconCanvas/)[1];
-		var t = $_('wod_lainExplorer'+wNum+'_title',{innerHTML:'Lain File Explorer - '+path});
+		var t = $_('wod_lainExplorer'+wNum+'_title',{innerHTML:'Lain File Explorer - '+title});
 		ajaxPetition(this.vars.apiURL,'subcommand=folder_list&fileRoute='+base64.encode(path),function(ajax){
-			var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
+			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 			iconCanvas.empty();
 			iconCanvas.innerPath = path;
 			$A(r.folders).each(function(elem){_desktop.icon_create(elem,iconCanvas);}.bind(this));
@@ -111,7 +120,7 @@ $A($_('lainPlacesMenu_itemList').childNodes).each(function(el){
 		gnomeButton_create('Cancel',function(){info_destroy(h);},btHolder);
 		gnomeButton_create('OK',function(){
 			_iface.reveal_folder_create(i.value,destPath,function(d){_desktop.icon_create(d,iconCanvas);});
-		},btHolder);	
+		},btHolder);
 	},
 	signal_folderAdd: function(src,fSel){
 		//alert(print_r(fSel));

@@ -18,6 +18,7 @@
 				<h1>Places</h1>
 				<ul id='lainPlacesMenu_itemList'>
 					<li class='icon_desktop' onclick='launchApp("lainExplorer",launchApp_createHolder("lainExplorer"),"native:drive:/");'>Desktop</li>
+					<li class='icon_desktop' onclick='launchApp("lainExplorer",launchApp_createHolder("lainExplorer"),"native:trash:/");'>Trash</li>
 					<?php //echo desktop_placesToCanvas(); ?>
 					<li class='icon_insert_link dropLeyend'>Drop folders here</li>
 				</ul>
