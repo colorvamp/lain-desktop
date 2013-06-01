@@ -5,8 +5,7 @@ VAR_apps.synaptic = {
 		return true;
 	},
 	client: function(){
-		var wPos = _desktop.window_loadRelativePosition('synaptic');
-		var w = window_create('synaptic',{wodTitle:'Synaptic - Package Manager','.width':'400px','.left':wPos.left+'px','.top':wPos.top+'px',
+		var w = window_create('synaptic',{wodTitle:'Synaptic - Package Manager',
 			beforeRemove:function(){},
 			onDropElement:function(elem){}
 		},VAR_apps.synaptic.vars.wHolder);
@@ -16,7 +15,8 @@ VAR_apps.synaptic = {
 		/* INI-MENU */
 		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},h);
 		var ul = $C('UL',{},$C('LI',{innerHTML:'File',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
-		$C('LI',{innerHTML:'Search',onclick:function(){VAR_apps.synaptic.client_search();}},ul);
+		$C('LI',{innerHTML:'<i class="icon-search"></i> Search',onclick:function(){VAR_apps.synaptic.client_search();}},ul);
+		$C('LI',{innerHTML:'<i class="icon-refresh"></i> Reload',onclick:function(){VAR_apps.synaptic.menu_reload();}},ul);
 		var ul = $C('UL',{},$C('LI',{innerHTML:'Edit',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
 		var ul = $C('UL',{},$C('LI',{innerHTML:'View',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
 		/* END-MENU */
@@ -51,17 +51,10 @@ VAR_apps.synaptic = {
 				var wContainer = VAR_apps.synaptic.vars.wContainer;if(!wContainer){return false;}
 				var tbody = wContainer.$T('TBODY')[0];
 				$A(r).each(function(elem){VAR_apps.synaptic.client_addRow(tbody,elem);});
-//alert(ajax.responseText);
-		return;
-				
-				iconCanvas.empty();
-				iconCanvas.innerPath = path;
-				$A(r.folders).each(function(elem){_desktop.icon_create(elem,iconCanvas);}.bind(this));
-				$A(r.files).each(function(elem){_desktop.icon_create(elem,iconCanvas);}.bind(this));
-
-				/* Calculate the height of an iconCanvas, if there is no icons */
-				_desktop.iconCanvas_autoResize(iconCanvas);
 			});
 		}
+	},
+	menu_reload: function(){
+		_tasks.taskAdd({'name':'Synaptic - Reload Sources','href':'api/apt','params':{'subcommand':'sourcesReload'}});
 	}
 }

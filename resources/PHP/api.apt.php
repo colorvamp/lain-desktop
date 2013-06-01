@@ -88,13 +88,17 @@
 
 //apt_get_update();
 	function apt_get_update(){
+		set_time_limit(-1);
 		//FIXME: hardcoded
 		$arch = 'i386';
 		$sources = apt_sources_getWhere(1);
+		$flush = ini_get('implicit_flush');
+		if($flush){echo json_encode(array('command'=>'processTotal','total'=>count($sources))),PHP_EOL;flush();}
 		foreach($sources as $source){
 			$pools = explode(',',$source['pools']);
 			foreach($pools as $pool){
 				$packageFileIn = $source['source'].'/dists/'.$source['dist'].'/'.$pool.'/binary-'.$arch.'/Packages.bz2';
+				//FIXME: capturar la cabecera, obtener el tamaño y el httpCode
 				$packageFileOut = '/tmp/'.uniqid().'Packages.bz2';
 				$in = @fopen($packageFileIn,'rb');if(!$in){break;}
 				$out = fopen($packageFileOut,'wb');while($chunk = fread($in,8192)){fwrite($out,$chunk,8192);}fclose($in);fclose($out);
@@ -107,9 +111,11 @@
 				$r = apt_cache_generate($source['source'],$deflatedFile);
 				unlink($deflatedFile);
 			}
+			if($flush){echo json_encode(array('command'=>'processStep')),PHP_EOL;flush();}
 		}
 
-return true;
+		if($flush){echo json_encode(array('command'=>'processEnd')),PHP_EOL;flush();}
+		return true;
 		//FIXME: quizá podemos sacar que es ubuntu de uname -a
 		$release = apt_helper_get_ubuntu_release();
 		$codename = $release['codename'];

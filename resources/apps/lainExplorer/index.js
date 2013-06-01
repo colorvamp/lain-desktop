@@ -13,8 +13,7 @@ VAR_apps.lainExplorer = {
 		var holder = VAR_apps.lainExplorer.vars.wHolder;
 
 		var wNum = this.vars.wCounter;
-		var wPos = _desktop.window_loadRelativePosition('wod_lainExplorer'+wNum);
-		var w = window_create('lainExplorer'+wNum,{wodTitle:'Lain File Explorer','.width':'400px','.left':wPos.left+'px','.top':wPos.top+'px',
+		var w = window_create('lainExplorer'+wNum,{wodTitle:'Lain File Explorer',
 			beforeRemove:function(){this.wList_removeElem(w);}.bind(this),
 			onDropElement:function(elem){ths.onDropElement(elem,this);}
 		},holder);

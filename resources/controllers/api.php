@@ -33,6 +33,7 @@
 				//FIXME: también hacerlo con un único argumento
 				foreach($args as $k=>$arg){$args[$k] = base64_decode(str_replace(' ','+',$args[$k]));}
 				list($fileName,$fileRoute) = $args;
+//echo $fileRoute,'/',$fileName;exit;
 				$r = fs_file_stream($fileName,$fileRoute);
 				print_r($r);
 				break;
@@ -56,9 +57,17 @@
 		}}
 	}
 
+/*$_POST['subcommand'] = 'sourcesReload';
+api_apt();
+exit;*/
 	function api_apt(){
 		include_once('api.apt.php');
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
+			case 'sourcesReload':
+				include_once('inc.flush.php');
+				$GLOBALS['ajax'] = true;
+				$r = apt_get_update();
+				break;
 			case 'packageSearch':
 				if(!isset($_POST['searchString']) || empty($_POST['searchString'])){break;}
 				$r = apt_get_search(base64_decode($_POST['searchString']));

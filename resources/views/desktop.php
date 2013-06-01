@@ -29,6 +29,7 @@
 		<ul id='systemTray'>
 			<li><div class="perm"><a href="{%baseURL%}logout"><i class="icon-user"></i> {%user_userName%}</a></div></li>
 			<li id="tray_desktop_progress"><div class="perm"><i class="icon-user"></i></div></li>
+			<li id="tray_desktop_tasks"><div class="perm"><i class="icon-reorder"></i></div></li>
 		</ul>
 		<ul id="lainIcons">{%HTML_icons%}</ul>
 		<ul id='lainWindows'></ul>

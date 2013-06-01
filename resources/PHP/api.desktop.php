@@ -39,7 +39,8 @@
 		$bgDir = $GLOBALS['userPath'].'background/';
 		$targetFile = $bgDir.'main.jpeg';
 		if(!file_exists($targetFile)){exit;}
-		readfile($targetFile);
-		exit;
+		$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');list($fileMimeType) = explode('; ',finfo_file($finfo,$targetFile));finfo_close($finfo);
+		header('Content-type: '.$fileMimeType);
+		readfile($targetFile);exit;
 	}
 ?>

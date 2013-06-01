@@ -29,6 +29,10 @@ div.wodInfo .wodInfoContainer.loading{background:URL(../images/load.gif) 3px cen
 .wodInfoContainer .fileTransferNode .fileTransferMargin{padding:4px;}
 .wodInfoContainer .fileTransferNode .title{white-space:nowrap;}
 .wodInfoContainer .fileTransferNode .size{white-space:nowrap;}
+.wodInfoContainer .taskNode{overflow:hidden;}
+.wodInfoContainer .taskNode .taskMargin{padding:4px;}
+.wodInfoContainer .taskNode .title{white-space:nowrap;}
+.wodInfoContainer .taskNode .info{white-space:nowrap;}
 /*END-wodInfo-custom*/
 .progressBar{position:relative;width:100%;overflow:hidden;}
 .progressBar > div{box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;}
@@ -52,6 +56,7 @@ div#lainMenu > div#lainPlacesMenu > ul > li > i:first-child{display:none;}
 
 ul#systemTray{position:absolute;top:0;right:0px;font-size:11px;padding-right:10px;line-height:20px;color:white;}
 ul#systemTray > li{float:right;position:relative;background-position:center;background-repeat:no-repeat;font-size:inherit;}
+ul#systemTray > li + li{margin-right:5px;}
 ul#systemTray > li > div.perm{white-space:nowrap;font-size:inherit;cursor:pointer;}
 ul#systemTray > li > div.perm a{color:inherit;font-size:inherit;}
 ul#systemTray > li > div.perm i{font-size:inherit;}
@@ -75,15 +80,19 @@ div#lainDesktop ul#lainWindows > li > div{position:absolute;}
 
 
 .wodern{position:absolute;border:1px solid #cccbc9;border-top:1px solid #e1e1e3;background-color:#bdbdbd;border-radius:3px;box-shadow:0 2px 3px rgba(0,0,0,.7);}
+.wodThemeBorder{padding:2px;}
+.wodThemeResize{position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer;z-index:1;}
+.wodThemeTitle{position:relative;z-index:10;}
 .wodThemeTitle h1{cursor:default;line-height:20px;font-size:10px;padding:0 3px;}
 .wodThemeTitle img{position:absolute;}
 .wodThemeTitle img.wodButtonClose{right:3px;top:3px;width:16px;height:15px;background:URL(../images/wod/wodButton.png) left top no-repeat;}
-.wodThemeContainer{position:relative;font-size:0;}
+.wodThemeContainer{position:relative;font-size:0;z-index:10;}
 ul.wodMenuHolder{border-bottom:1px solid #999;padding:3px 0;margin-bottom:4px;}
 ul.wodMenuHolder > li{display:inline-block;padding:0 5px;cursor:pointer;}
 ul.wodMenuHolder > li > ul{position:absolute;display:none;color:black;padding:5px 0;background:white;border-radius:3px;z-index:9;box-shadow:0 2px 3px rgba(0,0,0,.5);}
 ul.wodMenuHolder > li.selected > ul{display:block;}
-ul.wodMenuHolder > li.selected > ul > li{padding:2px 10px;padding-left:22px;margin:0 10px;white-space:nowrap;line-height:18px;background-position:left center;background-repeat:no-repeat;}
+ul.wodMenuHolder > li.selected > ul > li{margin:0 10px;white-space:nowrap;line-height:18px;background-position:left center;background-repeat:no-repeat;}
+ul.wodMenuHolder > li.selected > ul > li.eicon{padding-left:22px;}
 ul.wodMenuHolder > li.selected > ul > li:hover{color:#999;}
 
 

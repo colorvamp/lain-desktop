@@ -59,8 +59,8 @@
 		if($type(obj)=='object'){var n=0;for(var a in obj){fun.call(this,a,obj[a],n);n++;}return;}
 	}
 	function $getElementStyle(obj,styleProp){if(obj.currentStyle){return obj.currentStyle[styleProp];}if(window.getComputedStyle){return document.defaultView.getComputedStyle(obj,null).getPropertyValue(styleProp);}}
-	function $getOffsetLeft(el){var ol = 0;while(el.parentNode){ol += el.offsetLeft-parseInt($getElementStyle(el,'padding-left'));el = el.parentNode;}return ol;}
-	function $getOffsetTop(el){var ot = 0;while(el.parentNode){ot += el.offsetTop-parseInt($getElementStyle(el,'padding-top'));el = el.parentNode;}return ot;}
+	function $getOffsetLeft(el){var ol = 0;while(el.parentNode){ol += el.offsetLeft+parseInt($getElementStyle(el,'padding-left'));el = el.parentNode;}return ol;}
+	function $getOffsetTop(el){var ot = 0;while(el.parentNode){ot += el.offsetTop+parseInt($getElementStyle(el,'padding-top'));el = el.parentNode;}return ot;}
 	function $getOffsetPosition(el){return el.getBoundingClientRect();}
 	function $htmlEntitiesDecode(html){if(!html){return "";}return html.replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">");};
 	function $htmlEntitiesEncode(html){if(!html){return "";}return html.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\\/g,"");};

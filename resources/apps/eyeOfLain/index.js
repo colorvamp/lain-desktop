@@ -1,10 +1,11 @@
 VAR_apps.eyeOfLain = {
 	init: function(holder,params){
 		if(!VAR_apps.eyeOfLain.vars){VAR_apps.eyeOfLain.vars = {wCounter:0,wHolder:holder,wList:$A([]),cList:$A([])};}
-		if(params && params.tagName && params.tagName == 'LI'){VAR_apps.eyeOfLain.createViewer(params);return;}
+		if(params && params.tagName && params.tagName == 'LI'){VAR_apps.eyeOfLain.client_createViewer(params);return;}
 	},
 	appKill: function(){VAR_apps.eyeOfLain.vars.wList.each(function(w){window_destroy(w);});},
 	wList_removeElem: function(el){this.vars.wList.each(function(w,n){if(w == el){this.vars.wList.splice(n,1);}}.bind(this));},
+	wList_append: function(w){VAR_apps.eyeOfLain.vars.wList.push(w);},
 	onDropElement: function(iconElem,w){
 		var iProp = _desktop.icon_getProperties(iconElem);
 //alert(print_r(iProp));
@@ -12,42 +13,39 @@ VAR_apps.eyeOfLain = {
 		this.viewer_registerNodes(iconElem,w);
 		this.viewer_loadElement(iProp,w);
 	},
-	createViewer: function(iconElem){
-		var ths = this;
+	client_createViewer: function(iconElem){
 		var iProp = _desktop.icon_getProperties(iconElem);
+		var holder = VAR_apps.eyeOfLain.vars.wHolder;
 
-		holder = this.vars.wHolder;
-
-		var wNum = this.vars.wCounter;
-		var wPos = _desktop.window_loadRelativePosition('eyeOfLain'+wNum);
-		var w = window_create('eyeOfLain'+wNum,{wodTitle:'Eye of Lain','.width':'400px','.left':wPos.left+'px','.top':wPos.top+'px',
-			beforeRemove:function(){this.wList_removeElem(w);}.bind(this),
-			onDropElement:function(elem){ths.onDropElement(elem,this);}
-		},holder);
-		_desktop.desktop_shorcutKey_register(w,[16,17,66],function(){ths.viewer_next(ths,w);});/* CONTROL+SHIFT+B */
-		this.viewer_registerNodes(iconElem,w);
-		/* register the window */
-		this.vars.wList.push(w);
-		h = w.windowContainer;
-
-		var imgSource = false;
-		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},h);
-		var ul = $C('UL',{},$C('LI',{innerHTML:'File',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
+		var wContainer = window_container();
+		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},wContainer);
+		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'File'},wodMenuHolder));
 //$C('LI',{innerHTML:'Save',onclick:function(){alert(1);}.bind(this)},ul);
 //$C('LI',{innerHTML:'Save as',onclick:function(){alert(2);}.bind(this)},ul);
-			$C('LI',{innerHTML:'Set as wallpaper',onclick:function(){_desktop.background_set(iconElem);}},ul);
-		var ul = $C('UL',{},$C('LI',{innerHTML:'Edit',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
+			$C('LI',{innerHTML:'<i class="icon-desktop"></i> Set as wallpaper',onclick:function(){_desktop.background_set(iconElem);}},ul);
+		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'Edit'},wodMenuHolder));
 //$C('LI',{innerHTML:'Undo',onclick:function(){alert(3);}.bind(this)},ul);
 //$C('LI',{innerHTML:'Redo',onclick:function(){alert(4);}.bind(this)},ul);
-			$C('LI',{className:'icon_object_flip_horizontal',innerHTML:'Flip Horizontal',onclick:function(){this.image_flipHorizontal(imgSource);}.bind(this)},ul);
-			$C('LI',{className:'icon_object_flip_vertical',innerHTML:'Flip Vertical',onclick:function(){this.image_flipVertical(imgSource);}.bind(this)},ul);
-		var ul = $C('UL',{},$C('LI',{innerHTML:'View',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
-		var ul = $C('UL',{},$C('LI',{innerHTML:'Photo',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
-		var ul = $C('UL',{},$C('LI',{innerHTML:'Help',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
+			$C('LI',{className:'eicon icon_object_flip_horizontal',innerHTML:'Flip Horizontal',onclick:function(){this.image_flipHorizontal(imgSource);}.bind(this)},ul);
+			$C('LI',{className:'eicon icon_object_flip_vertical',innerHTML:'Flip Vertical',onclick:function(){this.image_flipVertical(imgSource);}.bind(this)},ul);
+		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'View'},wodMenuHolder));
+		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'Photo'},wodMenuHolder));
+		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'Help'},wodMenuHolder));
 
-		this.viewer_loadElement(iProp,w);
 
-		this.vars.wCounter++;
+		var wNum = VAR_apps.eyeOfLain.vars.wCounter;
+		var w = window_create('eyeOfLain'+wNum,{wodTitle:'Eye of Lain','wContainer':wContainer,
+			beforeRemove:function(){VAR_apps.eyeOfLain.wList_removeElem(w);},
+			onDropElement:function(elem){VAR_apps.eyeOfLain.onDropElement(elem,this);}
+		},holder);
+		VAR_apps.eyeOfLain.wList_append(w);/* register the window */
+		_desktop.desktop_shorcutKey_register(w,[16,17,66],function(){ths.viewer_next(ths,w);});/* CONTROL+SHIFT+B */
+		VAR_apps.eyeOfLain.viewer_registerNodes(iconElem,w);
+		var h = w.windowContainer;
+
+		VAR_apps.eyeOfLain.viewer_loadElement(iProp,w);
+
+		VAR_apps.eyeOfLain.vars.wCounter++;
 		return wNum;
 		//ROTATE
 		//ctx.translate(img.width-1,img.height-1);
@@ -63,9 +61,8 @@ VAR_apps.eyeOfLain = {
 	viewer_registerCurrent: function(iProp,w){w.storage_imageCurrent = iProp;},
 	viewer_loadElement: function(iProp,w){
 		var h = w.windowContainer;
-		if(w.canvas_image){
-			w.canvas_image.parentNode.removeChild(w.canvas_image);
-		}
+		/* Remove the old image canvas */
+		if(w.canvas_image){w.canvas_image.parentNode.removeChild(w.canvas_image);}
 
 		var fileStream = 'api/fs/file_stream/'+base64.encode(iProp.fileName)+'/'+base64.encode(iProp.fileRoute);
 		var size = h.offsetWidth;

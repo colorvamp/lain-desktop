@@ -4,16 +4,27 @@ var VAR_MIMES = {'folder':'lainExplorer','image/jpeg':'eyeOfLain','image/png':'e
 
 function window_create(id,style,holder){
 	if($_('wod_'+id)){return $_('wod_'+id);}
-	if(!style){var style = {};}extend(style,{'id':'wod_'+id,className:'wodern dragable'+(style.className ? ' '+style.className : ''),'.zIndex':_desktop.window_getWindowZ()});
+	if(!style){var style = {};}
+	var wContainer = (style.wContainer) ? style.wContainer : false;if(style.wContainer){style.wContainer = false;}
+	extend(style,{'id':'wod_'+id,className:'wodern dragable'+(style.className ? ' '+style.className : ''),'.zIndex':_desktop.window_getWindowZ()});
 	var w = $C('DIV',style);
 	w.onclick = function(e){_desktop.window_signals_click(e,w);};
-	w.titleContainer = $C('DIV',{className:'wodThemeTitle'},w);
+	w.windowBorder = $C('DIV',{className:'wodThemeBorder'},w);
+	$C('DIV',{className:'wodThemeResize',onmousedown:_wodern.resize_mousedown,'w':w},w.windowBorder);
+	w.titleContainer = $C('DIV',{className:'wodThemeTitle'},w.windowBorder);
 	w.titleContainer.onmousedown = _littleDrag.onMouseDown;
 	if(style.wodTitle){$C('H1',{className:'wodTitle','id':'wod_'+id+'_title',innerHTML:style.wodTitle},w.titleContainer);}
 	$C('IMG',{className:'wodThemeTitleButton wodButtonClose',src:'r/images/t.gif',onmousedown:function(e){e.stopPropagation();},onclick:function(){window_destroy(w);}},w.titleContainer);
-	w.windowContainer = $C('DIV',{className:'wodThemeContainer contractable','id':'wod_'+id+'_container'},w);
+	if(wContainer){w.appendChild(wContainer);window_container_init(wContainer);}
+	w.windowContainer = (wContainer) ? wContainer : window_container(w.windowBorder);
+	_wodern.position_get(w);
 	if(holder){holder.appendChild(w);}
 	return w;
+}
+function window_container(w){return $C('DIV',{className:'wodThemeContainer contractable'},w);}
+function window_container_init(w){
+	var menuItems = w.$L('wodMenuItem');
+	if(menuItems.length){$each(menuItems,function(k,menuItem){menuItem.onclick = function(){_desktop.menu_show(menuItem);}});}
 }
 function window_destroy(el,ev){
 	while(el.parentNode && !el.className.match(/^wodern( |$)/)){el = el.parentNode;}if(!el.parentNode){return;}
@@ -146,6 +157,8 @@ var _desktop = {
 		document.addEventListener('keypress',_desktop.desktop_signals_keyPress,true);
 		window.addEventListener('resize',_desktop.signals_resize,true);
 		_desktop.signals_resizeEnd();
+		window.oncontextmenu = function(e){return _desktop.desktop_mouseRightClick(e);};
+		var a = $_('lainPlacesMenu_itemList',{'onDropElement':_desktop.menu_places_mouseDown});
 		lWindows = $_('lainWindows');
 	},
 	signals_dragover: function(e){e.preventDefault();return false;},
@@ -189,11 +202,6 @@ var _desktop = {
 
 		return false;
 	},
-	desktop_signals_load: function(){
-		var ths = this;
-		window.oncontextmenu = function(e){return ths.desktop_mouseRightClick(e);};
-		var a = $_('lainPlacesMenu_itemList',{'onDropElement':this.menu_places_mouseDown});
-	},
 	signals_resize: function(e){
 		if(window.resizeTimer){clearTimeout(window.resizeTimer);window.resizeTimer = false;}
 		window.resizeTimer = setTimeout(function(){_desktop.signals_resizeEnd(e);},500);
@@ -207,21 +215,21 @@ var _desktop = {
 	desktop_signals_keyPress: function(e){
 		/* ENTER */if(e.keyCode == 13){
 			//FIXME: puede ser un intro porque se está canbiando el nombre de una carpeta
-			this.vars.fileSelection.each(function(elem){elem.launch();});
+			_desktop.vars.fileSelection.each(function(elem){elem.launch();});
 		}
 		/* DEL */if(e.keyCode == 46){if(_desktop.vars.fileSelection.length > 0){_desktop.file_trash(_desktop.vars.fileSelection);}}
 		/* LEFTCUR */if(e.keyCode == 37){
-			if(this.vars.fileSelection.length > 0){
+			if(_desktop.vars.fileSelection.length > 0){
 				var elem = _desktop.vars.fileSelection[0];
 				if(_desktop.vars.fileSelection.length == 1 && elem == elem.parentNode.firstChild){return;}
-				this.vars.fileSelection.empty();
+				_desktop.vars.fileSelection.empty();
 				elem.onUnSelect();
 				if(elem.previousSibling){elem.previousSibling.onSelect();}
 				else{elem.parentNode.firstChild.onSelect();}
 			}
 		}
 		/* RIGHTCUR */if(e.keyCode == 39){
-			if(this.vars.fileSelection.length > 0){
+			if(_desktop.vars.fileSelection.length > 0){
 				var elem = _desktop.vars.fileSelection[_desktop.vars.fileSelection.length-1];
 				if(_desktop.vars.fileSelection.length == 1 && elem == elem.parentNode.lastChild){return;}
 				_desktop.vars.fileSelection.empty();
@@ -231,7 +239,7 @@ var _desktop = {
 			}
 		}
 		/* F2 */if(e.keyCode == 113){
-			if(this.vars.fileSelection.length == 1){
+			if(_desktop.vars.fileSelection.length == 1){
 				var elem = _desktop.vars.fileSelection[0];
 				var iProp = _desktop.icon_getProperties(elem);
 				var h = $fix(elem.lastChild).empty();
@@ -405,36 +413,21 @@ var _desktop = {
 		}.bind(this));
 	},
 	window_contract: function(elem){
-		$each(elem.childNodes,function(k,v){
+		$each(elem.windowBorder.childNodes,function(k,v){
 			if(v.nodeType != 1 || !v.className.match(/contractable/)){return;}
 			v.$B({'.position':'absolute','.height':0,'.overflow':'hidden'});
 		});
 	},
 	window_expand: function(elem){
-		$each(elem.childNodes,function(k,v){
+		$each(elem.windowBorder.childNodes,function(k,v){
 			if(v.nodeType != 1 || !v.className.match(/contractable/)){return;}
 			v.$B({'.position':'relative','.height':'','.overflow':''});
 		});
-		setTimeout(function(){_desktop.window_saveRelativePosition(elem);},500);
+		setTimeout(function(){_wodern.position_set(elem);},500);
 	},
 	window_getWindowZ: function(){this.vars.wHighestZ++;return this.vars.wHighestZ;},
 	window_signals_click: function(e,elem){if(!elem){elem = e.target;while(elem.parentNode && !elem.className.match(/wodTheme/)){elem = elem.parentNode;};if(!elem.className.match(/wodTheme/)){return;};}this.window_registerTop(elem);},
 	window_registerTop: function(elem){elem.$B({'.zIndex':_desktop.window_getWindowZ()});this.vars.window_top = elem;},
-	window_loadRelativePosition: function(id){
-		var c = unescape(cookieTake('position:'+id));
-		//FIXME: esto no está correcto, no deberíamos asumir 400 y 100 tan alegremente
-		if(!c || !(c = jsonDecode(c))){return {'left':( Math.random()*(_desktop.vars.bodyWidth-400) ),'top':( Math.random()*(_desktop.vars.bodyHeight-100) )};}
-		var wLeft = (c.left < c.right) ? c.left : (_desktop.vars.bodyWidth-(parseInt(c.right)+parseInt(c.width)));
-		var wTop = (c.top < c.bottom) ? c.top : (_desktop.vars.bodyHeight-(parseInt(c.bottom)+parseInt(c.height)));
-		if(wTop < 0 || wTop > (_desktop.vars.bodyHeight-20)){wTop = 0;}
-		return {'left':wLeft,'top':wTop,'width':c.width,'height':c.height};
-	},
-	window_saveRelativePosition: function(elem){
-		var elemPos = $getOffsetPosition(elem);
-		elemPos = jsonEncode({'width':elem.outerWidth(),'height':elem.outerHeight(),'left':elemPos.left,'right':this.vars.bodyWidth-(elemPos.left+elem.offsetWidth),'top':elemPos.top,'bottom':this.vars.bodyHeight-(elemPos.top+elem.offsetHeight)});
-		cookieSet('position:'+elem.id,elemPos,20);
-	},
-	window_loadWidth: function(id){return 400+'px';},
 	icons_organize: function(){
 		var h = $_('lainIcons',{innerPath:'/'});
 		//FIXME: hacer 2 peticiones, no se x que

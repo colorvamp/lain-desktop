@@ -38,7 +38,7 @@
 
 		if($filePath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 		if(!is_dir($filePath)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
-		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? substr($fileRoute,strlen(realpath($GLOBALS['api']['fs']['root']))) : $fileRoute;
+		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? substr($filePath,strlen(realpath($GLOBALS['api']['fs']['root']))) : $fileRoute;
 
 		$files = $folders = array();
 		if($handle = opendir($filePath)){
@@ -151,7 +151,8 @@
 		$targetFile = $fileRoute.$fileName;
 		if(!file_exists($targetFile)){return array('errorDescription'=>'FILE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
 
-		//FIXME: falta el mimetype
+		$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');list($fileMimeType) = explode('; ',finfo_file($finfo,$targetFile));finfo_close($finfo);
+		header('Content-type: '.$fileMimeType);
 		readfile($targetFile);exit;
 	}
 
