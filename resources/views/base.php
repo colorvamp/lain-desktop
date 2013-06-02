@@ -8,6 +8,7 @@
 	<script type="text/javascript" src="{%baseURL%}r/js/lainCanvas.next.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/lain.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/wodern.js"></script>
+	<script type="text/javascript" src="{%baseURL%}r/js/widgets.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/tasks.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/XMLHttpRequest.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/littleDrag.js"></script>
