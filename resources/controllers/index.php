@@ -30,10 +30,16 @@
 				$r = users_login($_POST['userMail'],$_POST['userPass']);
 				echo json_encode($r);
 				exit;
+			case 'userRegister':
+				$users = users_getSingle(1);if($users){break;}
+				//FIXME: registrar usuario
+				break;
 		}}
 
 		/* get all the users */
 		$users = users_getWhere(1,array('indexBy'=>'userMail'));
+		if(!$users){return common_renderTemplate('register');}
+
 		$usersGrid = '';
 		foreach($users as $user){
 			$user['loginName'] = $user['userName'];

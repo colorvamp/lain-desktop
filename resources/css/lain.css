@@ -12,6 +12,7 @@ i.floatSeparator{display:block;clear:both;}
 .loginForm > .userGrid > .user .image img{height:64px;}
 .loginForm > .userGrid > .user .name{padding:6px 0;color:white;font-weight:bold;}
 .loginForm > .userGrid > .user .whiteBox{width:180px;margin-top:10px;}
+.loginForm > .wodContainer{width:400px;height:auto;margin:50px auto 0 auto;background:white;border-radius:3px;box-shadow:0 2px 4px rgba(0,0,0,.4);}
 /*END-login*/
 /*INI-whiteBox*/
 .whiteBox{position:absolute;background:white;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.6);}
@@ -144,11 +145,16 @@ table.dataTable tbody > tr td:first-child{}
 .wodContainer p.header{color:#808080;text-align:center;padding-bottom:10px;}
 .wodContainer hr{height:1px;border:0;background:-moz-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:-webkit-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:-o-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:-ms-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);}
 .wodForm{padding:25px 30px;}
+.wodForm > div{}
 .wodForm > div + div{margin-top:10px;}
 .wodForm > div > span{display:inline-block;width:40%;text-align:right;padding-right:10px;}
 .wodForm > div > div{display:inline-block;width:60%;}
-.wodForm > div > div > input{display:block;width:100%;padding:1px 4px 0 4px;line-height:16px;color:#777;border-left:1px solid #ababab;border-right:1px solid #ababab;border-top:1px solid #707070;border-bottom:1px solid #cecece;background:white URL(../images/inputBg.png) repeat-x;}
-.wodForm > div > div > input:active,.wodForm > div > div > input:focus{outline:0;}
+.wodForm > table{width:100%;}
+.wodForm > table td:first-child{width:40%;text-align:right;padding-right:10px;}
+.wodForm > table td:last-child{width:60%;vertical-align:top;}
+.wodForm > table tr + tr td{padding-top:10px;}
+.wodForm input{display:block;width:100%;padding:2px 4px 1px 4px;line-height:16px;color:#777;border-left:1px solid #ababab;border-right:1px solid #ababab;border-top:1px solid #707070;border-bottom:1px solid #cecece;background:white URL(../images/inputBg.png) repeat-x;}
+.wodForm input:active,.wodForm input:focus{outline:0;}
 .wodForm .buttonHolder{margin-top:20px;}
 .wodTable{background:white;width:100%;height:100%;}
 .wodTable .wodThead{color:#454545;font-weight:bold;height:20px;overflow:hidden;line-height:18px;border-top:1px solid #cbcbcb;border-bottom:1px solid #c8c8c8;background:-moz-linear-gradient(top,#e2e2e2,#d0d0d0);background:-webkit-linear-gradient(top,#e2e2e2,#d0d0d0);background:-o-linear-gradient(top,#e2e2e2,#d0d0d0);background:-ms-linear-gradient(top,#e2e2e2,#d0d0d0);background:linear-gradient(top,#e2e2e2,#d0d0d0);}

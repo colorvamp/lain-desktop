@@ -3,14 +3,12 @@
 	$HERE_localhost = $_SERVER['SERVER_NAME'] == 'localhost';
 	if(substr($_SERVER['SERVER_NAME'],0,7) == '192.168'){$HERE_localhost = true;}
 
-	$r = preg_match('/(?<projectName>[^\/]+.com)/',$_SERVER['SCRIPT_FILENAME'],$m);
-	if(!$r){echo 'Unable to find the projectName';exit;}
-	$projectName = $m['projectName'];
-	$GLOBALS['indexURL'] = 'http://'.$_SERVER['SERVER_NAME'].(($HERE_localhost) ? '/testing/'.$projectName : '');
+	$GLOBALS['indexURL'] = 'http://'.$_SERVER['SERVER_NAME'];
+	if($HERE_localhost){$filepath = substr(realPath(__FILE__),strlen($_SERVER['DOCUMENT_ROOT']));$filepath = dirname($filepath);$GLOBALS['indexURL'] .= $filepath;}
 	$GLOBALS['baseURL'] = $GLOBALS['indexURL'].'/';
 
 	$params = parse_url($_SERVER['REQUEST_URI']);$params = $params['path'];
-	if($HERE_localhost){$params = substr($params,strlen('/testing/'.$projectName));}
+	if($HERE_localhost){$params = substr($params,strlen($filepath));}
 	$controllersBase = dirname(__FILE__).'/resources/controllers/';
 
 	/* INI-loading other resources */
