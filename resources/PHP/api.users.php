@@ -37,17 +37,19 @@
 		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
 		$user = users_getSingle('(userMail = \''.$data['userMail'].'\')',array('db'=>$db));
 		$user = array_merge($user,array('userCode'=>$userCode));
-		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('OK'=>false,'errno'=>$GLOBALS['DB_LAST_ERRNO'],'error'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['users']['table']);sqlite3_close($db);}
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['users']['table']);sqlite3_close($db);}
 		return $user;
 	}
 	function users_getSingle($whereClause = false,$params = array()){
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['users']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		if(!isset($params['indexBy'])){$params['indexBy'] = 'userMail';}
 		$r = sqlite3_getSingle($GLOBALS['api']['users']['table'],$whereClause,$params);
 		if($shouldClose){sqlite3_close($params['db']);}
 		return $r;
 	}
 	function users_getWhere($whereClause = false,$params = array()){
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['users']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
+		if(!isset($params['indexBy'])){$params['indexBy'] = 'userMail';}
 		$r = sqlite3_getWhere($GLOBALS['api']['users']['table'],$whereClause,$params);
 		if($shouldClose){sqlite3_close($params['db']);}
 		return $r;

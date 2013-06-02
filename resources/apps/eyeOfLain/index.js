@@ -3,7 +3,7 @@ VAR_apps.eyeOfLain = {
 		if(!VAR_apps.eyeOfLain.vars){VAR_apps.eyeOfLain.vars = {wCounter:0,wHolder:holder,wList:$A([]),cList:$A([])};}
 		if(params && params.tagName && params.tagName == 'LI'){VAR_apps.eyeOfLain.client_createViewer(params);return;}
 	},
-	appKill: function(){VAR_apps.eyeOfLain.vars.wList.each(function(w){window_destroy(w);});},
+	appKill: function(){VAR_apps.eyeOfLain.vars.wList.each(function(w){_wodern.window_destroy(w);});},
 	wList_removeElem: function(el){this.vars.wList.each(function(w,n){if(w == el){this.vars.wList.splice(n,1);}}.bind(this));},
 	wList_append: function(w){VAR_apps.eyeOfLain.vars.wList.push(w);},
 	onDropElement: function(iconElem,w){

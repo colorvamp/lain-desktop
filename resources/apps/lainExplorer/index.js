@@ -5,7 +5,7 @@ VAR_apps.lainExplorer = {
 		if(params && params.tagName && params.tagName == 'LI'){var iProp = _desktop.icon_getProperties(params);VAR_apps.lainExplorer.createExplorer(iProp);return;}
 		if(params && params.constructor == String){VAR_apps.lainExplorer.createExplorer(params);return;}
 	},
-	appKill: function(){this.vars.wList.each(function(w){window_destroy(w);}.bind(this));},
+	appKill: function(){this.vars.wList.each(function(w){_wodern.window_destroy(w);}.bind(this));},
 	wList_removeElem: function(el){this.vars.wList.each(function(w,n){if(w == el){this.vars.wList.splice(n,1);}}.bind(this));},
 	createExplorer: function(path){
 //FIXME: hay que pasarlo a icon
@@ -75,7 +75,7 @@ $C('LI',{className:'icon_folder_add',innerHTML:'Create new folder',onclick:funct
 
 			/* Calculate the height of an iconCanvas, if there is no icons */
 			_desktop.iconCanvas_autoResize(iconCanvas);
-		}.bind(this));
+		});
 	},
 	list_upOneLevel: function(iconCanvas){
 		if(iconCanvas.innerPath == ''){return;}

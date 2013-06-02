@@ -6,21 +6,16 @@
 		<b class="lainLeyend">LAIN Project ~12.10 "REBIRTH" by sombra2eternity</b>
 		<div id='lainMenu'>
 			<div id='lainAppsMenu' onclick='menu_switch(this);'>
-				<h1>Applications</h1>
-				<ul>
-					<li onclick="launchApp('greenEnergy',launchApp_createHolder('greenEnergy'));">green Energy</li>
-					<li onclick="launchApp('lainJukebox',launchApp_createHolder('lainJukebox'));">Lain Jukebox</li>
-					<li onclick="launchApp('melodiamePlayer',launchApp_createHolder('melodiamePlayer'));">Melodiame Player</li>
-					<li onclick="launchApp('synaptic',launchApp_createHolder('synaptic'));">Synaptic</li>
-				</ul>
+				<h1><i class="icon-cogs"></i> Applications</h1>
+				<ul>{%HTML_apps%}</ul>
 			</div>
 			<div id='lainPlacesMenu' onclick='menu_switch(this);'>
-				<h1>Places</h1>
+				<h1><i class="icon-folder-close"></i> Places</h1>
 				<ul id='lainPlacesMenu_itemList'>
 					<li class='icon_desktop' onclick='launchApp("lainExplorer",launchApp_createHolder("lainExplorer"),"native:drive:/");'>Desktop</li>
 					<li class='icon_desktop' onclick='launchApp("lainExplorer",launchApp_createHolder("lainExplorer"),"native:trash:/");'>Trash</li>
 					<?php //echo desktop_placesToCanvas(); ?>
-					<li class='icon_insert_link dropLeyend'>Drop folders here</li>
+					<li class='dropLeyend'><i class="icon-link"></i> Drop folders here</li>
 				</ul>
 			</div>
 		</div>

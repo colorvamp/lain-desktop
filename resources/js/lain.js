@@ -2,34 +2,11 @@ var VAR_lain = {'bodyWidth':0,'bodyHeight':0};
 var lWindows = false;
 var VAR_MIMES = {'folder':'lainExplorer','image/jpeg':'eyeOfLain','image/png':'eyeOfLain','application/ogg':'melodiamePlayer','application/ogv':'lainPlayer'};
 
-function window_create(id,style,holder){
-	if($_('wod_'+id)){return $_('wod_'+id);}
-	if(!style){var style = {};}
-	var wContainer = (style.wContainer) ? style.wContainer : false;if(style.wContainer){style.wContainer = false;}
-	extend(style,{'id':'wod_'+id,className:'wodern dragable'+(style.className ? ' '+style.className : ''),'.zIndex':_desktop.window_getWindowZ()});
-	var w = $C('DIV',style);
-	w.onclick = function(e){_desktop.window_signals_click(e,w);};
-	w.windowBorder = $C('DIV',{className:'wodThemeBorder'},w);
-	$C('DIV',{className:'wodThemeResize',onmousedown:_wodern.resize_mousedown,'w':w},w.windowBorder);
-	w.titleContainer = $C('DIV',{className:'wodThemeTitle'},w.windowBorder);
-	w.titleContainer.onmousedown = _littleDrag.onMouseDown;
-	if(style.wodTitle){$C('H1',{className:'wodTitle','id':'wod_'+id+'_title',innerHTML:style.wodTitle},w.titleContainer);}
-	$C('IMG',{className:'wodThemeTitleButton wodButtonClose',src:'r/images/t.gif',onmousedown:function(e){e.stopPropagation();},onclick:function(){window_destroy(w);}},w.titleContainer);
-	if(wContainer){w.appendChild(wContainer);window_container_init(wContainer);}
-	w.windowContainer = (wContainer) ? wContainer : window_container(w.windowBorder);
-	_wodern.position_get(w);
-	if(holder){holder.appendChild(w);}
-	return w;
-}
+function window_create(id,style,holder){return _wodern.window_create(id,style,holder);}
 function window_container(w){return $C('DIV',{className:'wodThemeContainer contractable'},w);}
 function window_container_init(w){
 	var menuItems = w.$L('wodMenuItem');
 	if(menuItems.length){$each(menuItems,function(k,menuItem){menuItem.onclick = function(){_desktop.menu_show(menuItem);}});}
-}
-function window_destroy(el,ev){
-	while(el.parentNode && !el.className.match(/^wodern( |$)/)){el = el.parentNode;}if(!el.parentNode){return;}
-	if(el.beforeRemove){el.beforeRemove();};var afterRemove = function(){};if(el.afterRemove){afterRemove=el.afterRemove;}
-	el.parentNode.removeChild(el);if(ev){ev.stopPropagation();}afterRemove();
 }
 
 function OnDragStart(event){
@@ -128,8 +105,9 @@ function menu_switch(el){
 
 var VAR_apps = {};
 var VAR_appsPath = 'resources/apps/';
-function launchApp(appName,holder,params){
+function launchApp(appName,params){
 	var pool = 'r/apps/';
+	var holder = launchApp_createHolder(appName);
 	if(VAR_apps[appName]){VAR_apps[appName].init(holder,params);return;}
 	$each(['js','css'],function(k,v){include_once(pool+appName+'/index.'+v,v);});
 	$execWhenExists('VAR_apps.'+appName+'.init',[holder,params]);
@@ -377,7 +355,7 @@ var _desktop = {
 		var iProp = _desktop.icon_getProperties(iconElem);
 		if(iProp.fileMime == 'application/ogg' && iProp.fileName.match(/ogv$/)){iProp.fileMime = 'application/ogv';}
 		if(!(appName = VAR_MIMES[iProp.fileMime])){return false;}
-		launchApp(appName,launchApp_createHolder(appName),iconElem);
+		launchApp(appName,iconElem);
 	},
 	desktop_drivePARSENAME: function(driveFile){
 		var protocol = driveFile.substring(0,6);
@@ -640,7 +618,7 @@ var _desktop = {
 		//FIXME: quiza si el baseDrive tiene protocol sobreescribir el icono
 		if(!placeIcon){placeIcon = 'folder';}
 		var h = $_('lainPlacesMenu_itemList');
-		var li = $C('LI',{className:'icon_'+placeIcon+' '+baseDrive,innerHTML:placeName,onclick:function(){VAR_apps['lainExplorer'].createExplorer(placePath);}});
+		var li = $C('LI',{className:'icon_'+placeIcon+' '+baseDrive,innerHTML:placeName,onclick:function(){launchApp('lainExplorer',placePath);}});
 		//FIXME: efectos de transición
 		h.insertBefore(li,h.lastChild.previousSibling);
 	},

@@ -1,5 +1,5 @@
 html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden;}
-*{font-family: "Albany AMT", sans-serif;font-size:10px;margin:0;padding:0;list-style:none;}
+*{font-family: "Albany AMT", sans-serif;font-size:10px;margin:0;padding:0;list-style:none;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;}
 a{text-decoration:none;}
 i.floatSeparator{display:block;clear:both;}
 .hidden{display:none;}
@@ -50,9 +50,8 @@ div#lainMenu > div > ul > li{padding:2px 10px;padding-left:22px;margin:0 10px;wh
 div#lainMenu > div > ul > li:hover{color:#999;}
 div#lainMenu > div.visible > ul{display:block;}
 div#lainMenu > div#lainAppsMenu > ul > li{background:URL(../images/icons/page_gear.png) left center no-repeat;}
-div#lainMenu > div#lainPlacesMenu > ul > li{background:URL(../images/icons/database.png) left center no-repeat;}
-div#lainMenu > div#lainPlacesMenu > ul > li:last-child{background-position:8px center;border:1px dashed #AAA;padding:2px 8px 2px 30px;border-radius:5px;margin:8px 10px 4px 10px;}
-div#lainMenu > div#lainPlacesMenu > ul > li > i:first-child{display:none;}
+div#lainMenu > div#lainPlacesMenu > ul > li{background-position:left center;background-repeat:no-repeat;}
+div#lainMenu > div#lainPlacesMenu > ul > li:last-child{background-position:8px center;border:1px dashed #AAA;padding:2px 8px 2px 8px;border-radius:5px;margin:8px 10px 4px 10px;}
 
 ul#systemTray{position:absolute;top:0;right:0px;font-size:11px;padding-right:10px;line-height:20px;color:white;}
 ul#systemTray > li{float:right;position:relative;background-position:center;background-repeat:no-repeat;font-size:inherit;}
@@ -80,14 +79,14 @@ div#lainDesktop ul#lainWindows > li > div{position:absolute;}
 
 
 .wodern{position:absolute;border:1px solid #cccbc9;border-top:1px solid #e1e1e3;background-color:#bdbdbd;border-radius:3px;box-shadow:0 2px 3px rgba(0,0,0,.7);}
-.wodThemeBorder{padding:2px;}
+.wodThemeBorder{padding:2px;height:100%;}
 .wodThemeResize{position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer;z-index:1;}
 .wodThemeTitle{position:relative;z-index:10;}
 .wodThemeTitle h1{cursor:default;line-height:20px;font-size:10px;padding:0 3px;}
 .wodThemeTitle img{position:absolute;}
 .wodThemeTitle img.wodButtonClose{right:3px;top:3px;width:16px;height:15px;background:URL(../images/wod/wodButton.png) left top no-repeat;}
-.wodThemeContainer{position:relative;font-size:0;z-index:10;}
-ul.wodMenuHolder{border-bottom:1px solid #999;padding:3px 0;margin-bottom:4px;}
+.wodThemeContainer{position:relative;height:-webkit-calc(100% - 20px);height:calc(100% - 20px);font-size:0;z-index:10;}
+ul.wodMenuHolder{border-bottom:1px solid #999;padding:3px 0;}
 ul.wodMenuHolder > li{display:inline-block;padding:0 5px;cursor:pointer;}
 ul.wodMenuHolder > li > ul{position:absolute;display:none;color:black;padding:5px 0;background:white;border-radius:3px;z-index:9;box-shadow:0 2px 3px rgba(0,0,0,.5);}
 ul.wodMenuHolder > li.selected > ul{display:block;}
@@ -128,10 +127,9 @@ img.icon32_application\/ogg{background:URL(../images/iconSet/audio-x-vorbis+ogg.
 img.icon32_image\/jpeg{background:URL(../images/iconSet/image-jpeg.png) no-repeat;}
 img.icon32_image\/png{background:URL(../images/iconSet/image-png.png) no-repeat;}
 
-.lainList{border:1px solid #c4c1bd;background:white;width:100%;min-height:100px;overflow-x:hidden;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;}
 table.dataTable{width:100%;margin-bottom:5px;}
 table.dataTable thead tr{height:17px;background:URL(../images/wod/dataTable_thead.png) repeat-x;line-height:16px;}
-table.dataTable thead tr > td{padding:0 5px;border-top:1px solid #707070;font-weight:bold;color:#454545;}
+table.dataTable thead tr > td{padding:0 5px;font-weight:bold;color:#454545;}
 table.dataTable thead tr > td:first-child{}
 table.dataTable tr{position:relative;background:white;}
 table.dataTable tr td{position:relative;}
@@ -139,6 +137,20 @@ table.dataTable tbody > tr{background-color:#fff;}
 table.dataTable tbody > tr:nth-child(even){background-color:#eee;}
 table.dataTable tbody > tr td{padding:0 5px;border-left:1px solid #d8d8d8;}
 table.dataTable tbody > tr td:first-child{}
+/* INI-WIDGETS */
+.wodContainer{height:100%;background-color:#aaa;background:-moz-linear-gradient(top,#ebebeb 0px,#fff 80px);background:-webkit-linear-gradient(top,#ebebeb 0px,#fff 80px);background:-o-linear-gradient(top,#ebebeb 0px,#fff 80px);background:-ms-linear-gradient(top,#ebebeb 0px,#fff 80px);background:linear-gradient(top,#ebebeb 0px,#fff 80px);}
+.wodMenuHolder + .wodContainer{height:-webkit-calc(100% - 20px);height:calc(100% - 20px);}
+.wodContainer h1.header{color:#464646;text-align:center;font-size:20px;line-height:30px;padding-top:10px;}
+.wodContainer p.header{color:#808080;text-align:center;padding-bottom:10px;}
+.wodContainer hr{height:1px;border:0;background:-moz-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:-webkit-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:-o-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:-ms-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);}
+.wodForm{padding:25px 30px;}
+.wodForm > div + div{margin-top:10px;}
+.wodForm > div > span{display:inline-block;width:40%;text-align:right;padding-right:10px;}
+.wodForm > div > div{display:inline-block;width:60%;}
+.wodForm > div > div > input{display:block;width:100%;padding:1px 4px 0 4px;line-height:16px;color:#777;border-left:1px solid #ababab;border-right:1px solid #ababab;border-top:1px solid #707070;border-bottom:1px solid #cecece;background:white URL(../images/inputBg.png) repeat-x;}
+.wodForm > div > div > input:active,.wodForm > div > div > input:focus{outline:0;}
+.wodForm .buttonHolder{margin-top:20px;}
+/* END-WIDGETS */
 
 
 
@@ -150,13 +162,13 @@ ul.systemForm > li{}
 ul.systemForm > li > span:first-child{position:absolute;}
 ul.systemForm > li > div{margin-left:50%;}
 
-	/*===INI-buttons===*/
+/*===INI-buttons===*/
 ul.buttonHolder{text-align:right;}
 ul.buttonHolder *{font-size:inherit;}
 ul.buttonHolder > li.button{display:inline-block;}
 ul.buttonHolder > li.button > div{margin:0 10px;}
-ul.buttonHolder > li.gnomeButton{line-height:19px;text-align:center;cursor:default;color:#666;-moz-border-image:URL(../images/buttons/LI_gnomeButtonUnpressed.png) 3 4 3 4 round round;-webkit-border-image:URL(../images/buttons/LI_gnomeButtonUnpressed.png) 3 4 3 4 round round;border-width:3px 4px;}
-ul.buttonHolder > li.gnomeButton:active{-moz-border-image:URL(../images/buttons/LI_gnomeButtonPressed.png) 3 4 3 4 round round;-webkit-border-image:URL(../images/buttons/LI_gnomeButtonPressed.png) 3 4 3 4 round round;border-width:3px 4px;}
+ul.buttonHolder > li.gnomeButton{line-height:19px;text-align:center;cursor:default;color:#666;border:1px solid #a09892;border-radius:3px;box-shadow:0 0 3px rgba(0,0,0,.3);background:-moz-linear-gradient(top,#fefdfc 0,#f8f5f4 50%,#f2eeec 50%,#ece8e5 100%);background:-webkit-linear-gradient(top,#fefdfc 0,#f8f5f4 50%,#f2eeec 50%,#ece8e5 100%);background:-o-linear-gradient(top,#fefdfc 0,#f8f5f4 50%,#f2eeec 50%,#ece8e5 100%);background:-ms-linear-gradient(top,#fefdfc 0,#f8f5f4 50%,#f2eeec 50%,#ece8e5 100%);background:linear-gradient(top,#fefdfc 0,#f8f5f4 50%,#f2eeec 50%,#ece8e5 100%);}
+ul.buttonHolder > li.gnomeButton:active{border:1px solid #958c83;box-shadow:0 0 3px rgba(0,0,0,.3),inset 0 1px 3px rgba(0,0,0,.3);background:-moz-linear-gradient(top,#ddd7ce 0,#ded5ce 50%,#d6cec6 50%,#d3cac1 100%);background:-webkit-linear-gradient(top,#ddd7ce 0,#ded5ce 50%,#d6cec6 50%,#d3cac1 100%);background:-o-linear-gradient(top,#ddd7ce 0,#ded5ce 50%,#d6cec6 50%,#d3cac1 100%);background:-ms-linear-gradient(top,#ddd7ce 0,#ded5ce 50%,#d6cec6 50%,#d3cac1 100%);background:linear-gradient(top,#ddd7ce 0,#ded5ce 50%,#d6cec6 50%,#d3cac1 100%);}
 
 ul.buttonHolder > li.gnomeButtonMini{line-height:9px;font-size:9px;text-align:center;cursor:default;color:#666;border-width:3px;-moz-border-image:URL(../images/buttons/LI_gnomeButtonMiniUnpressed.png) 3;-webkit-border-image:URL(../images/buttons/LI_gnomeButtonUnpressed.png) 3;}
 ul.buttonHolder > li.gnomeButtonMini:active{border-width:3px;-moz-border-image:URL(../images/buttons/LI_gnomeButtonMiniPressed.png) 3;-webkit-border-image:URL(../images/buttons/LI_gnomeButtonPressed.png) 3;}
@@ -174,38 +186,7 @@ ul.buttonHolder > li.gnomeButtonMini:active{border-width:3px;-moz-border-image:U
 	.wodInfoContainerCenter div.buttonFooter{clear:both;padding-top:3px;}
 	.wodInfoContainerCenter div.buttonFooter div.buttonFooterNode{position:relative;float:right;height:20px;line-height:20px;background:#e3e3e3;padding:0 5px;margin-left:5px;cursor:pointer;}
 
-		div.buttonHolder div.button{display:inline-block;}
-		/*osxPe*/
-		div.osxPeButtonUnpressed{line-height:20px;cursor:default;color:#494a4d;}
-		div.osxPeButtonUnpressed div.buttonLeft:first-child{background:URL(../images/buttons/osxPeButtonUnpressed.png) left top no-repeat;height:22px;padding-left:4px;}
-		div.osxPeButtonUnpressed div.buttonRight:first-child{background:URL(../images/buttons/osxPeButtonUnpressed.png) right -22px no-repeat;height:22px;padding-right:4px;text-align:center;}
-		div.osxPeButtonUnpressed div.buttonCenter:first-child{background:URL(../images/buttons/osxPeButtonUnpressed.png) left -44px repeat-x;height:22px;padding:0 2px;font-size:10px;}
-
-		div.osxPeButtonPressed{line-height:20px;cursor:default;color:#494a4d;}
-		div.osxPeButtonPressed div.buttonLeft:first-child{background:URL(../images/buttons/osxPeButtonPressed.png) left top no-repeat;height:22px;padding-left:4px;}
-		div.osxPeButtonPressed div.buttonRight:first-child{background:URL(../images/buttons/osxPeButtonPressed.png) right -22px no-repeat;height:22px;padding-right:4px;text-align:center;}
-		div.osxPeButtonPressed div.buttonCenter:first-child{background:URL(../images/buttons/osxPeButtonPressed.png) left -44px repeat-x;height:22px;padding:0 2px;font-size:10px;}
-		/*GNOME*/
-		div.gnomeButtonUnpressed{line-height:27px;text-align:center;cursor:default;color:#666;}
-		div.gnomeButtonUnpressed div.buttonLeft{background:URL(../images/buttons/gnomeButtonUnpressed.png) left top no-repeat;height:26px;padding-left:4px;}
-		div.gnomeButtonUnpressed div.buttonRight{background:URL(../images/buttons/gnomeButtonUnpressed.png) right -26px no-repeat;height:26px;padding-right:4px;}
-		div.gnomeButtonUnpressed div.buttonCenter{background:URL(../images/buttons/gnomeButtonUnpressed.png) left -52px repeat-x;height:26px;padding:0 4px;font-size:10px;}
-
-		div.gnomeButtonPressed{line-height:27px;text-align:center;cursor:default;color:#666;}
-		div.gnomeButtonPressed div.buttonLeft{background:URL(../images/buttons/gnomeButtonPressed.png) left top no-repeat;height:26px;padding-left:4px;}
-		div.gnomeButtonPressed div.buttonRight{background:URL(../images/buttons/gnomeButtonPressed.png) right -26px no-repeat;height:26px;padding-right:4px;}
-		div.gnomeButtonPressed div.buttonCenter{background:URL(../images/buttons/gnomeButtonPressed.png) left -52px repeat-x;height:26px;padding:0 4px;font-size:10px;}
-		/*GNOME-mini*/
-		div.gnomeButtonMiniUnpressed{line-height:16px;text-align:center;cursor:default;color:#666;}
-		div.gnomeButtonMiniUnpressed div.buttonLeft{background:URL(../images/buttons/gnomeButtonMiniUnpressed.png) left top no-repeat;height:15px;padding-left:4px;}
-		div.gnomeButtonMiniUnpressed div.buttonRight{background:URL(../images/buttons/gnomeButtonMiniUnpressed.png) right -15px no-repeat;height:15px;padding-right:4px;}
-		div.gnomeButtonMiniUnpressed div.buttonCenter{background:URL(../images/buttons/gnomeButtonMiniUnpressed.png) left -30px repeat-x;height:15px;padding:0 3px;font-size:9px;}
-
-		div.gnomeButtonMiniPressed{line-height:16px;text-align:center;cursor:default;color:#666;}
-		div.gnomeButtonMiniPressed div.buttonLeft{background:URL(../images/buttons/gnomeButtonMiniPressed.png) left top no-repeat;height:15px;padding-left:4px;}
-		div.gnomeButtonMiniPressed div.buttonRight{background:URL(../images/buttons/gnomeButtonMiniPressed.png) right -15px no-repeat;height:15px;padding-right:4px;}
-		div.gnomeButtonMiniPressed div.buttonCenter{background:URL(../images/buttons/gnomeButtonMiniPressed.png) left -30px repeat-x;height:15px;padding:0 3px;font-size:9px;}
-	/*===FIN-buttons===*/
+/*===FIN-buttons===*/
 
 	div#mouseTrayIcon{position:absolute;right:180px;top:1px;width:20px;height:20px;}
 	div#mouseTrayIcon img{background:URL(../images/devices/mouse.png) no-repeat;width:20px;height:20px;}

@@ -35,7 +35,26 @@
 				list($fileName,$fileRoute) = $args;
 //echo $fileRoute,'/',$fileName;exit;
 				$r = fs_file_stream($fileName,$fileRoute);
-				print_r($r);
+				exit;
+		}}
+		exit;
+	}
+
+	function api_users(){
+//FIXME: modes?
+		include_once('api.users.php');
+		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
+			case 'get':
+				//FIXME: selectString
+				$users = users_getWhere(1,array());
+				echo json_encode($users);
+				break;
+			case 'create':
+				if(!isset($_POST['userPass']) || !isset($_POST['userPassR'])){echo json_encode(array('errorDescription'=>'PASSWORDS_NOT_MATCH','file'=>__FILE__,'line'=>__LINE__));}
+				if($_POST['userPass'] !== $_POST['userPassR']){echo json_encode(array('errorDescription'=>'PASSWORDS_NOT_MATCH','file'=>__FILE__,'line'=>__LINE__));}
+				$user = users_create($_POST);
+				//FIXME: ya de paso activar el usuario
+				echo json_encode($user);
 				break;
 		}}
 		exit;
@@ -57,9 +76,6 @@
 		}}
 	}
 
-/*$_POST['subcommand'] = 'sourcesReload';
-api_apt();
-exit;*/
 	function api_apt(){
 		include_once('api.apt.php');
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
@@ -74,5 +90,6 @@ exit;*/
 				echo json_encode($r);
 				break;
 		}}
+		exit;
 	}
 ?>

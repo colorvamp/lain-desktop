@@ -1,7 +1,14 @@
 <?php
 	function index_main(){
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
+		include_once('api.desktop.php');
 		include_once('api.fs.php');
+		$apps = desktop_app_getWhere('(appStatus = 1)');
+		//FIXME: hack
+		if(!$apps){$apps = array(array('appCode'=>'synaptic','appName'=>'Synaptic'),array('appCode'=>'users','appName'=>'Users and groups'));}
+		$HTML_apps = '';foreach($apps as $app){$HTML_apps .= J.'<li onclick="launchApp(\''.$app['appCode'].'\');">'.$app['appName'].'</li>'.N;}
+		$TEMPLATE['HTML_apps'] = $HTML_apps;
+
 		$desktopIcons = fs_folder_list('/');
 		$HTML_icons = '';
 		foreach($desktopIcons['folders'] as $f){$HTML_icons .= J.'<li class="desktop_icon wodIcon icon32_folder dragable" onmousedown="_littleDrag.onMouseDown(event);"><i>'.json_encode($f).'</i><div class="icon32_imgHolder"><img src="r/images/t.gif" class="icon32_folder"/></div><div class="icon32_textHolder">'.$f['fileName'].'</div></li>'.N;}

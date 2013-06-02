@@ -175,26 +175,6 @@
 	function schedulerRestart(){clearInterval(window.scheduler);window.scheduler = setInterval(schedulerExec,VAR_schedulerDelay);}
 	window.scheduler = setInterval(schedulerExec,VAR_schedulerDelay);
 
-	function createThemeWindow(id){
-		if($_("wod_"+id)){return $_("wod_"+id);}
-		var w = $C("DIV",{className:"wodTheme",id:"wod_"+id});
-		var d = $C("DIV",{className:"wodThemeHeaderLeft"},w);
-		var d = $C("DIV",{className:"wodThemeHeaderRight"},d);
-			$C("DIV",{className:"wodThemeHeaderCenter"},d);
-		var d = $C("DIV",{className:"wodThemeContainerLeft"},w);
-		var d = $C("DIV",{className:"wodThemeContainerRight"},d);
-			$C("DIV",{className:"wodThemeContainerCenter",id:"wod_"+id+"_container",".position":"relative"},d);
-		var d = $C("DIV",{className:"wodThemeFooterLeft"},w);
-		var d = $C("DIV",{className:"wodThemeFooterRight"},d);
-			$C("DIV",{className:"wodThemeFooterCenter"},d);
-		return w;
-	}
-	function window_destroy(el,ev){
-		while(el.parentNode && el.className!="wodTheme"){el = el.parentNode;}if(!el.parentNode){return;}
-		var afterRemove = function(){};if(el.afterRemove){afterRemove=el.afterRemove;}
-		el.parentNode.removeChild(el);if(ev){ev.stopPropagation();}afterRemove();
-	}
-
 	var VAR_wodInfo = {zIndex:40,marginRight:1};
 	function info_create(id,style,holder,indicatorOffsetLeft){
 		var prev = $_('info_'+id);if(prev){if(holder){holder.appendChild(prev);}return prev;}
