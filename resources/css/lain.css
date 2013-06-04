@@ -139,7 +139,7 @@ table.dataTable tbody > tr:nth-child(even){background-color:#eee;}
 table.dataTable tbody > tr td{padding:0 5px;border-left:1px solid #d8d8d8;}
 table.dataTable tbody > tr td:first-child{}
 /* INI-WIDGETS */
-.wodContainer{height:100%;background-color:#aaa;background:-moz-linear-gradient(top,#ebebeb 0px,#fff 80px);background:-webkit-linear-gradient(top,#ebebeb 0px,#fff 80px);background:-o-linear-gradient(top,#ebebeb 0px,#fff 80px);background:-ms-linear-gradient(top,#ebebeb 0px,#fff 80px);background:linear-gradient(top,#ebebeb 0px,#fff 80px);}
+.wodContainer{height:100%;overflow-y:auto;background-color:#aaa;background:-moz-linear-gradient(top,#ebebeb 0px,#fff 80px);background:-webkit-linear-gradient(top,#ebebeb 0px,#fff 80px);background:-o-linear-gradient(top,#ebebeb 0px,#fff 80px);background:-ms-linear-gradient(top,#ebebeb 0px,#fff 80px);background:linear-gradient(top,#ebebeb 0px,#fff 80px);}
 .wodMenuHolder + .wodContainer{height:-webkit-calc(100% - 20px);height:calc(100% - 20px);}
 .wodContainer h1.header{color:#464646;text-align:center;font-size:20px;line-height:30px;padding-top:10px;}
 .wodContainer p.header{color:#808080;text-align:center;padding-bottom:10px;}
@@ -156,11 +156,12 @@ table.dataTable tbody > tr td:first-child{}
 .wodForm input{display:block;width:100%;padding:2px 4px 1px 4px;line-height:16px;color:#777;border-left:1px solid #ababab;border-right:1px solid #ababab;border-top:1px solid #707070;border-bottom:1px solid #cecece;background:white URL(../images/inputBg.png) repeat-x;}
 .wodForm input:active,.wodForm input:focus{outline:0;}
 .wodForm .buttonHolder{margin-top:20px;}
-.wodTable{background:white;width:100%;height:100%;}
-.wodTable .wodThead{color:#454545;font-weight:bold;height:20px;overflow:hidden;line-height:18px;border-top:1px solid #cbcbcb;border-bottom:1px solid #c8c8c8;background:-moz-linear-gradient(top,#e2e2e2,#d0d0d0);background:-webkit-linear-gradient(top,#e2e2e2,#d0d0d0);background:-o-linear-gradient(top,#e2e2e2,#d0d0d0);background:-ms-linear-gradient(top,#e2e2e2,#d0d0d0);background:linear-gradient(top,#e2e2e2,#d0d0d0);}
-.wodTable .wodTbody{height:-webkit-calc(100% - 20px);height:calc(100% - 18px);background:white;overflow-y:auto;}
+.wodTable{background:white;width:100%;height:100%;min-height:50px;}
+.wodTable .wodThead{color:#454545;font-weight:bold;height:20px;overflow:hidden;line-height:18px;border-top:1px solid #cbcbcb;border-bottom:1px solid #c8c8c8;background:-moz-linear-gradient(top,#e2e2e2,#e6e6e6 30%,#d5d5d5 90%,#e4e4e2 94%,#e4e4e2);background:-webkit-linear-gradient(top,#e2e2e2,#e6e6e6 30%,#d5d5d5 90%,#e4e4e2 94%,#e4e4e2);background:-o-linear-gradient(top,#e2e2e2,#e6e6e6 30%,#d5d5d5 90%,#e4e4e2 94%,#e4e4e2);background:-ms-linear-gradient(top,#e2e2e2,#e6e6e6 30%,#d5d5d5 90%,#e4e4e2 94%,#e4e4e2);background:linear-gradient(top,#e2e2e2,#e6e6e6 30%,#d5d5d5 90%,#e4e4e2 94%,#e4e4e2);}
+.wodTable .wodThead .wodTd{vertical-align:baseline;}
+.wodTable .wodTbody{height:-webkit-calc(100% - 20px);height:calc(100% - 20px);background:white;overflow-y:auto;}
 .wodTable .wodTr:nth-child(even){background-color:#eee;}
-.wodTable .wodTd{display:inline-block;color:#222;padding:0 4px;border-left:1px solid #d8d8d8;}
+.wodTable .wodTd{display:inline-block;line-height:16px;color:#222;padding:0 4px;vertical-align:text-top;border-left:1px solid #d8d8d8;overflow:hidden;}
 /* END-WIDGETS */
 
 

@@ -4,7 +4,7 @@
 	if(substr($_SERVER['SERVER_NAME'],0,7) == '192.168'){$HERE_localhost = true;}
 
 	$GLOBALS['indexURL'] = 'http://'.$_SERVER['SERVER_NAME'];
-	if($HERE_localhost){$filepath = substr(realPath(__FILE__),strlen($_SERVER['DOCUMENT_ROOT']));$filepath = dirname($filepath);$GLOBALS['indexURL'] .= $filepath;}
+	if($HERE_localhost){$filepath = substr(realPath(__FILE__), strlen(realPath($_SERVER['DOCUMENT_ROOT'])) , -(strlen(basename(__FILE__))+1) );$GLOBALS['indexURL'] .= $filepath;}
 	$GLOBALS['baseURL'] = $GLOBALS['indexURL'].'/';
 
 	$params = parse_url($_SERVER['REQUEST_URI']);$params = $params['path'];

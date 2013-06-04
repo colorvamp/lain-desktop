@@ -59,7 +59,10 @@ var _wodern = {
 	resize_mousemove_right: function(e,el,w){var eL = e.clientX-el.startX;w.style.width = (w.startWidth+eL)+'px';},
 	resize_mousemove_top: function(e,el,w){var eT = e.clientY-el.startY;w.style.height = (w.startHeight-eT)+'px';w.style.top = (w.startTop+eT)+'px';},
 	resize_mousemove_bottom: function(e,el,w){var eT = e.clientY-el.startY;w.style.height = (w.startHeight+eT)+'px';},
-	resize_mouseup: function(e,el){document.removeEventListener('mousemove',el.mousemovehandler,true);document.removeEventListener('mouseup',el.mouseuphandler,true);_wodern.position_set(el.w);},
+	resize_mouseup: function(e,el){
+		document.removeEventListener('mousemove',el.mousemovehandler,true);document.removeEventListener('mouseup',el.mouseuphandler,true);_wodern.position_set(el.w);
+		var _tables = el.w.windowContainer.$L('wodTable');$each(_tables,function(k,table){if(table.reflow){table.reflow();}});
+	},
 	position_set: function(w){
 		var pos = $getOffsetPosition(w);
 		//FIXME: en algún punto necesitaremos posicionamiento por zonas y necesitaremos los valores right y bottom

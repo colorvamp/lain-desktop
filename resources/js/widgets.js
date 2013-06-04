@@ -23,11 +23,11 @@ var _wodTable = {
 			'reflow': function(params){return _wodTable.reflow(wodTable);},
 			'columns':{
 				'childs': [],
-				'add': function(params){return _wodTable.column_add(wodTable,params);}
+				'add': function(){return _wodTable.column_add.apply(wodTable,arguments);}
 			},
 			'rows':{
 				'childs': [],
-				'add': function(params){return _wodTable.row_add(wodTable,params);}
+				'add': function(){return _wodTable.row_add.apply(wodTable,arguments);}
 			}
 		});
 		extend(wodTable,{
@@ -38,6 +38,7 @@ var _wodTable = {
 	reflow: function(wodTable){
 		var width = wodTable.tbody.clientWidth;
 		wodTable.vars.hasScrollbars = (wodTable.tbody.scrollHeight > wodTable.tbody.clientHeight);
+		//FIXME: normalizar todos los heights de cada row al mayor de ellos
 
 		var reservedWidth = 0;var columnsAuto = 0;
 		/* Calculate the reserved space first */
@@ -58,23 +59,35 @@ var _wodTable = {
 		$each(wodTable.rows.childs,function(j,row){$each(row.childNodes,function(k,v){if(!v.nodeType){return;}v.style.width = wodTable.columns.childs[k].width;});});
 	},
 	header_add: function(wodTable){var el = $C('DIV',{className:'wodThead'});$C('DIV',{className:'wodTr'},el);wodTable.insertBefore(el,wodTable.firstChild);wodTable.thead = el;},
-	column_add: function(wodTable,params){
-		/* params = {'columName':'TEXT','columnIndex':'INTEGER'} */
-		//FIXME: comprobar args
-		if(params.columnName && !wodTable.thead){_wodTable.header_add(wodTable);}
-		//FIXME: no hacemos push si hay undex
-		extend(params,{'widthCalc':'auto'});// auto | fixed
-		wodTable.columns.childs.push(params);
-		if(params.columnName){$C('DIV',{className:'wodTd',innerHTML:params.columnName},wodTable.thead.firstChild);}
+	column_add: function(params){
+		/* params = {'columName':'TEXT','columnIndex':'INTEGER'},{...} */
+		var wodTable = this;
+		$each(arguments,function(k,v){
+			/* If any of the arguments has a name, we need a header */
+			if(v.columnName && !wodTable.thead){_wodTable.header_add(wodTable);}
+			extend(v,{'widthCalc':'auto'});// auto | fixed
+			if(v.columnIndex){wodTable.columns.childs.splice(v.columnIndex,0,v);}
+			else{wodTable.columns.childs.push(v);}
+		});
 
+		if(wodTable.thead){wodTable.thead.firstChild.empty();$each(wodTable.columns.childs,function(k,v){
+			var td = $C('DIV',{className:'wodTd',innerHTML:((v.columnName) ? v.columnName : '')});
+			if(v.columnIndex && wodTable.thead.firstChild.childNodes[v.columnIndex]){wodTable.thead.insertBefore(td,wodTable.thead.firstChild.childNodes[v.columnIndex]);return;}
+			wodTable.thead.firstChild.appendChild(td);
+		});}
+
+		$each(wodTable.rows.childs,function(j,row){$C('DIV',{className:'wodTd'},row);});
 		wodTable.reflow();
 		return true;
 	},
-	row_add: function(wodTable,params){
-		/* params = ['value-1','value-n'] */
+	row_add: function(params){
+		/* params = 'value-1','value-n' */
+		var wodTable = this;
+		var args = arguments;
 		var tr = $C('DIV',{className:'wodTr'},wodTable.tbody);
-		$each(params,function(k,v){$C('DIV',{className:'wodTd','.width':wodTable.columns.childs[k].width,innerHTML:v},tr);});
-		//FIXME: no hacemos push si hay undex
+		$each(wodTable.columns.childs,function(k,v){var value = args[k] ? args[k] : '';$C('DIV',{className:'wodTd','.width':wodTable.columns.childs[k].width,innerHTML:value},tr);});
+
+		//FIXME: no hacemos push si hay index
 		wodTable.rows.childs.push(tr);
 
 		var hasScrollbars = (wodTable.tbody.scrollHeight > wodTable.tbody.clientHeight);

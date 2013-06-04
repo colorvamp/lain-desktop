@@ -55,25 +55,16 @@ alert(print_r(r));
 			});
 		};
 	},
-	client_users_addRow: function(tbody,row){
-		var tr = $C('TR',{},tbody);
-		var td = $C('TD',{innerHTML:row.userMail},tr);
-		var td = $C('TD',{innerHTML:row.userName},tr);
-		var td = $C('TD',{innerHTML:row.userRegistered},tr);
-	},
 	client_users_list: function(cont){
 		cont.empty();
-		var table = $C('TABLE',{'className':'dataTable','cellPadding':0,'cellSpacing':0},cont);
-		var thead = $C('TR',{},$C('THEAD',{},table));
-		var titles = ['Mail','Name','Registered'];
-		$each(titles,function(k,title){$C('TD',{innerHTML:title},thead);});
-		var tbody = $C('TBODY',{},table);
+		var table = new widget('_wodTable');
+		cont.appendChild(table);
+		table.columns.add({'columnName':'Mail'},{'columnName':'Name'},{'columnName':'Registered'});
 
 		ajaxPetition('api/users','subcommand=get',function(ajax){
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 			var wContainer = VAR_apps.users.vars.wContainer;if(!wContainer){return false;}
-			var tbody = wContainer.$T('TBODY')[0];
-			$each(r,function(k,user){VAR_apps.users.client_users_addRow(tbody,user);});
+			$each(r,function(k,user){table.rows.add(user['userMail'],user['userName'],user['userRegistered']);});
 		});
 	},
 	menu_reload: function(){
