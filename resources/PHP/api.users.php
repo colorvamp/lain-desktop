@@ -40,6 +40,26 @@
 		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['users']['table']);sqlite3_close($db);}
 		return $user;
 	}
+	function users_update($userMail,$data = array(),$db = false){
+		include_once('inc.strings.php');
+		$data['_userMail_'] = $userMail;
+		if(isset($data['userBirth_day']) && isset($data['userBirth_month']) && isset($data['userBirth_year'])){$data['userBirth'] = $data['userBirth_year'].'-'.$data['userBirth_month'].'-'.$data['userBirth_day'];unset($data['userBirth_year'],$data['userBirth_month'],$data['userBirth_day']);}
+
+		/* VALIDATION */
+		if(isset($data['userName'])){$data['userName'] = preg_replace('/[^a-zA-ZáéíóúÁÉÍÓÚ, ]*/','',strings_UTF8Encode($data['userName']));}
+		if(isset($data['userPass'])){$data['userPass'] = sha1($data['userPass']);}
+		if(isset($data['userBirth'])){$data['userBirth'] = preg_replace('/[^0-9\-]*/','',$data['userBirth']);}
+		if(isset($data['userBirth']) && (!preg_match('/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/',$data['userBirth']) || strtotime($data['userBirth']) < 1)){return array('errorCode'=>2,'errorDescription'=>'USERBIRTH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		if(isset($data['userLat']) || isset($data['userLng'])){$data['userLocationUpdated'] = time();}
+
+		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['users']['db']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
+		$r = sqlite3_insertIntoTable($GLOBALS['api']['users']['table'],$data,$db);
+		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
+		$user = users_getSingle('(userMail = \''.$data['_userMail_'].'\')',array('db'=>$db));
+		if($shouldClose){sqlite3_close($db);}
+		if(isset($GLOBALS['user']) && $GLOBALS['user']['userMail'] == $userMail){$GLOBALS['user'] = $user;}
+		return $user;
+	}
 	function users_getSingle($whereClause = false,$params = array()){
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['users']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
 		if(!isset($params['indexBy'])){$params['indexBy'] = 'userMail';}
@@ -79,5 +99,9 @@
 		if(isset($_SESSION['user']) && is_array($_SESSION['user'])){$GLOBALS['user'] = $_SESSION['user'];$GLOBALS['userPath'] = '../db/users/'.$_SESSION['user']['userMail'].'/';return true;}
 		//FIXME: faltaría revisar cookies
 		return false;
+	}
+	function users_checkModes($mode){
+		if(!isset($GLOBALS['user'])){return false;}
+		return (strpos($GLOBALS['user']['userModes'],','.$mode.',') !== false);
 	}
 ?>

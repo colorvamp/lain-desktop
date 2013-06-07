@@ -41,7 +41,6 @@
 	}
 
 	function api_users(){
-//FIXME: modes?
 		include_once('api.users.php');
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
 			case 'get':
@@ -50,10 +49,13 @@
 				echo json_encode($users);
 				break;
 			case 'create':
-				if(!isset($_POST['userPass']) || !isset($_POST['userPassR'])){echo json_encode(array('errorDescription'=>'PASSWORDS_NOT_MATCH','file'=>__FILE__,'line'=>__LINE__));}
-				if($_POST['userPass'] !== $_POST['userPassR']){echo json_encode(array('errorDescription'=>'PASSWORDS_NOT_MATCH','file'=>__FILE__,'line'=>__LINE__));}
+				if(!users_checkModes('admin')){echo json_encode(array('errorDescription'=>'PREMISSION_DENIED','file'=>__FILE__,'line'=>__LINE__));break;}
+				if(!isset($_POST['userPass']) || !isset($_POST['userPassR'])){echo json_encode(array('errorDescription'=>'PASSWORDS_NOT_MATCH','file'=>__FILE__,'line'=>__LINE__));break;}
+				if($_POST['userPass'] !== $_POST['userPassR']){echo json_encode(array('errorDescription'=>'PASSWORDS_NOT_MATCH','file'=>__FILE__,'line'=>__LINE__));break;}
 				$user = users_create($_POST);
-				//FIXME: ya de paso activar el usuario
+				/* Activate the new user so he can log into the system */
+				//FIXME: no funciona
+				$r = users_update($user['userMail'],array('userStatus'=>1,'userCode'=>''));
 				echo json_encode($user);
 				break;
 		}}
