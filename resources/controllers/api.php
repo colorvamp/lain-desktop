@@ -54,9 +54,20 @@
 				if($_POST['userPass'] !== $_POST['userPassR']){echo json_encode(array('errorDescription'=>'PASSWORDS_NOT_MATCH','file'=>__FILE__,'line'=>__LINE__));break;}
 				$user = users_create($_POST);
 				/* Activate the new user so he can log into the system */
-				//FIXME: no funciona
 				$r = users_update($user['userMail'],array('userStatus'=>1,'userCode'=>''));
 				echo json_encode($user);
+				break;
+			case 'remove';
+				if(!users_checkModes('admin')){echo json_encode(array('errorDescription'=>'PREMISSION_DENIED','file'=>__FILE__,'line'=>__LINE__));break;}
+				if(!isset($_POST['users']) || empty($_POST['users'])){echo json_encode(array('errorDescription'=>'INVALID_INPUT','file'=>__FILE__,'line'=>__LINE__));break;}
+				$_POST['users'] = base64_decode($_POST['users']);
+				if(strpos($_POST['users'],'[') === 0){$_POST['users'] = json_decode($_POST['users'],1);}
+				//FIXME: con una conexion global a la base de datos funcionaría mejor
+				foreach($_POST['users'] as $userMail){
+					$r = users_remove($userMail);
+					if(isset($r['errorDescription'])){echo json_encode($r);exit;}
+				}
+				echo json_encode($_POST['users']);
 				break;
 		}}
 		exit;

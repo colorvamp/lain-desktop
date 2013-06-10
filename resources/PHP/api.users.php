@@ -40,6 +40,24 @@
 		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['users']['table']);sqlite3_close($db);}
 		return $user;
 	}
+	function users_remove($userMail,$db = false){
+		if(!preg_match('/^[a-z0-9\._\+\-]+@[a-z0-9\.\-]+\.[a-z]{2,6}$/',$userMail)){return array('errorDescription'=>'EMAIL_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+
+		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['users']['db']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
+		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM '.$GLOBALS['api']['users']['table'].' WHERE userMail = \''.$userMail.'\';';
+		$r = sqlite3_exec($GLOBALS['DB_LAST_QUERY'],$db);
+		$changes = $db->changes();
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['users']['table']);sqlite3_close($db);}
+		if(!$changes){return array('errorDescription'=>'USER_NOT_FOUND','file'=>__FILE__,'line'=>__LINE__);}
+
+		//FIXME: si existe la carpeta de usuario, debemos eliminarla tb
+		$userFolder = '../db/users/'.$userMail;
+		if(file_exists($userFolder)){
+
+		}
+
+		return true;
+	}
 	function users_update($userMail,$data = array(),$db = false){
 		include_once('inc.strings.php');
 		$data['_userMail_'] = $userMail;
@@ -56,7 +74,7 @@
 		$r = sqlite3_insertIntoTable($GLOBALS['api']['users']['table'],$data,$db);
 		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
 		$user = users_getSingle('(userMail = \''.$data['_userMail_'].'\')',array('db'=>$db));
-		if($shouldClose){sqlite3_close($db);}
+		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}$r = sqlite3_cache_destroy($db,$GLOBALS['api']['users']['table']);sqlite3_close($db);}
 		if(isset($GLOBALS['user']) && $GLOBALS['user']['userMail'] == $userMail){$GLOBALS['user'] = $user;}
 		return $user;
 	}

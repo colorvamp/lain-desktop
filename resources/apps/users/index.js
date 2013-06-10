@@ -5,19 +5,24 @@ VAR_apps.users = {
 		return true;
 	},
 	client: function(){
-		var w = window_create('users',{wodTitle:'Users and Groups',
+		var wContainer = window_container();
+		/* INI-MENU */
+		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},wContainer);
+		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'File'},wodMenuHolder));
+		$C('LI',{innerHTML:'<i class="icon-plus"></i> Add a new user',onclick:function(){VAR_apps.users.client_users_add(cont);}},ul);
+		$C('LI',{innerHTML:'<i class="icon-plus"></i> View users list',onclick:function(){VAR_apps.users.client_users_list(cont);}},ul);
+		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'Edit'},wodMenuHolder));
+		$C('LI',{innerHTML:'<i class="icon-remove"></i> Remove selected users',onclick:function(){VAR_apps.users.menu_edit_remove_checkeds(wContainer);}},ul);
+		/* END-MENU */
+
+		var w = window_create('users',{wodTitle:'Users and Groups','wContainer':wContainer,
 			beforeRemove:function(){},
 			onDropElement:function(elem){}
 		},VAR_apps.users.vars.wHolder);
-		/* app conteniner */
+		/* app container */
 		h = VAR_apps.users.vars.wContainer = w.windowContainer;
 
-		/* INI-MENU */
-		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},h);
-		var ul = $C('UL',{},$C('LI',{innerHTML:'File',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
-		$C('LI',{innerHTML:'<i class="icon-plus"></i> Add a new user',onclick:function(){VAR_apps.users.client_users_add(cont);}},ul);
-		$C('LI',{innerHTML:'<i class="icon-plus"></i> View users list',onclick:function(){VAR_apps.users.client_users_list(cont);}},ul);
-		/* END-MENU */
+
 		var cont = $C('DIV',{className:'wodContainer'},h);
 
 		/* Load the users list */
@@ -57,14 +62,33 @@ alert(print_r(r));
 	},
 	client_users_list: function(cont){
 		cont.empty();
-		var table = new widget('_wodTable');
+		var table = new widget('_wodTable',{'tableMode':'wodCheck'});
 		cont.appendChild(table);
 		table.columns.add({'columnName':'Mail'},{'columnName':'Name'},{'columnName':'Registered'});
 
 		ajaxPetition('api/users','subcommand=get',function(ajax){
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 			var wContainer = VAR_apps.users.vars.wContainer;if(!wContainer){return false;}
-			$each(r,function(k,user){table.rows.add(user['userMail'],user['userName'],user['userRegistered']);});
+			$each(r,function(k,user){table.rows.add(false,user['userMail'],user['userName'],user['userRegistered']);});
+		});
+	},
+	menu_edit_remove_checkeds: function(wContainer){
+		var wodTable = wContainer.$L('wodTable');if(!wodTable.length){return false;}
+		wodTable = wodTable.item(0);
+		var checkeds = wodTable.rows.getChecked();if(!checkeds.length){return false;}
+		var userMails = [];
+		$each(checkeds,function(k,v){var o = v.getValue();userMails.push(o[1]);});
+		/* Comm to the server */
+		ajaxPetition('api/users','subcommand=remove&users='+base64.encode(jsonEncode(userMails)),function(ajax){
+			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
+			var deletedUserMails = r;
+			var wodTable = wContainer.$L('wodTable');if(!wodTable.length){return false;}
+			wodTable = wodTable.item(0);
+			var rows = wodTable.rows.childs;if(!rows.length){return false;}
+			$each(rows,function(k,v){
+				var o = v.getValue();var userMail = o[1];
+				if(deletedUserMails.indexOf(userMail) > -1){ eEaseLeave(v,{'callback':function(el){el.parentNode.removeChild(el);}}); }
+			});
 		});
 	},
 	menu_reload: function(){

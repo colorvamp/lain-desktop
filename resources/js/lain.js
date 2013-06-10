@@ -121,7 +121,9 @@ function launchApp_createHolder(appName){
 var _desktop = {
 	vars: {},
 	init: function(){
-		_desktop.vars = {'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight,'yOffset':30,'window_top':false,'wHighestZ':0,'currentContextMenu':false,
+		_desktop.vars = {'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight,
+			'clickDelay':400,
+			'yOffset':30,'window_top':false,'wHighestZ':0,'currentContextMenu':false,
 			'fileOperation':false,'fileOrig':false,'fileDest':false,'fileSelection':$A([]),
 			'input_presedKeys':$A([]),'input_shorcutKeys':{}};
 

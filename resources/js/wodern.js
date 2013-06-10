@@ -12,7 +12,7 @@ var _wodern = {
 		w.titleContainer.onmousedown = _littleDrag.onMouseDown;
 		if(style.wodTitle){$C('H1',{className:'wodTitle','id':'wod_'+id+'_title',innerHTML:style.wodTitle},w.titleContainer);}
 		$C('IMG',{className:'wodThemeTitleButton wodButtonClose',src:'r/images/t.gif',onmousedown:function(e){e.stopPropagation();},onclick:function(){_wodern.window_destroy(w);}},w.titleContainer);
-		if(wContainer){w.appendChild(wContainer);window_container_init(wContainer);}
+		if(wContainer){w.windowBorder.appendChild(wContainer);window_container_init(wContainer);}
 		w.windowContainer = (wContainer) ? wContainer : window_container(w.windowBorder);
 		_wodern.position_get(w);
 		if(holder){holder.appendChild(w);}

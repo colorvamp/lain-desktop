@@ -35,6 +35,12 @@
 	}
 	function $C(tag,obj,holder){var el = document.createElement(tag);return $fix(el,obj,holder);}
 	function $T(tag,elem){if(elem){return elem.getElementsByTagName(tag);}return document.getElementsByTagName(tag);}
+	/* extended $E-lements functions - to avoid too much selector overload */
+	var $E = {
+		classHas: function(elem,className){var p = new RegExp('(^| )'+className+'( |$)');return (elem.className && elem.className.match(p));},
+		classAdd: function(elem,className){if($E.classHas(elem,className)){return true;}elem.className += ' '+className;},
+		classRemove: function(elem,className){var c = elem.className;var p = new RegExp('(^| )'+className+'( |$)');c = c.replace(p,' ').replace(/  /g,' ');elem.className = c;}
+	}
 
 	extend(Function.prototype,{
 		argumentNames: function(){var names = this.toString().match(/^[\s\(]*function[^(]*\(([^\)]*)\)/)[1].replace(/\s+/g, '').split(',');return names.length == 1 && !names[0] ? [] : names;},
