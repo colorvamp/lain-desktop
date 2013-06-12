@@ -56,7 +56,8 @@ VAR_apps.users = {
 			var params = extend($parseForm(form),{'subcommand':'create'});
 			ajaxPetition('api/users',$toUrl(params),function(ajax){
 				var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
-alert(print_r(r));
+				//alert(print_r(r));
+				VAR_apps.users.client_users_list(cont);
 			});
 		};
 	},

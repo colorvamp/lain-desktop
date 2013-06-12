@@ -7,6 +7,7 @@
 	<script type="text/javascript" src="{%baseURL%}r/js/coreJS.402.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/lainCanvas.next.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/lain.js"></script>
+	<script type="text/javascript" src="{%baseURL%}r/js/lain.signals.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/wodern.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/widgets.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/tasks.js"></script>

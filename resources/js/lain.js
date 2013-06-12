@@ -124,23 +124,30 @@ var _desktop = {
 		_desktop.vars = {'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight,
 			'clickDelay':400,
 			'yOffset':30,'window_top':false,'wHighestZ':0,'currentContextMenu':false,
-			'fileOperation':false,'fileOrig':false,'fileDest':false,'fileSelection':$A([]),
+			'fileOperation':false,'fileOrig':false,'fileDest':false,'fileSelection':[],
 			'input_presedKeys':$A([]),'input_shorcutKeys':{}};
 
 		VAR_wodInfo.marginRight = 4;
 		_desktop.vars.cacheSeed = Math.random()*1000;
+		document.addEventListener('mousedown',_desktop.signals.mouse_down,true);
+		document.addEventListener('mouseup',_desktop.signals.mouse_up,true);
+		document.addEventListener('click',_desktop.signals.mouse_click,true);
+		document.addEventListener('keydown',_desktop.signals.key_down,true);
+		window.addEventListener('resize',_desktop.signals.resize,true);
+		window.oncontextmenu = function(e){return false;};
+
 		document.addEventListener('dragover',_desktop.signals_dragover,true);
 		document.addEventListener('drop',_desktop.signals_drop,true);
-		document.addEventListener('mousedown',_desktop.signals_mousedown,true);
-		document.addEventListener('keydown',_desktop.desktop_signals_keyDown,true);
 		document.addEventListener('keyup',_desktop.desktop_signals_keyUp,true);
 		document.addEventListener('keypress',_desktop.desktop_signals_keyPress,true);
-		window.addEventListener('resize',_desktop.signals_resize,true);
-		_desktop.signals_resizeEnd();
-		window.oncontextmenu = function(e){return _desktop.desktop_mouseRightClick(e);};
+		_desktop.signals.resize_end();
 		var a = $_('lainPlacesMenu_itemList',{'onDropElement':_desktop.menu_places_mouseDown});
 		lWindows = $_('lainWindows');
 	},
+	fileSelection_add: function(el){_desktop.vars.fileSelection.push(el);},
+	fileSelection_remove: function(el){var index = _desktop.vars.fileSelection.indexOf(el);if(index > -1){_desktop.vars.fileSelection.splice(index,1);}},
+	fileSelection_get: function(el){return _desktop.vars.fileSelection;},
+	fileSelection_empty: function(e){$each(_desktop.vars.fileSelection,function(k,v){if(v.onunselect){v.onunselect(e,v);}});_desktop.vars.fileSelection = [];},
 	signals_dragover: function(e){e.preventDefault();return false;},
 	signals_drop: function(e){
 		e.preventDefault();
@@ -182,22 +189,11 @@ var _desktop = {
 
 		return false;
 	},
-	signals_resize: function(e){
-		if(window.resizeTimer){clearTimeout(window.resizeTimer);window.resizeTimer = false;}
-		window.resizeTimer = setTimeout(function(){_desktop.signals_resizeEnd(e);},500);
-	},
-	signals_resizeEnd: function(e){
-		window.resizeTimer = false;
-		extend(_desktop.vars,{'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight});
-		_desktop.icons_organize();
-		_desktop.background_init();
-	},
 	desktop_signals_keyPress: function(e){
 		/* ENTER */if(e.keyCode == 13){
 			//FIXME: puede ser un intro porque se está canbiando el nombre de una carpeta
 			_desktop.vars.fileSelection.each(function(elem){elem.launch();});
 		}
-		/* DEL */if(e.keyCode == 46){if(_desktop.vars.fileSelection.length > 0){_desktop.file_trash(_desktop.vars.fileSelection);}}
 		/* LEFTCUR */if(e.keyCode == 37){
 			if(_desktop.vars.fileSelection.length > 0){
 				var elem = _desktop.vars.fileSelection[0];
@@ -231,8 +227,14 @@ var _desktop = {
 		//alert(e.keyCode);
 		//alert(e.ctrlKey);
 	},
-	desktop_signals_keyDown: function(e){_desktop.vars.input_presedKeys.push(e.keyCode);_desktop.vars.input_presedKeys.sort();_desktop.desktop_shorcutKey_check();return false;},
-	desktop_signals_keyUp: function(e){_desktop.vars.input_presedKeys.remove(e.keyCode);/*alert(this.vars.input_presedKeys.values());/**/return false;},
+	desktop_signals_keyDown: function(e){
+//_desktop.vars.input_presedKeys.push(e.keyCode);_desktop.vars.input_presedKeys.sort();_desktop.desktop_shorcutKey_check();return false;
+},
+	desktop_signals_keyUp: function(e){
+//_desktop.vars.input_presedKeys.remove(e.keyCode);
+/*alert(this.vars.input_presedKeys.values());/**/
+//return false;
+},
 	desktop_shorcutKey_check: function(){
 		var inLen = _desktop.vars.input_presedKeys.length;
 		var values = _desktop.vars.input_presedKeys.values();
@@ -252,22 +254,15 @@ var _desktop = {
 		if(!w.input_shorcutKey){w.input_shorcutKey = {'1':{},'2':{},'3':{}};}
 		w.input_shorcutKey[keyCodes.length][keyCodes] = callback;
 	},
-	desktop_mouseClick: function(e){
-		if(_desktop.vars.currentContextMenu){_desktop.vars.currentContextMenu.parentNode.removeChild(_desktop.vars.currentContextMenu);_desktop.vars.currentContextMenu = false;}
-		
-	},
 	signals_mousedown: function(e){
+//FIXME rehacer
+return true;
 		if(_desktop.vars.currentContextMenu){_desktop.vars.currentContextMenu.parentNode.removeChild(_desktop.vars.currentContextMenu);_desktop.vars.currentContextMenu = false;}
 
 		if(e.target.tagName == 'INPUT'){return true;}
 		if((e.target.tagName == 'LI' || e.target.parentNode.tagName == 'LI') && e.target.className.match(/button/)){return true;}
 		if(e.target.id == 'lainDesktop'){e.preventDefault();_desktop.desktop_selection_start(e);return true;}
 
-		/* If the control key is pressed we should check multi selection */
-		if(!e.ctrlKey){
-			_desktop.vars.fileSelection.each(function(el){el.onUnSelect();});
-			_desktop.vars.fileSelection.empty();
-		}
 		/* Icon selection - Right clic can't start a file selection */
 		if(e.which != 3 && e.target && e.target.className.match(/^icon32_/)){
 			var elem = e.target;var isIcon = false;
@@ -275,17 +270,6 @@ var _desktop = {
 			if(isIcon){elem.onSelect();}
 		}
 		e.preventDefault();
-	},
-	desktop_mouseRightClick: function(e){
-		this.vars.fileSelection.each(function(el){el.onUnSelect();});
-		this.vars.fileSelection.empty();
-
-		/* Fired on oncontextmenu event - detect if target is an icon and make a custom themed context menu */
-		var elem = e.target;var isIcon = false;
-		if(elem.className.match(/desktop_icon/)){isIcon = true;};
-		var lim = 3;while(elem.parentNode && lim > 0){if(elem.parentNode.className && elem.parentNode.className.match(/desktop_icon/)){isIcon = true;lim = 0;};elem = elem.parentNode;lim--;}
-		if(isIcon){elem.onSelect();elem.onContextMenu(elem);return false;}
-		return true;
 	},
 	desktop_selection_start: function(e){
 		var s = {'startX':e.clientX,'startY':e.clientY,'h':$_('lainFlowIcon')};
@@ -314,12 +298,10 @@ var _desktop = {
 		elem.parentNode.removeChild(elem);
 	},
 	desktop_fileOperations: function(op,elem){if(this['desktop_'+op]){this['desktop_'+op](elem);}},
-	desktop_cut: function(elem){
-		this.vars.fileOrig = elem;
-		this.vars.fileOperation = 'cut';
-	},
 	desktop_paste: function(elem){
 		if(_desktop.vars.fileOperation != 'cut' && _desktop.vars.fileOperation != 'copy'){return;}
+return false;
+//FIXME: mal, usar fileSelection
 		var iconElem = _desktop.vars.fileOrig;
 
 		var iProp = _desktop.icon_getProperties(elem);
@@ -332,10 +314,6 @@ var _desktop = {
 			if(_desktop.vars.fileOperation == 'cut'){iconElem.parentNode.removeChild(iconElem);}
 			_desktop.vars.fileOperation = false;
 		}.bind(this));
-	},
-	desktop_trash: function(elem){
-//AAAAAAAAAAAAAAAAAAA
-		this.file_trash(this.vars.fileSelection);
 	},
 	desktop_properties: function(elem){
 		var iProp = _desktop.icon_getProperties(elem);
@@ -379,18 +357,12 @@ var _desktop = {
 		var d = _desktop.desktop_drivePARSENAME(driveFile);
 		_desktop.menu_place_placeREMOVEDRIVE(d.protocol+':'+d.nameEncoded);
 	},
-	file_trash: function(fSel,callback){
-		var tSel = $A([]);
-		fSel.each(function(el){tSel.push(_desktop.icon_getProperties(el));});
-		tSel = jsonEncode(tSel);
-
-		ajaxPetition('api/fs','subcommand=file_trash&files='+base64.encode(tSel),function(ajax){
+	file_trash: function(selection,callback){
+		var files = [];$each(selection,function(k,v){files.push(_desktop.icon_getProperties(v));});
+		ajaxPetition('api/fs','subcommand=file_trash&files='+base64.encode(jsonEncode(files)),function(ajax){
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
-			fSel.each(function(li){_desktop.icon_destroy(li);});
-			//FIXME: TODO
-			//if(VAR_apps.systemTrash){VAR_apps.systemTrash.acquireFiles(fSel);}
-			//alert(print_r(r));
-		}.bind(this));
+			$each(selection,function(k,v){_icon.destroy(v);});
+		});
 	},
 	window_contract: function(elem){
 		$each(elem.windowBorder.childNodes,function(k,v){
@@ -430,16 +402,24 @@ var _desktop = {
 		var shortedText = (iProp.fileName.length > 13) ? iProp.fileName.substr(0,10)+'...' : iProp.fileName;
 
 		var signals = {
-			onmousedown:function(e){_littleDrag.onMouseDown(e);},
 			launch:function(){_desktop.desktop_launch(this);},
-			onTrash:function(){},
-			onSelect:function(){_desktop.icon_onSelect(li);},
-			onUnSelect:function(){_desktop.icon_onUnSelect(li);},
 			onRename:function(){_desktop.icon_onRename(li);},
-			onContextMenu:function(){_desktop.icon_onContextMenu(li);}
+
+			onopen: function(e,el){_desktop.desktop_launch(this);},
+			//FIXME: hacer una copia de fileSelection en el momento de copiar o pegar
+			oncopy: function(e,el){_desktop.vars.fileOperation = 'copy';},
+			oncut: function(e,el){_desktop.vars.fileOperation = 'cut';},
+			ontrash: function(e,el){_icon.destroy(el);},
+			onselect:function(e,el){_icon.select(el);},
+			onunselect:function(e,el){_icon.unselect(el);},
+			onmousedown:function(e,el){
+				if(e.which == 1){return _littleDrag.onMouseDown(e);}
+				if(e.which == 3){return _desktop.icon_onContextMenu(li);}
+			}
 		};
 		if(s){signals = extend(signals,s);}
 		var li = $C('LI',extend({className:'desktop_icon wodIcon icon32_'+iProp.fileMime+' dragable'},signals),h);
+
 		/* iconCanvas is allowed to navigate (not open in new window) */
 		if(iProp.fileIsDir && li.parentNode.className == 'iconCanvas' && VAR_apps['lainExplorer']){li.launch = function(){VAR_apps['lainExplorer'].list(h,h.innerPath+iProp.fileName+'/');};}
 		$C('I',{innerHTML:jsonEncode(iProp)},li);
@@ -450,24 +430,46 @@ var _desktop = {
 		if(li.parentNode.className == 'iconCanvas'){this.iconCanvas_autoResize(li.parentNode);}
 		return li;
 	},
-	icon_destroy: function(li){
-		if(li.onTrash){li.onTrash();}
-		var iconCanvas = li.parentNode;
-		iconCanvas.removeChild(li);
-		if(iconCanvas.className == 'iconCanvas'){this.iconCanvas_autoResize(iconCanvas);}
-	},
 	icon_getProperties: function(elem){return jsonDecode(elem.firstChild.innerHTML);},
 	icon_saveProperties: function(elem,iProp){var iPropEncoded = jsonEncode(iProp);elem.firstChild.innerHTML = iPropEncoded;return iPropEncoded;},
 	icon_isFolder: function(elem){return elem.className.match('icon_folder');},
 	icon_onContextMenu: function(elem){
 		var ul = _desktop.icon_contextMenu_create(elem);
+		var ops = [	{'text':'<i class="icon-ok"></i> Open','op':'onopen'},
+				{'text':'-'},
+				{'text':'<i class="icon-copy"></i> Copy','op':'oncopy'},
+				{'text':'<i class="icon-cut"></i> Cut','op':'oncut'},
+				{'text':'-'},
+				{'text':'<i class="icon-trash"></i> Trash','op':'ontrash'},
+				{'text':'-'},
+				{'text':'<i class="icon-plus-sign-alt"></i> Compress','op':'oncompress'}
+			   ];
+		$each(ops,function(k,v){
+			if(v.text == '-'){$C('LI',{className:'separator'},ul);return;}
+			var disabled = (v.op == 'paste' && !_desktop.vars.fileOperation) ? 'disabled' : '';
+			var li = $C('LI',{className:disabled,innerHTML:v.text,
+				onmousedown:function(e){e.preventDefault();e.stopPropagation();},
+				onclick:function(e){
+					if(li.className.match('disabled')){return;};
+					if(v.op != 'properties'){_desktop.icon_contextMenu_close(e);}
+					//FIXME: hay algunas operaciones  que se aplican a la seleccion, aunque el menú
+					//atienda a un solo elemento, por tanto hay que implementar versiones de escritorio
+					//de los comandos
+
+					var el = elem;
+					do{if(el[v.op]){return el[v.op](e,el);}el = el.parentNode;}while(el.parentNode);
+
+					_desktop.desktop_fileOperations(v.op,elem);
+				}
+			},ul);
+		});
+
 		//FIXME: hacerlo con icon_contextMenu_option_append
-		$A(['open','-','openWith','-','copy','cut','paste','trash','properties']).each(function(op){
-			if(_desktop['icon_contextMenu_'+op]){return _desktop['icon_contextMenu_'+op](elem,ul,op);}
+		$A(['openWith','-','paste','properties']).each(function(op){
 			if(op == '-'){$C('LI',{className:'separator'},ul);return;}
 			if(op == 'paste' && !_desktop.icon_isFolder(elem)){return;}
 			var disabled = (op == 'paste' && !_desktop.vars.fileOperation) ? 'disabled' : '';
-			var li = $C('LI',{className:'icon_'+op+' '+disabled,innerHTML:op,
+			var li = $C('LI',{className:disabled,innerHTML:op,
 				onmousedown:function(e){e.preventDefault();e.stopPropagation();},
 				onclick:function(e){
 					if(li.className.match('disabled')){return;};
@@ -478,8 +480,9 @@ var _desktop = {
 		});
 	},
 	icon_contextMenu_open: function(elem,ul,op){var disabled = (elem.launch) ? '' : 'disabled';var li = $C('LI',{className:'icon_'+op+' '+disabled,innerHTML:op,onmousedown:function(e){e.preventDefault();e.stopPropagation();},onclick:function(e){if(!disabled && elem.launch){elem.launch();_desktop.icon_contextMenu_close(e);}}},ul);return true;},
-	icon_contextMenu_close: function(e){var ul = _desktop.vars.currentContextMenu;ul.parentNode.removeChild(ul);_desktop.vars.currentContextMenu = false;e.stopPropagation();},
+	icon_contextMenu_close: function(e){var ul = _desktop.vars.currentContextMenu;if(!ul){return false;}ul.parentNode.removeChild(ul);_desktop.vars.currentContextMenu = false;if(e){e.stopPropagation();}},
 	icon_contextMenu_create: function(elem,ops){
+		_desktop.icon_contextMenu_close();
 		var pos = $getOffsetPosition(elem);
 		var ul = this.vars.currentContextMenu = $C('UL',{className:'icon_contextMenu','.top':pos.top+'px','.left':(pos.left+85)+'px'},$_('lainFlowIcon'));
 		if(ops){$A(ops).each(function(op){op.opElem = elem;_desktop.icon_contextMenu_option_append(ul,op);});}
@@ -524,21 +527,6 @@ var _desktop = {
 		//FIXME: callback to h.updateCanvasSize if exists
 		if(oldParent.className == 'iconCanvas'){this.iconCanvas_autoResize(oldParent);}
 		if(li.parentNode.className == 'iconCanvas'){this.iconCanvas_autoResize(li.parentNode);}
-	},
-	icon_onSelect: function(li){
-		li.className += ' iconSelected';
-		this.vars.fileSelection.push(li);
-		var iProp = _desktop.icon_getProperties(li);
-		li.lastChild.innerHTML = iProp.fileName;
-	},
-	icon_onUnSelect: function(li){
-		/* we don't unload this elem from fileSelection because we unload the entire block */
-		li.className = li.className.replace(/ iconSelected$/,'');
-		/* Support for renaming an icon */
-		if(li.onRename && li.lastChild.firstChild && li.lastChild.firstChild.tagName == 'TEXTAREA'){li.onRename();}
-		var iProp = _desktop.icon_getProperties(li);
-		var shortedText = (iProp.fileName.length > 13) ? iProp.fileName.substr(0,10)+'...' : iProp.fileName;
-		li.lastChild.innerHTML = shortedText;
 	},
 	icon_onRename: function(li,text){
 		/* text param is no used yet */
@@ -667,6 +655,31 @@ var _desktop = {
 		var i = parseInt(Math.floor(Math.log(bytes)/Math.log(1024)));
 		return Math.round(bytes/Math.pow(1024,i),2)+' '+sizes[i];
 	}
+};
+
+var _icon = {
+	open: function(icon){
+		
+	},
+	destroy: function(icon){
+		var iconCanvas = icon.parentNode;iconCanvas.removeChild(icon);
+		if(iconCanvas.className == 'iconCanvas'){/* FIXME: mover a este objeto */_desktop.iconCanvas_autoResize(iconCanvas);}
+	},
+	select: function(icon){
+		if($E.classHas(icon,'selected')){return _icon.unselect(icon);}
+		$E.classAdd(icon,'selected');
+		_desktop.fileSelection_add(icon);
+		var iProp = _desktop.icon_getProperties(icon);
+		icon.lastChild.innerHTML = iProp.fileName;
+	},
+	unselect: function(icon){
+		if(!$E.classHas(icon,'selected')){return false;}
+		$E.classRemove(icon,'selected');
+		_desktop.fileSelection_remove(icon);
+		var iProp = _desktop.icon_getProperties(icon);
+		var shortedText = (iProp.fileName.length > 13) ? iProp.fileName.substr(0,10)+'...' : iProp.fileName;
+		icon.lastChild.innerHTML = shortedText;
+	},
 };
 
 var _iface = {
