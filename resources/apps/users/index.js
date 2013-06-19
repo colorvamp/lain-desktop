@@ -66,11 +66,37 @@ VAR_apps.users = {
 		var table = new widget('_wodTable',{'tableMode':'wodCheck'});
 		cont.appendChild(table);
 		table.columns.add({'columnName':'Mail'},{'columnName':'Name'},{'columnName':'Registered'});
+		table.rows.oncontextmenu = function(e,tr){
+			var ctx = new widget('_wodContextMenu',{'target':tr});
+			ctx.addItem('<i class="icon-copy"></i> Copy',function(){alert(1);});
+			ctx.addSeparator();
+			ctx.addItem('<i class="icon-trash"></i> Remove user',function(e,tr){
+				var o = tr.getValue();if(!(length in o)){return false;}var mail = o[1];
+				VAR_apps.users.action_user_removeByMail(mail,function(mails){VAR_apps.users.client_user_remove_callback(cont,mails);});
+			});
+		};
 
 		ajaxPetition('api/users','subcommand=get',function(ajax){
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 			var wContainer = VAR_apps.users.vars.wContainer;if(!wContainer){return false;}
 			$each(r,function(k,user){table.rows.add(false,user['userMail'],user['userName'],user['userRegistered']);});
+		});
+	},
+	client_user_remove_callback: function(wContainer,mails){
+		var wodTable = wContainer.$L('wodTable');if(!wodTable.length){return false;}
+		wodTable = wodTable.item(0);
+		var rows = wodTable.rows.childs;if(!rows.length){return false;}
+		$each(rows,function(k,v){
+			var o = v.getValue();var userMail = o[1];
+			if(mails.indexOf(userMail) > -1){ eEaseLeave(v,{'callback':function(el){el.parentNode.removeChild(el);}}); }
+		});
+	},
+	action_user_removeByMail: function(mails,callback){
+		callback = typeof callback !== 'undefined' ? callback : false;
+		var userMails = $isString(mails) ? [mails] : mails;
+		ajaxPetition('api/users','subcommand=remove&users='+base64.encode(jsonEncode(userMails)),function(ajax){
+			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
+			if(callback){return callback(r);}
 		});
 	},
 	menu_edit_remove_checkeds: function(wContainer){
@@ -80,17 +106,7 @@ VAR_apps.users = {
 		var userMails = [];
 		$each(checkeds,function(k,v){var o = v.getValue();userMails.push(o[1]);});
 		/* Comm to the server */
-		ajaxPetition('api/users','subcommand=remove&users='+base64.encode(jsonEncode(userMails)),function(ajax){
-			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
-			var deletedUserMails = r;
-			var wodTable = wContainer.$L('wodTable');if(!wodTable.length){return false;}
-			wodTable = wodTable.item(0);
-			var rows = wodTable.rows.childs;if(!rows.length){return false;}
-			$each(rows,function(k,v){
-				var o = v.getValue();var userMail = o[1];
-				if(deletedUserMails.indexOf(userMail) > -1){ eEaseLeave(v,{'callback':function(el){el.parentNode.removeChild(el);}}); }
-			});
-		});
+		VAR_apps.users.action_user_removeByMail(userMails,function(mails){VAR_apps.users.client_user_remove_callback(wContainer,mails);});
 	},
 	menu_reload: function(){
 		//_tasks.taskAdd({'name':'Synaptic - Reload Sources','href':'api/apt','params':{'subcommand':'sourcesReload'}});

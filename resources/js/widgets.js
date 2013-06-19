@@ -17,6 +17,7 @@ var _widgets = {
 var _wodTable = {
 	vars: {},
 	init: function(params){
+		/* params = {'tableMode':'wodTable'|'wodCheck'} */
 		var wodTable = $C('DIV',{className:'wodTable',
 			'thead':false,'tbody':false,
 			'vars':{'tableMode':'wodTable','rowsSelected':[],'rowsChecked':[],'hasScrollbars':false,'scrollbarWidth':0},
@@ -27,6 +28,9 @@ var _wodTable = {
 			},
 			'rows':{
 				'childs': [],
+				//FIXME: comprobar data-oncontextmenu para custom menus por rows
+				//FIXME: también añadir una function setCustomMenu
+				'oncontextmenu': function(e,el){return false;},
 				'add': function(){return _wodTable.row_add.apply(wodTable,arguments);},
 				'getChecked': function(){return wodTable.vars.rowsChecked;}
 			}
@@ -106,6 +110,7 @@ wodTable.columns.childs[k].width = '-webkit-calc('+columnsPercentage+' * (100% -
 		var args = arguments;
 		var tr = $C('DIV',{className:'wodTr',
 			'onclick': function(e){return _wodTable.row_signal_click(wodTable,e,tr);},
+			'oncontextmenu': function(e){return _wodTable.row_signal_contextmenu(wodTable,e,tr);},
 			'getValue': function(e){return _wodTable.row_getValue(wodTable,e,tr);}
 		},wodTable.tbody);
 		
@@ -156,6 +161,9 @@ wodTable.columns.childs[k].width = '-webkit-calc('+columnsPercentage+' * (100% -
 		else{$each(wodTable.vars.rowsSelected,function(k,v){$E.classRemove(v,'selected');});wodTable.vars.rowsSelected = [tr];}
 		$E.classAdd(tr,'selected');
 	},
+	row_signal_contextmenu: function(wodTable,e,tr){
+		return wodTable.rows.oncontextmenu(e,tr);
+	},
 	col_signal_resize_mousedown: function(wodTable,e,td){
 		e.stopPropagation();
 		td.startX = e.clientX;
@@ -183,4 +191,30 @@ wodTable.columns.childs[k].width = '-webkit-calc('+columnsPercentage+' * (100% -
 		}
 		wodTable.reflow();
 	}
+};
+
+var _wodContextMenu = {
+	init: function(params){
+		/* params = {'target':HTMLElement} */
+		var wodContextMenu = $C('UL',{className:'icon_contextMenu',
+			'target':false,
+			'addItem': function(text,callback,disabled){return _wodContextMenu.item_add(wodContextMenu,text,callback,disabled);},
+			'addSeparator': function(text){return _wodContextMenu.separator_add(wodContextMenu);}
+		},$_('lainFlowIcon'));
+		if(params.target){
+			var pos = $getOffsetPosition(params.target);
+			wodContextMenu.$B({'target':params.target,'.top':pos.top+'px','.left':(pos.left+85)+'px'});
+		}
+		//FIXME: mal
+		_desktop.icon_contextMenu_close();
+		_desktop.vars.currentContextMenu = wodContextMenu;
+		return wodContextMenu;
+	},
+	item_add: function(wodContextMenu,text,callback,disabled){
+		$C('LI',{className:(disabled) ? 'disabled' : '',innerHTML:text,
+			onmousedown:function(e){e.preventDefault();e.stopPropagation();},
+			onclick:function(e){if(disabled || !callback){return;};callback(e,wodContextMenu.target);}
+		},wodContextMenu);
+	},
+	separator_add: function(wodContextMenu){$C('LI',{className:'separator'},wodContextMenu);}
 };

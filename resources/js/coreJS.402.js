@@ -39,7 +39,13 @@
 	var $E = {
 		classHas: function(elem,className){var p = new RegExp('(^| )'+className+'( |$)');return (elem.className && elem.className.match(p));},
 		classAdd: function(elem,className){if($E.classHas(elem,className)){return true;}elem.className += ' '+className;},
-		classRemove: function(elem,className){var c = elem.className;var p = new RegExp('(^| )'+className+'( |$)');c = c.replace(p,' ').replace(/  /g,' ');elem.className = c;}
+		classRemove: function(elem,className){var c = elem.className;var p = new RegExp('(^| )'+className+'( |$)');c = c.replace(p,' ').replace(/  /g,' ');elem.className = c;},
+		classParentHas: function(elem,className,limit){
+			limit = typeof limit !== 'undefined' ? limit : 1;
+			if($E.classHas(elem,className)){return elem;}
+			if(!elem.parentNode){return false;}
+			do{if($E.classHas(elem.parentNode,className)){return elem.parentNode;}elem = elem.parentNode;}while(elem.parentNode && limit--);return false;
+		}
 	}
 
 	extend(Function.prototype,{
@@ -75,6 +81,7 @@
 	function $round(num){num = num.toString();if(num.indexOf('.') == -1){return num;}num = (parseFloat(num)*1000).toString().split('.')[0];if(parseInt(num[num.length-1])>4){if(num[0]!='-'){num = (parseInt(num)+10).toString();}else{num = (parseInt(num)-10).toString();}}num = (parseInt(num)/10).toString();num = num.split('.')[0];num = (parseInt(num)/100).toString();return num;}
 	function $toUrl(elem){var str = '';for(var a in elem){str += a+'='+encodeURIComponent(elem[a].toString())+'&';}return str.replace(/&$/,'');}
 	function $type(obj){return typeof(obj);}
+	function $isString(o){return (typeof o == 'string' || o instanceof String);}
 
 	//FIXME: mejorar implementación de isEmpty
 	function isEmpty(elem){if(!elem || elem == ""){return true;}return false;}
