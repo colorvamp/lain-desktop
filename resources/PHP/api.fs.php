@@ -31,6 +31,13 @@
 		return $path.'/';
 	}
 
+	function fs_file_getInfo($fileName,$filePath,$fileRoute,$finfo = false){
+		$fileData = stat($filePath.$fileName);
+		if(is_dir($filePath.$fileName)){return array('fileName'=>$fileName,'fileRoute'=>'native:drive:'.$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);}
+		list($fileMimeType) = explode('; ',finfo_file($finfo,$filePath.$fileName));
+		return array('fileName'=>$fileName,'fileRoute'=>'native:drive:'.$fileRoute,'fileMime'=>$fileMimeType,'fileSize'=>$fileData['size'],'fileDateM'=>$fileData['mtime']);
+	}
+
 	function fs_folder_list($fileRoute = ''){
 		if(strpos($fileRoute,'native:trash:') === 0){return fs_trash_list($fileRoute);}
 		if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
@@ -40,22 +47,19 @@
 		if(!is_dir($filePath)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
 		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? substr($filePath,strlen(realpath($GLOBALS['api']['fs']['root']))) : $fileRoute;
 
-		$files = $folders = array();
+		$files = array();
 		if($handle = opendir($filePath)){
 			$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
-			while(false !== ($file = readdir($handle))){if($file[0] == '.'){continue;}
-				//echo $file.print_r(stat($driveDir.$file)).'\n';
-				$fileData = stat($filePath.$file);
-				if(is_dir($filePath.$file)){$folders[] = array('fileName'=>$file,'fileRoute'=>'native:drive:'.$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);continue;}
-				list($fileMimeType) = explode('; ',finfo_file($finfo,$filePath.$file));
-				$files[] = array('fileName'=>$file,'fileRoute'=>'native:drive:'.$fileRoute,'fileMime'=>$fileMimeType,'fileSize'=>$fileData['size'],'fileDateM'=>$fileData['mtime']);
+			while(false !== ($fileName = readdir($handle))){if($fileName[0] == '.'){continue;}
+				//echo $file.print_r(stat($driveDir.$fileName)).'\n';
+				$files[] = fs_file_getInfo($fileName,$filePath,$fileRoute,$finfo);
 			}
 			finfo_close($finfo);
 			closedir($handle);
 		}
-//print_r($folders);exit;
-		sort($files);sort($folders);
-		return array('folders'=>$folders,'files'=>$files);
+
+		sort($files);
+		return array('folders'=>array(),'files'=>$files);
 	}
 	function fs_folder_create($fileName,$path = ''){
 		if(strpos($path,'native:drive:') === 0){$path = substr($path,13);}
@@ -72,6 +76,7 @@
 		if(!$r){return array('errorDescription'=>'MKDIR_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 
 		$fileData = stat($targetFolder);
+		//FIXME
 		$f = array('fileName'=>$fileName,'fileRoute'=>'native:drive:'.$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);
 		return $f;
 	}
@@ -86,8 +91,10 @@
 		$destRoute = fs_helper_parsePath($destRoute);
 		if($destRoute === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 		if(!is_dir($destRoute)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
+//FIXME: if(!count($files))
 
 		$fileRoutes = array();
+		//$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
 		foreach($files as $file){$fileRoutes[$file['fileRoute']][] = $file;}
 		foreach($fileRoutes as $fileRoute=>$files){
 			if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
@@ -98,18 +105,56 @@
 				$sourceFile = $fileRoute.$file['fileName'];
 				$targetFile = $destRoute.$file['fileName'];
 				$r = @rename($sourceFile,$targetFile);
+				
 				if(!$r){return array('errorDescription'=>'UNKNOWN_ERROR_WHILE_MOVING'.' '.$sourceFile.' to '.$targetFile,'file'=>__FILE__,'line'=>__LINE__);}
 			}
 		}
+		//finfo_close($finfo);
 
 		return true;
 	}
 
+	function fs_file_copy($files,$target){
+		/* $files could be json_encoded */
+		if(is_string($files)){$files = json_decode($files,1);if($files === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}}
+		if($target[0] == '{'){$target = json_decode($target,1);if($files === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}$target = $target['fileRoute'].$target['fileName'].'/';}
+//FIXME: if(!count($files))
+		$destRoute = $target;
+
+		if(strpos($destRoute,'native:drive:') === 0){$destRoute = substr($destRoute,13);}
+		$destPath = fs_helper_parsePath($destRoute);
+		if($destPath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		if(!is_dir($destPath)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
+		$destRoute = ($GLOBALS['api']['fs']['serverCage']) ? substr($destPath,strlen(realpath($GLOBALS['api']['fs']['root']))) : $destPath;
+
+		$fileRoutes = array();foreach($files as $file){$fileRoutes[$file['fileRoute']][] = $file;}
+		$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
+		$return = array();
+		foreach($fileRoutes as $fileRoute=>$files){
+			if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
+			$filePath = fs_helper_parsePath($fileRoute);
+			if($filePath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+			if(!is_dir($filePath)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
+			foreach($files as $file){
+				$sourceFile = $filePath.$file['fileName'];
+				$targetFile = $destPath.$file['fileName'];
+				/* If the source and target are the same we cant copy the file */
+				if($sourceFile == $targetFile){continue;}
+				if(file_exists($targetFile)){/* FIXME */continue;}
+				//FIXME: hacer el copy con fread y fwrite y llevar el progreso
+				$r = @copy($sourceFile,$targetFile);
+				if(!$r){return array('errorDescription'=>'UNKNOWN_ERROR_WHILE_MOVING'.' '.$sourceFile.' to '.$targetFile,'file'=>__FILE__,'line'=>__LINE__);}
+				$return[] = fs_file_getInfo($file['fileName'],$destPath,$destRoute,$finfo);
+			}
+		}
+		finfo_close($finfo);
+
+		return array('files'=>$return);
+	}
+
 	function fs_file_trash($files,$db = false){
 		/* $files could be json_encoded */
-		if(is_string($files)){$files = json_decode($files,1);if($files !== NULL){
-			//FIXME:
-		}}
+		if(is_string($files)){$files = json_decode($files,1);if($files === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}}
 		if(!file_exists($GLOBALS['api']['fs']['trash'])){$oldmask = umask(0);$r = @mkdir($GLOBALS['api']['fs']['trash'],0777,1);umask($oldmask);}
 
 		$fileRoutes = array();

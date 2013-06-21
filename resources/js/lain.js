@@ -125,7 +125,7 @@ var _desktop = {
 			'clickDelay':400,
 			'yOffset':30,'window_top':false,'wHighestZ':0,'currentContextMenu':false,
 			'fileOperation':false,'fileOrig':false,'fileDest':false,'fileSelection':[],
-			'file_selection':[],
+			'file_selection':[],'file_selectionSaved':[],
 			'input_presedKeys':$A([]),'input_shorcutKeys':{}};
 
 		VAR_wodInfo.marginRight = 4;
@@ -149,9 +149,12 @@ var _desktop = {
 	},
 	fileSelection_add: function(el){_desktop.vars.file_selection.push(el);},
 	fileSelection_remove: function(el){var index = _desktop.vars.file_selection.indexOf(el);if(index > -1){_desktop.vars.file_selection.splice(index,1);}},
-	fileSelection_get: function(el){return _desktop.vars.file_selection;},
-	fileSelection_empty: function(e){while(v = _desktop.vars.file_selection.shift()){v.onunselect(e,v);}_desktop.vars.fileSelection = [];},
+	fileSelection_get: function(){return _desktop.vars.file_selection;},
+	fileSelection_empty: function(e){while(v = _desktop.vars.file_selection.shift()){v.onunselect(e,v);}_desktop.vars.file_selection = [];},
 	fileSelection_selected: function(el){var index = _desktop.vars.file_selection.indexOf(el);return (index > -1);},
+	fileSelection_save: function(){_desktop.vars.file_selectionSaved = _desktop.vars.file_selection.slice(0);return true;},
+	fileSelection_getSaved: function(){return _desktop.vars.file_selectionSaved;},
+	fileSelection_emptySaved: function(){_desktop.vars.file_selectionSaved = [];},
 	signals_dragover: function(e){e.preventDefault();return false;},
 	signals_drop: function(e){
 		e.preventDefault();
@@ -293,7 +296,6 @@ return true;
 		}
 		elem.parentNode.removeChild(elem);
 	},
-	desktop_fileOperations: function(op,elem){if(this['desktop_'+op]){this['desktop_'+op](elem);}},
 	desktop_paste: function(elem){
 		if(_desktop.vars.fileOperation != 'cut' && _desktop.vars.fileOperation != 'copy'){return;}
 return false;
@@ -353,14 +355,6 @@ return false;
 		var d = _desktop.desktop_drivePARSENAME(driveFile);
 		_desktop.menu_place_placeREMOVEDRIVE(d.protocol+':'+d.nameEncoded);
 	},
-	file_trash: function(selection,callback){
-$_('log').innerHTML += 'DEPRECATED';
-		var files = [];$each(selection,function(k,v){files.push(_desktop.icon_getProperties(v));});
-		ajaxPetition('api/fs','subcommand=file_trash&files='+base64.encode(jsonEncode(files)),function(ajax){
-			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
-			$each(selection,function(k,v){_icon.destroy(v);});
-		});
-	},
 	window_contract: function(elem){
 		$each(elem.windowBorder.childNodes,function(k,v){
 			if(v.nodeType != 1 || !v.className.match(/contractable/)){return;}
@@ -403,19 +397,20 @@ $_('log').innerHTML += 'DEPRECATED';
 			onRename:function(){_desktop.icon_onRename(li);},
 
 			onopen: function(e,el){_desktop.desktop_launch(this);},
-			//FIXME: hacer una copia de fileSelection en el momento de copiar o pegar
-			oncopy: function(e,el){_desktop.vars.fileOperation = 'copy';},
-			oncut: function(e,el){_desktop.vars.fileOperation = 'cut';},
+			oncopy: function(e,el){_desktop.vars.fileOperation = 'copy';_desktop.fileSelection_save();},
+			oncut: function(e,el){_desktop.vars.fileOperation = 'cut';_desktop.fileSelection_save();},
+			onpaste: function(e,el){if(!_icon.isFolder(this)){return false;}var f = 'fs_'+_desktop.vars.fileOperation;if(_desktop[f]){return _desktop[f](e,this);}},
 			ontrash: function(e,el){
 //FIXME: rompe el escritorio
 //FIXME: si hay varias operaciones, no hacer reflow
 _icon.destroy(el);},
-			onselect:function(e,el){_icon.select(el,(e.which == 1)/* To switch selection */);},
-			onunselect:function(e,el){_icon.unselect(el);},
-			onmousedown:function(e,el){
+			onselect: function(e,el){_icon.select(el,(e.which == 1)/* To switch selection */);},
+			onunselect: function(e,el){_icon.unselect(el);},
+			onmousedown: function(e,el){
 				if(e.which == 1){return _littleDrag.onMouseDown(e);}
-				if(e.which == 3){return _desktop.icon_onContextMenu(li);}
-			}
+				if(e.which == 3){return this.oncontextmenu(e,el);}
+			},
+			oncontextmenu: function(e,el){_icon.contextmenu(e,el);}
 		};
 		if(s){signals = extend(signals,s);}
 		var li = $C('LI',extend({className:'desktop_icon wodIcon icon32_'+iProp.fileMime+' dragable'},signals),h);
@@ -433,80 +428,27 @@ _icon.destroy(el);},
 	},
 	icon_getProperties: function(elem){return jsonDecode(elem.firstChild.innerHTML);},
 	icon_saveProperties: function(elem,iProp){var iPropEncoded = jsonEncode(iProp);elem.firstChild.innerHTML = iPropEncoded;return iPropEncoded;},
-	icon_isFolder: function(elem){return elem.className.match('icon_folder');},
+	fs_copy: function(e,icon){
+//FIXME: comprobar si en destino existen ficheros con el mismo nombre
+		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}
+		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
+		var target = _icon.getProperties(icon);
+		ajaxPetition('api/fs','subcommand=file_copy&files='+base64.encode(jsonEncode(files))+'&target='+base64.encode(jsonEncode(target)),function(ajax){
+			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
+			_desktop.signals.fileupdate(r);
+			_desktop.fileSelection_emptySaved();
+		});
+	},
 	fs_trash: function(e){
 		var selection = _desktop.fileSelection_get();if(!selection.length){return false;}
-		var files = [];$each(selection,function(k,v){files.push(_desktop.icon_getProperties(v));});
+		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
 		ajaxPetition('api/fs','subcommand=file_trash&files='+base64.encode(jsonEncode(files)),function(ajax){
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 			$each(selection,function(k,v){if(v.ontrash){v.ontrash(e,v);}});
 			_desktop.fileSelection_empty();
 		});
 	},
-	icon_onContextMenu: function(elem){
-		var ul = _desktop.icon_contextMenu_create(elem);
-		var ops = [	{'text':'<i class="icon-ok"></i> Open','op':'onopen'},
-				{'text':'-'},
-				{'text':'<i class="icon-copy"></i> Copy','op':'oncopy'},
-				{'text':'<i class="icon-cut"></i> Cut','op':'oncut'},
-				{'text':'-'},
-				{'text':'<i class="icon-trash"></i> Trash','op':'fs_trash'},
-				{'text':'-'},
-				{'text':'<i class="icon-plus-sign-alt"></i> Compress','op':'oncompress'}
-			   ];
-		$each(ops,function(k,v){
-			if(v.text == '-'){$C('LI',{className:'separator'},ul);return;}
-			var disabled = (v.op == 'paste' && !_desktop.vars.fileOperation) ? 'disabled' : '';
-			var li = $C('LI',{className:disabled,innerHTML:v.text,
-				onmousedown:function(e){e.preventDefault();e.stopPropagation();},
-				onclick:function(e){
-					if(li.className.match('disabled')){return;};
-					if(v.op != 'properties'){_desktop.icon_contextMenu_close(e);}
-					if(_desktop[v.op]){return _desktop[v.op](e,el);}
-					//FIXME: hay algunas operaciones  que se aplican a la seleccion, aunque el menú
-					//atienda a un solo elemento, por tanto hay que implementar versiones de escritorio
-					//de los comandos
-
-					var el = elem;
-					do{if(el[v.op]){return el[v.op](e,el);}el = el.parentNode;}while(el.parentNode);
-
-					_desktop.desktop_fileOperations(v.op,elem);
-				}
-			},ul);
-		});
-
-		//FIXME: hacerlo con icon_contextMenu_option_append
-		$A(['openWith','-','paste','properties']).each(function(op){
-			if(op == '-'){$C('LI',{className:'separator'},ul);return;}
-			if(op == 'paste' && !_desktop.icon_isFolder(elem)){return;}
-			var disabled = (op == 'paste' && !_desktop.vars.fileOperation) ? 'disabled' : '';
-			var li = $C('LI',{className:disabled,innerHTML:op,
-				onmousedown:function(e){e.preventDefault();e.stopPropagation();},
-				onclick:function(e){
-					if(li.className.match('disabled')){return;};
-					if(op != 'properties'){_desktop.icon_contextMenu_close(e);}
-					_desktop.desktop_fileOperations(op,elem);
-				}
-			},ul);
-		});
-	},
-	icon_contextMenu_open: function(elem,ul,op){var disabled = (elem.launch) ? '' : 'disabled';var li = $C('LI',{className:'icon_'+op+' '+disabled,innerHTML:op,onmousedown:function(e){e.preventDefault();e.stopPropagation();},onclick:function(e){if(!disabled && elem.launch){elem.launch();_desktop.icon_contextMenu_close(e);}}},ul);return true;},
 	icon_contextMenu_close: function(e){var ul = _desktop.vars.currentContextMenu;if(!ul){return false;}ul.parentNode.removeChild(ul);_desktop.vars.currentContextMenu = false;if(e){e.stopPropagation();}},
-	icon_contextMenu_create: function(elem,ops){
-		_desktop.icon_contextMenu_close();
-		var pos = $getOffsetPosition(elem);
-		var ul = this.vars.currentContextMenu = $C('UL',{className:'icon_contextMenu','.top':pos.top+'px','.left':(pos.left+85)+'px'},$_('lainFlowIcon'));
-		if(ops){$A(ops).each(function(op){op.opElem = elem;_desktop.icon_contextMenu_option_append(ul,op);});}
-		return ul;
-	},
-	icon_contextMenu_option_append: function(m,op){
-		/* m must be an contextMenu Object */
-		if(!op.opDisabled){op.opDisabled = '';}
-		var li = $C('LI',{className:'icon_'+op.opName+' '+op.opDisabled,innerHTML:op.opName,
-			onmousedown:function(e){e.preventDefault();e.stopPropagation();},
-			onclick:function(e){if(op.opDisabled === true){return;};op.opCommand(op.opElem,e);}
-		},m);
-	},
 	icon_mouseup: function(e,elem){
 		var ws = [];
 		$A(lWindows.childNodes).each(function(elem){if(!elem.firstChild){return;}
@@ -523,7 +465,8 @@ _icon.destroy(el);},
 		//FIXME: problema del zIndex
 		var candidate = false;var candidateIndex = 0;
 		$A(dn).each(function(el){if((el.style.zIndex || 1) > candidateIndex){candidateIndex = el.style.zIndex;candidate = el;}});
-		if(candidate.onDropElement){candidate.onDropElement(elem);}
+		if(candidate.onDropElement){return candidate.onDropElement(elem);}
+		_desktop.signals.icon_drop(elem);
 	},
 	icon_move: function(li,h){
 		/* If the canvas get destroyed in the process */
@@ -578,21 +521,6 @@ _icon.destroy(el);},
 
 		//eEaseHeight(i,iconCanvasHeight,false,false,false,true);
 		i.style.height = iconCanvasHeight+'px';
-	},
-	signal_folderAdd: function(src,fSel){
-		//FIXME: DEPRECATED, use signal_iconAdd instead.
-		if(src == '/'){$A(fSel).each(function(el){this.icon_create(el,$_('lainIcons'));}.bind(this));this.icons_organize();}
-		if(VAR_apps['lainExplorer']){VAR_apps['lainExplorer'].signal_folderAdd(src,fSel);}
-	},
-	signal_iconAdd: function(fSel){
-		//FIXME: hay una excepcion, puede que el fichero apunte a una carpeta que no exista, que
-		// es '/lost+found/', en cuyo caso debemos crearla
-		var ths = this;
-		$A(fSel).each(function(el){
-			if(el.fileRoute == '/'){ths.icon_create(el,$_('lainIcons'));}
-			if(VAR_apps['lainExplorer']){VAR_apps['lainExplorer'].signal_iconAdd(el);}
-		});
-		ths.icons_organize();
 	},
 	time_stampToDate: function(t){
 		var date = new Date(t*1000);
@@ -675,7 +603,7 @@ var _icon = {
 	destroy: function(icon){
 		var iconCanvas = icon.parentNode;iconCanvas.removeChild(icon);
 		//FIXME: esto está de mal a muy mal
-		//FIXME: si hay destroys consecutivos?
+		//FIXME: si hay destroys consecutivos? <- hacerlo con un setTimeout
 		//FIXME: posiblemente llamar a icons_organize
 		if(iconCanvas.id != 'lainIcons' && iconCanvas.className == 'iconCanvas'){/* FIXME: mover a este objeto */_desktop.iconCanvas_autoResize(iconCanvas);}
 	},
@@ -695,6 +623,33 @@ var _icon = {
 		var shortedText = (iProp.fileName.length > 13) ? iProp.fileName.substr(0,10)+'...' : iProp.fileName;
 		icon.lastChild.innerHTML = shortedText;
 	},
+	contextmenu: function(e,elem){
+//FIXME: la distancia desde target
+		var ctx = new widget('_wodContextMenu',{'target':elem});
+		var ops = [	{'text':'<i class="icon-ok"></i> Open','op':'onopen'},
+				{'text':'-'},
+				{'text':'<i class="icon-copy"></i> Copy','op':'oncopy'},
+				{'text':'<i class="icon-cut"></i> Cut','op':'oncut'}
+			   ];
+		if(_icon.isFolder(elem) && _desktop.fileSelection_get().length < 2){
+			ops.push({'text':'-'});
+			ops.push({'text':'<i class="icon-paste"></i> Paste','op':'onpaste'});
+		}
+		ops.push({'text':'-'});
+		ops.push({'text':'<i class="icon-trash"></i> Trash','op':'fs_trash'});
+		ops.push({'text':'-'});
+		ops.push({'text':'<i class="icon-plus-sign-alt"></i> Compress','op':'oncompress'});
+
+		$each(ops,function(k,v){
+			if(v.text == '-'){ctx.addSeparator();return;}
+			ctx.addItem(v.text,function(e,tr){
+				if(_desktop[v.op]){return _desktop[v.op](e,el);}
+				var el = elem;do{if(el[v.op]){return el[v.op](e,el);}el = el.parentNode;}while(el.parentNode);
+			});
+		});
+	},
+	getProperties: function(elem){return jsonDecode(elem.firstChild.innerHTML);},
+	isFolder: function(icon){var p = _icon.getProperties(icon);return p.fileMime == 'folder';}
 };
 
 var _iface = {

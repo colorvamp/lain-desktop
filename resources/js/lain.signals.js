@@ -1,5 +1,6 @@
 _desktop.signals = {
 	mouse_down: function(e){
+		if(e.target.tagName == 'INPUT'){return true;}
 		e.preventDefault();e.stopPropagation();
 		var key_control = (_desktop.vars.input_presedKeys.indexOf(17) > -1);
 		/* If the control key is pressed we should check multi selection, if after 
@@ -49,7 +50,7 @@ _desktop.signals = {
 		//_desktop.desktop_shorcutKey_check();return false;
 		//FIXME: si hay más de una tecla no seguir
 		var selection = _desktop.fileSelection_get();
-		/* DEL */if(e.keyCode == 46){if(selection.length > 0){return _desktop.file_trash(selection);}}
+		/* DEL */if(e.keyCode == 46){if(selection.length > 0){return _desktop.fs_trash(selection);}}
 		//alert(e.keyCode);
 	},
 	key_up: function(e){
@@ -61,5 +62,13 @@ _desktop.signals = {
 		extend(_desktop.vars,{'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight});
 		_desktop.icons_organize();
 		_desktop.background_init();
+	},
+	file_update: function(files){
+		//$A(files).each(function(elem){_desktop.icon_create(elem,iconCanvas);}.bind(this));
+	},
+	icon_drop: function(iconElem){
+		//FIXME: faltaría moverlo de verdad
+		
+alert(iconElem);
 	}
 };

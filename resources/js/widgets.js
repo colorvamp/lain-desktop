@@ -14,6 +14,15 @@ var _widgets = {
 	}
 }
 
+var _wodIconCanvas = {
+	vars: {},
+	init: function(params){
+		var wodIconCanvas = $C('DIV',{className:'wodIconCanvas'
+
+		});
+	},
+};
+
 var _wodTable = {
 	vars: {},
 	init: function(params){
