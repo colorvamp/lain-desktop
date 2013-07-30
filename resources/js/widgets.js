@@ -14,13 +14,56 @@ var _widgets = {
 	}
 }
 
+var _wodHContainer = {
+	vars: {},
+	init: function(params){
+		var wodHContainer = $C('DIV',{className:'wodHContainer'
+
+		});
+		return wodHContainer;
+	}
+}
+
 var _wodIconCanvas = {
 	vars: {},
 	init: function(params){
-		var wodIconCanvas = $C('DIV',{className:'wodIconCanvas'
-
+		var wodIconCanvas = $C('UL',{className:'wodIconCanvas',
+			'iconsRemove': function(iconsNames){return _wodIconCanvas.icons_remove(this,iconsNames);},
+			'iconsAdd': function(icons){return _wodIconCanvas.icons_add(this,icons);},
+			'onicondrop': function(e){return false;},
+			'oncontextmenu': function(e){return _wodIconCanvas.oncontextmenu(e,this);}
+		});
+		if(params){
+			if(params.onicondrop){wodIconCanvas.onicondrop = params.onicondrop;}
+		}
+		return wodIconCanvas;
+	},
+	icons_add: function(wodIconCanvas,icons){
+		/* icons are properties */
+		$each(icons,function(k,v){
+			_icon.create(v,wodIconCanvas);
 		});
 	},
+	icons_remove: function(wodIconCanvas,iconsNames){
+//FIXME: mejor indexar el array
+		$each(wodIconCanvas.childNodes,function(k,v){
+			var iProp = _icon.getProperties(v);
+			if(iconsNames.indexOf(iProp.fileName) > -1){_icon.destroy(v);}
+		});
+	},
+	oncontextmenu: function(e,elem){
+		ops = [];
+		ops.push({'text':'<i class="icon-paste"></i> Paste','op':'fs_paste'});
+
+		var ctx = new widget('_wodContextMenu',{'target':elem});
+		$each(ops,function(k,v){
+			if(v.text == '-'){ctx.addSeparator();return;}
+			ctx.addItem(v.text,function(e,tr){
+				if(_desktop[v.op]){return _desktop[v.op](el);}
+				var el = elem;do{if(el[v.op]){return el[v.op](e,el);}el = el.parentNode;}while(el.parentNode);
+			});
+		});
+	}
 };
 
 var _wodTable = {
@@ -205,7 +248,7 @@ wodTable.columns.childs[k].width = '-webkit-calc('+columnsPercentage+' * (100% -
 var _wodContextMenu = {
 	init: function(params){
 		/* params = {'target':HTMLElement} */
-		var wodContextMenu = $C('UL',{className:'icon_contextMenu',
+		var wodContextMenu = $C('UL',{className:'contextMenu',
 			'target':false,
 			'addItem': function(text,callback,disabled){return _wodContextMenu.item_add(wodContextMenu,text,callback,disabled);},
 			'addSeparator': function(text){return _wodContextMenu.separator_add(wodContextMenu);}

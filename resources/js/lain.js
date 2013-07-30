@@ -2,6 +2,9 @@ var VAR_lain = {'bodyWidth':0,'bodyHeight':0};
 var lWindows = false;
 var VAR_MIMES = {'folder':'lainExplorer','image/jpeg':'eyeOfLain','image/png':'eyeOfLain','application/ogg':'melodiamePlayer','application/ogv':'lainPlayer'};
 
+function test(){
+_desktop.signals.file_update('aa');
+}
 function window_create(id,style,holder){return _wodern.window_create(id,style,holder);}
 function window_container(w){return $C('DIV',{className:'wodThemeContainer contractable'},w);}
 function window_container_init(w){
@@ -142,7 +145,6 @@ var _desktop = {
 
 		document.addEventListener('dragover',_desktop.signals_dragover,true);
 		document.addEventListener('drop',_desktop.signals_drop,true);
-		document.addEventListener('keypress',_desktop.desktop_signals_keyPress,true);
 		_desktop.signals.resize_end();
 		var a = $_('lainPlacesMenu_itemList',{'onDropElement':_desktop.menu_places_mouseDown});
 		lWindows = $_('lainWindows');
@@ -197,10 +199,6 @@ var _desktop = {
 		return false;
 	},
 	desktop_signals_keyPress: function(e){
-		/* ENTER */if(e.keyCode == 13){
-			//FIXME: puede ser un intro porque se está canbiando el nombre de una carpeta
-			_desktop.vars.fileSelection.each(function(elem){elem.launch();});
-		}
 		/* LEFTCUR */if(e.keyCode == 37){
 			if(_desktop.vars.fileSelection.length > 0){
 				var elem = _desktop.vars.fileSelection[0];
@@ -219,16 +217,6 @@ var _desktop = {
 				elem.onUnSelect();
 				if(elem.nextSibling){elem.nextSibling.onSelect();}
 				else{elem.parentNode.lastChild.onSelect();}
-			}
-		}
-		/* F2 */if(e.keyCode == 113){
-			if(_desktop.vars.fileSelection.length == 1){
-				var elem = _desktop.vars.fileSelection[0];
-				var iProp = _desktop.icon_getProperties(elem);
-				var h = $fix(elem.lastChild).empty();
-				var iconName = iProp.fileName;
-				/* See icon_onUnSelect for more details */
-				var t = $C('TEXTAREA',{value:iconName,onmousedown:function(e){e.stopPropagation();}},h).focus();
 			}
 		}
 		//alert(e.keyCode);
@@ -252,23 +240,6 @@ var _desktop = {
 		if(keyCodes.length > 3 || keyCodes.length < 1){return;}
 		if(!w.input_shorcutKey){w.input_shorcutKey = {'1':{},'2':{},'3':{}};}
 		w.input_shorcutKey[keyCodes.length][keyCodes] = callback;
-	},
-	signals_mousedown: function(e){
-//FIXME rehacer
-return true;
-		if(_desktop.vars.currentContextMenu){_desktop.vars.currentContextMenu.parentNode.removeChild(_desktop.vars.currentContextMenu);_desktop.vars.currentContextMenu = false;}
-
-		if(e.target.tagName == 'INPUT'){return true;}
-		if((e.target.tagName == 'LI' || e.target.parentNode.tagName == 'LI') && e.target.className.match(/button/)){return true;}
-		if(e.target.id == 'lainDesktop'){e.preventDefault();_desktop.desktop_selection_start(e);return true;}
-
-		/* Icon selection - Right clic can't start a file selection */
-		if(e.which != 3 && e.target && e.target.className.match(/^icon32_/)){
-			var elem = e.target;var isIcon = false;
-			var lim = 3;while(elem.parentNode && lim > 0){if(elem.parentNode.className && elem.parentNode.className.match(/desktop_icon/)){isIcon = true;lim = 0;};elem = elem.parentNode;lim--;}
-			if(isIcon){elem.onSelect();}
-		}
-		e.preventDefault();
 	},
 	desktop_selection_start: function(e){
 		var s = {'startX':e.clientX,'startY':e.clientY,'h':$_('lainFlowIcon')};
@@ -296,25 +267,8 @@ return true;
 		}
 		elem.parentNode.removeChild(elem);
 	},
-	desktop_paste: function(elem){
-		if(_desktop.vars.fileOperation != 'cut' && _desktop.vars.fileOperation != 'copy'){return;}
-return false;
-//FIXME: mal, usar fileSelection
-		var iconElem = _desktop.vars.fileOrig;
-
-		var iProp = _desktop.icon_getProperties(elem);
-		var destPath = iProp.filePath+iProp.fileName;
-		var iProp = _desktop.icon_getProperties(iconElem);
-		var origPath = iProp.filePath+iProp.fileName;
-
-		ajaxPetition('r/PHP/API_fileManager.php','command=move&orig='+origPath+'&dest='+destPath,function(ajax){
-			var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
-			if(_desktop.vars.fileOperation == 'cut'){iconElem.parentNode.removeChild(iconElem);}
-			_desktop.vars.fileOperation = false;
-		}.bind(this));
-	},
 	desktop_properties: function(elem){
-		var iProp = _desktop.icon_getProperties(elem);
+		var iProp = _icon.getProperties(elem);
 		var origPath = iProp.filePath+iProp.fileName;
 
 		var h = elem.lastChild;
@@ -330,7 +284,7 @@ return false;
 		$C('LI',{className:'noSensitive',innerHTML:'Link: <a href="users/'+VAR_loggedUser.userAlias+'/drive'+origPath+'">'+iProp.fileName+'</a>'},h);
 	},
 	desktop_launch: function(iconElem){
-		var iProp = _desktop.icon_getProperties(iconElem);
+		var iProp = _icon.getProperties(iconElem);
 		if(iProp.fileMime == 'application/ogg' && iProp.fileName.match(/ogv$/)){iProp.fileMime = 'application/ogv';}
 		if(!(appName = VAR_MIMES[iProp.fileMime])){return false;}
 		launchApp(appName,iconElem);
@@ -368,9 +322,8 @@ return false;
 		});
 		setTimeout(function(){_wodern.position_set(elem);},500);
 	},
-	window_getWindowZ: function(){this.vars.wHighestZ++;return this.vars.wHighestZ;},
 	window_signals_click: function(e,elem){if(!elem){elem = e.target;while(elem.parentNode && !elem.className.match(/wodTheme/)){elem = elem.parentNode;};if(!elem.className.match(/wodTheme/)){return;};}this.window_registerTop(elem);},
-	window_registerTop: function(elem){elem.$B({'.zIndex':_desktop.window_getWindowZ()});this.vars.window_top = elem;},
+	window_registerTop: function(elem){elem.$B({'.zIndex':_wodern.window_getZ()});this.vars.window_top = elem;},
 	icons_organize: function(){
 		var h = $_('lainIcons',{innerPath:'/'});
 		//FIXME: hacer 2 peticiones, no se x que
@@ -379,8 +332,8 @@ return false;
 		var offsetTop = 30;
 		$A(h.childNodes).each(function(li){
 			if(li.tagName != 'LI'){li.parentNode.removeChild(li);return;}
-			var iProp = _desktop.icon_getProperties(li);
-			var iconElem = _desktop.icon_create(iProp,h);
+			var iProp = _icon.getProperties(li);
+			var iconElem = _icon.create(iProp,h);
 			iconElem.$B({'.left':offsetLeft+'px','.top':offsetTop+'px'});
 			offsetTop += 64;
 			if(offsetTop+64>_desktop.vars.bodyHeight){offsetTop=30;offsetLeft+=85;}
@@ -394,50 +347,57 @@ return false;
 
 		var signals = {
 			launch:function(){_desktop.desktop_launch(this);},
-			onRename:function(){_desktop.icon_onRename(li);},
-
+			onrename:function(){_icon.rename(this);},
 			onopen: function(e,el){_desktop.desktop_launch(this);},
 			oncopy: function(e,el){_desktop.vars.fileOperation = 'copy';_desktop.fileSelection_save();},
-			oncut: function(e,el){_desktop.vars.fileOperation = 'cut';_desktop.fileSelection_save();},
-			onpaste: function(e,el){if(!_icon.isFolder(this)){return false;}var f = 'fs_'+_desktop.vars.fileOperation;if(_desktop[f]){return _desktop[f](e,this);}},
-			ontrash: function(e,el){
-//FIXME: rompe el escritorio
-//FIXME: si hay varias operaciones, no hacer reflow
-_icon.destroy(el);},
+			oncut: function(e,el){_desktop.vars.fileOperation = 'move';_desktop.fileSelection_save();},
+			onpaste: function(e,el){if(!_icon.isFolder(this)){return false;}var f = 'fs_'+_desktop.vars.fileOperation;if(_desktop[f]){return _desktop[f](this);}},
+			ontrash: function(e,el){_icon.destroy(el);},
 			onselect: function(e,el){_icon.select(el,(e.which == 1)/* To switch selection */);},
 			onunselect: function(e,el){_icon.unselect(el);},
 			onmousedown: function(e,el){
+				if(this.getAttribute('data-status') == 'rename'){return false;}
 				if(e.which == 1){return _littleDrag.onMouseDown(e);}
 				if(e.which == 3){return this.oncontextmenu(e,el);}
 			},
 			oncontextmenu: function(e,el){_icon.contextmenu(e,el);}
 		};
 		if(s){signals = extend(signals,s);}
-		var li = $C('LI',extend({className:'desktop_icon wodIcon icon32_'+iProp.fileMime+' dragable'},signals),h);
+		var li = $C('LI',extend({className:'wodIcon icon32_'+iProp.fileMime+' dragable'},signals),h);
 
 		/* iconCanvas is allowed to navigate (not open in new window) */
-		if(iProp.fileIsDir && li.parentNode.className == 'iconCanvas' && VAR_apps['lainExplorer']){li.launch = function(){VAR_apps['lainExplorer'].list(h,h.innerPath+iProp.fileName+'/');};}
+//FIXME: esto no va aquí, pero bueno
+		if(iProp.fileIsDir && li.parentNode.className == 'iconCanvas' && VAR_apps.lainExplorer){li.launch = function(){VAR_apps['lainExplorer'].list(h,h.innerPath+iProp.fileName+'/');};}
 		$C('I',{innerHTML:jsonEncode(iProp)},li);
 		var i = $C('IMG',{className:'icon32_generic icon32_'+iProp.fileMime,src:'r/images/t.gif'},$C('DIV',{className:'icon32_imgHolder'},li));
 		$C('DIV',{className:'icon32_textHolder',innerHTML:shortedText},li);
 
-		/* if the holder is an iconCanvas we need to resize it in order to keep the height right */
-		//FIXME: esto está de mal a muy mal
-		if(li.parentNode.id != 'lainIcons' && li.parentNode.className == 'iconCanvas'){this.iconCanvas_autoResize(li.parentNode);}
 		return li;
 	},
+	//FIXME: deprecated
 	icon_getProperties: function(elem){return jsonDecode(elem.firstChild.innerHTML);},
-	icon_saveProperties: function(elem,iProp){var iPropEncoded = jsonEncode(iProp);elem.firstChild.innerHTML = iPropEncoded;return iPropEncoded;},
-	fs_copy: function(e,icon){
+	fs_copy: function(icon){
 //FIXME: comprobar si en destino existen ficheros con el mismo nombre
-		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}
-		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
+		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});var target = _icon.getProperties(icon);
+		ajaxPetition('api/fs','subcommand=file_copy&files='+base64.encode(jsonEncode(files))+'&target='+base64.encode(jsonEncode(target)),function(ajax){var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();});
+	},
+	fs_move: function(icon){
+//FIXME: comprobar si en destino existen ficheros con el mismo nombre
+		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});var target = _icon.getProperties(icon);
+		ajaxPetition('api/fs','subcommand=file.move&files='+base64.encode(jsonEncode(files))+'&target='+base64.encode(jsonEncode(target)),function(ajax){var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();});
+	},
+	fs_paste: function(){
+//FIXME: hay que pasar el destino por parámetros
+return false;
+		if(isEmpty(_desktop.vars.fileOperation)){return false;}
+		var f = 'fs_'+_desktop.vars.fileOperation;
+		var selection = _desktop.fileSelection_get();
+		if(selection.length != 1){return false;}
+		if(_desktop[f]){return _desktop[f](selection[0]);}
+	},
+	fs_rename: function(icon,name){
 		var target = _icon.getProperties(icon);
-		ajaxPetition('api/fs','subcommand=file_copy&files='+base64.encode(jsonEncode(files))+'&target='+base64.encode(jsonEncode(target)),function(ajax){
-			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
-			_desktop.signals.fileupdate(r);
-			_desktop.fileSelection_emptySaved();
-		});
+		ajaxPetition('api/fs','subcommand=file_rename&file='+base64.encode(jsonEncode(target))+'&name='+base64.encode(jsonEncode(name)),function(ajax){var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);});
 	},
 	fs_trash: function(e){
 		var selection = _desktop.fileSelection_get();if(!selection.length){return false;}
@@ -446,10 +406,15 @@ _icon.destroy(el);},
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 			$each(selection,function(k,v){if(v.ontrash){v.ontrash(e,v);}});
 			_desktop.fileSelection_empty();
+			_desktop.signals.file_update(r);
 		});
 	},
 	icon_contextMenu_close: function(e){var ul = _desktop.vars.currentContextMenu;if(!ul){return false;}ul.parentNode.removeChild(ul);_desktop.vars.currentContextMenu = false;if(e){e.stopPropagation();}},
 	icon_mouseup: function(e,elem){
+
+return;
+		document.elementFromPoint(2, 2);
+//FIXME: esto debería pertenecer a wodern
 		var ws = [];
 		$A(lWindows.childNodes).each(function(elem){if(!elem.firstChild){return;}
 			$A(elem.childNodes).each(function(el){if(el.className && el.className.match(/^wodern/)){ws.push(el);}});
@@ -467,60 +432,6 @@ _icon.destroy(el);},
 		$A(dn).each(function(el){if((el.style.zIndex || 1) > candidateIndex){candidateIndex = el.style.zIndex;candidate = el;}});
 		if(candidate.onDropElement){return candidate.onDropElement(elem);}
 		_desktop.signals.icon_drop(elem);
-	},
-	icon_move: function(li,h){
-		/* If the canvas get destroyed in the process */
-		if(!h){return;}
-		var iProp = this.icon_getProperties(li);
-//FIXME: esto ya esta todo mal
-		if(iProp.filePath != h.innerPath){iProp.filePath = h.innerPath;li.firstChild.innerHTML = jsonEncode(iProp);}
-		var oldParent = li.parentNode;
-		li.$B({'.left':'auto','.top':'auto'});
-		h.appendChild(li);
-
-		//FIXME: callback to h.updateCanvasSize if exists
-		if(oldParent.className == 'iconCanvas'){this.iconCanvas_autoResize(oldParent);}
-		if(li.parentNode.className == 'iconCanvas'){this.iconCanvas_autoResize(li.parentNode);}
-	},
-	icon_onRename: function(li,text){
-		/* text param is no used yet */
-		var ta = li.lastChild.firstChild;
-		if(isEmpty(ta.value)){return;}
-		var iProp = _desktop.icon_getProperties(li);
-		var iPropOrigEncoded = jsonEncode(iProp);
-
-		iProp.fileName = li.lastChild.firstChild.value;
-		this.icon_saveProperties(li,iProp);
-
-		ajaxPetition('r/PHP/API_fileManager.php','command=renameFile&file='+iPropOrigEncoded+'&newName='+iProp.fileName,function(ajax){
-			var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
-			//alert(print_r(r));
-		}.bind(this));
-	},
-	iconCanvas_create: function(id,p){
-		return $C('UL',{id:id,className:'iconCanvas'},p);
-	},
-	iconCanvas_autoResize: function(i){
-		var childs = i.childNodes.length;
-		var l = 1;
-		if(childs > 1){
-			i.$B({'.width':'auto'});
-			var w = i.innerWidth();
-			var iconWidth = i.childNodes[0].offsetWidth;
-			//FIXME: hay que calcular 80 automáticamente, el tamaño del icono
-			if(iconWidth == 0){iconWidth = 80;}
-			if(w < iconWidth){w = iconWidth;}
-			var c = iconWidth*childs;
-			l = Math.ceil(c/w);
-		}
-		//FIXME: hay que calcular 70 automáticamente, el tamaño del icono
-		var iconCanvasHeight = l*70;
-
-		i.$B({'.overflowY':'hidden','.height':'auto'});
-		if(iconCanvasHeight > 220){iconCanvasHeight = 220;i.style.overflowY = 'scroll';}
-
-		//eEaseHeight(i,iconCanvasHeight,false,false,false,true);
-		i.style.height = iconCanvasHeight+'px';
 	},
 	time_stampToDate: function(t){
 		var date = new Date(t*1000);
@@ -584,7 +495,7 @@ _icon.destroy(el);},
 		});
 	},
 	background_set: function(iconElem){
-		var iProp = _desktop.icon_getProperties(iconElem);
+		var iProp = _icon.getProperties(iconElem);
 		var filePath = iProp.fileRoute+iProp.fileName;
 		ajaxPetition('api/desktop/background_set/'+base64.encode(filePath),'',function(ajax){_desktop.background_init(1);});
 	},
@@ -597,31 +508,53 @@ _icon.destroy(el);},
 };
 
 var _icon = {
+	create: function(iProp,h,s){
+		return _desktop.icon_create(iProp,h,s);
+	},
 	open: function(icon){
 		
 	},
 	destroy: function(icon){
-		var iconCanvas = icon.parentNode;iconCanvas.removeChild(icon);
-		//FIXME: esto está de mal a muy mal
-		//FIXME: si hay destroys consecutivos? <- hacerlo con un setTimeout
-		//FIXME: posiblemente llamar a icons_organize
-		if(iconCanvas.id != 'lainIcons' && iconCanvas.className == 'iconCanvas'){/* FIXME: mover a este objeto */_desktop.iconCanvas_autoResize(iconCanvas);}
+		icon.parentNode.removeChild(icon);
 	},
 	select: function(icon,swch){
 		swch = typeof swch !== 'undefined' ? swch : 1;
 		if($E.classHas(icon,'selected')){if(swch){return _icon.unselect(icon);}return false;}
 		$E.classAdd(icon,'selected');
 		_desktop.fileSelection_add(icon);
-		var iProp = _desktop.icon_getProperties(icon);
+		_desktop.fileSelection_save();
+		var iProp = _icon.getProperties(icon);
 		icon.lastChild.innerHTML = iProp.fileName;
 	},
 	unselect: function(icon){
 		if(!$E.classHas(icon,'selected')){return false;}
+		icon.setAttribute('data-status','unselect');
 		$E.classRemove(icon,'selected');
 		_desktop.fileSelection_remove(icon);
-		var iProp = _desktop.icon_getProperties(icon);
+		_desktop.fileSelection_save();
+		var iProp = _icon.getProperties(icon);
 		var shortedText = (iProp.fileName.length > 13) ? iProp.fileName.substr(0,10)+'...' : iProp.fileName;
 		icon.lastChild.innerHTML = shortedText;
+	},
+	rename: function(icon){
+		icon.setAttribute('data-status','rename');
+		var iProp = _icon.getProperties(icon);
+		var h = $fix(icon.lastChild).empty();
+		var iconName = iProp.fileName;
+		/* See icon_onUnSelect for more details */
+		var t = $C('TEXTAREA',{value:iconName,onmousedown:function(e){e.stopPropagation();}},h).focus();
+		icon.onrenameend = function(){return _icon.renameend(icon);};
+	},
+	renameend: function(icon){
+		icon.onrenameend = false;
+		var iconName = icon.$T('TEXTAREA')[0].value;
+		var iProp = _icon.getProperties(icon);
+		iProp.fileName = iconName;
+		_desktop.fs_rename(icon,iconName);
+		_icon.setProperties(icon,iProp);
+		_icon.unselect(icon);
+		_icon.select(icon);
+		return false;
 	},
 	contextmenu: function(e,elem){
 //FIXME: la distancia desde target
@@ -643,12 +576,13 @@ var _icon = {
 		$each(ops,function(k,v){
 			if(v.text == '-'){ctx.addSeparator();return;}
 			ctx.addItem(v.text,function(e,tr){
-				if(_desktop[v.op]){return _desktop[v.op](e,el);}
+				if(_desktop[v.op]){return _desktop[v.op](el);}
 				var el = elem;do{if(el[v.op]){return el[v.op](e,el);}el = el.parentNode;}while(el.parentNode);
 			});
 		});
 	},
-	getProperties: function(elem){return jsonDecode(elem.firstChild.innerHTML);},
+	getProperties: function(elem){if(elem.fileRoute){return elem;}return jsonDecode(elem.firstChild.innerHTML);},
+	setProperties: function(elem,iProp){var iPropEncoded = jsonEncode(iProp);elem.firstChild.innerHTML = iPropEncoded;return iPropEncoded;},
 	isFolder: function(icon){var p = _icon.getProperties(icon);return p.fileMime == 'folder';}
 };
 
@@ -656,7 +590,7 @@ var _iface = {
 	vars: {},
 	init: function(){},
 	desktop_setBackground: function(iconElem,callback){
-		var iProp = _desktop.icon_getProperties(iconElem);
+		var iProp = _icon.getProperties(iconElem);
 		var iPropOrigEncoded = jsonEncode(iProp);
 		var params = {'command':'setBackground','file':iPropOrigEncoded};
 		ajaxPetition('r/PHP/API_desktop.php',$toUrl(params),function(ajax){

@@ -50,16 +50,21 @@ var _littleDrag = {
 	onMouseUp: function(e,elem){
 		document.removeEventListener('mousemove',elem.mouseMoveHandler,true);
 		document.removeEventListener('mouseup',elem.mouseUpHandler,true);
+		if(elem.onmouseup){elem.oldOnmouseup = elem.onmouseup;}
 
 		/* Si es una ventana, la expandemos para ver el contenido */
+//FIXME: no es necesario, hacer un callback en el propio objeto
 		if(elem.className.match(/wodern/)){_desktop.window_expand(elem);}
 
-		if(elem.className.match(/wodIcon/)){
+		if(elem.className.match(/wodIcon/)){do{
 			var fake = elem;elem = elem.innerElem;
 			fake.parentNode.removeChild(fake);
-			elem.oldOnmouseup = elem.onmouseup;
-			if((new Date().getTime() - elem.firstClick)>this.vars.clickDelay){_desktop.icon_mouseup(e,elem);}
-		}
+			if((new Date().getTime() - elem.firstClick) < this.vars.clickDelay){break;}
+			var x = e.clientX;var y = e.clientY;
+			var candidate = document.elementFromPoint(x,y);if(!candidate){break;}
+			do{if(candidate.onicondrop && $type(candidate.onicondrop) === 'function'){break;}candidate = candidate.parentNode;}while(candidate.parentNode);
+			if(candidate.onicondrop){candidate.onicondrop(e,elem);}
+		}while(false);}
 
 		/* Si tenia callbacks previos, los ejecutamos */
 		if(elem.oldOnmouseup){elem.oldOnmouseup();}

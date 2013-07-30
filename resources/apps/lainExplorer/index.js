@@ -1,55 +1,77 @@
 VAR_apps.lainExplorer = {
 	init: function(holder,params){
-		if(!VAR_apps.lainExplorer.vars){VAR_apps.lainExplorer.vars = {apiURL:'api/fs',wCounter:0,wHolder:holder,wList:$A([]),cList:$A([])};}
-		//if(params && params.tagName && params.tagName == 'LI'){var iProp = _desktop.icon_getProperties(params);VAR_apps.lainExplorer.createExplorer(iProp.fileRoute+iProp.fileName);return;}
-		if(params && params.tagName && params.tagName == 'LI'){var iProp = _desktop.icon_getProperties(params);VAR_apps.lainExplorer.createExplorer(iProp);return;}
-		if(params && params.constructor == String){VAR_apps.lainExplorer.createExplorer(params);return;}
+		if(!VAR_apps.lainExplorer.vars){VAR_apps.lainExplorer.vars = {apiURL:'api/fs',wCounter:0,wHolder:holder,wList:[],cList:$A([])};}
+		if(!VAR_apps.lainExplorer.events){
+			document.addEventListener('fileRemove',VAR_apps.lainExplorer.onFileRemove,true);
+			document.addEventListener('fileAdd',VAR_apps.lainExplorer.onFileAdd,true);
+			VAR_apps.lainExplorer.events = true;
+		}
+		if(params && params.tagName && params.tagName == 'LI'){var iProp = _desktop.icon_getProperties(params);VAR_apps.lainExplorer.client(iProp);return;}
+		if(params && params.constructor == String){VAR_apps.lainExplorer.client(params);return;}
 	},
 	appKill: function(){this.vars.wList.each(function(w){_wodern.window_destroy(w);}.bind(this));},
-	wList_removeElem: function(el){this.vars.wList.each(function(w,n){if(w == el){this.vars.wList.splice(n,1);}}.bind(this));},
-	createExplorer: function(path){
-//FIXME: hay que pasarlo a icon
-		var ths = this;
-		var holder = VAR_apps.lainExplorer.vars.wHolder;
+	windows_get: function(){return VAR_apps.lainExplorer.vars.wList;},
+	wList_removeElem: function(el){
+//FIXME: usar indexOf
+//this.vars.wList.each(function(w,n){if(w == el){this.vars.wList.splice(n,1);}}.bind(this));
 
-		var wNum = this.vars.wCounter;
-		var w = window_create('lainExplorer'+wNum,{wodTitle:'Lain File Explorer',
-			beforeRemove:function(){this.wList_removeElem(w);}.bind(this),
-			onDropElement:function(elem){ths.onDropElement(elem,this);}
-		},holder);
-		this.vars.wList.push(w);
-		h = w.windowContainer;
-
+},
+	client: function(params){
+		var wContainer = window_container();
 		/* INI-MENU */
-		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},h);
-		var ul = $C('UL',{},$C('LI',{innerHTML:'File',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
-$C('LI',{className:'icon_folder_add',innerHTML:'Create new folder',onclick:function(){this.operation_createFolder(iconCanvas);}.bind(this)},ul);
-		var ul = $C('UL',{},$C('LI',{innerHTML:'Edit',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
-		$C('LI',{className:'icon_paste',innerHTML:'Paste',onclick:function(){this.operation_paste(iconCanvas);}.bind(this)},ul);
-		var ul = $C('UL',{},$C('LI',{innerHTML:'View',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
-		$C('LI',{innerHTML:'Side Panel',onclick:function(){alert(1);}.bind(this)},ul);
+		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},wContainer);
+		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'File'},wodMenuHolder));
+		$C('LI',{innerHTML:'Create new folder',onclick:function(){VAR_apps.lainExplorer.operation_createFolder(iconCanvas);}},ul);
+		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'Edit'},wodMenuHolder));
+		$C('LI',{innerHTML:'<i class="icon-paste"></i> Paste',onclick:function(){VAR_apps.lainExplorer.menu_edit_paste();}},ul);
+		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'View'},wodMenuHolder));
+		$C('LI',{innerHTML:'Side Panel',onclick:function(){alert(1);}},ul);
 		/* END-MENU */
 
-		var buttonHolder = $C("DIV",{className:"wodButtonMenu"},h);
-		var bt_uponelevel = $C("DIV",{innerHTML:"<img class='icon icon_token_uponelevel' src='r/images/t.gif'/>"},buttonHolder);
+		var cont = $C('DIV',{className:'wodVContainer'},wContainer);
+		var panelLeft = $C('DIV',{className:'wodHContainer','.width':'140px'},cont);
+		var s = this.sidePanel_create();
+		panelLeft.appendChild(s);
 
-		var explorerBody = $C('DIV',{className:'lainExplorer_explorerBody'},h);
-		var sidePanel = this.sidePanel_create();
-		explorerBody.appendChild(sidePanel);
+		var panelRight = $C('DIV',{className:'wodHContainer','.width':'-webkit-calc(100% - 140px)'},cont);
 
-		var iconCanvasParent = $C('DIV',{className:'lainExplorer_iconHolder iconCanvasDecorator'},h);
-		var iconCanvas = w.iconCanvas = _desktop.iconCanvas_create('lainExplorer'+wNum+'_iconCanvas',iconCanvasParent);
+
+		var buttonHolder = $C("DIV",{className:"wodButtonMenu"},panelRight);
+		var bt_uponelevel = $C('DIV',{innerHTML:'<i class="icon-arrow-up"></i>'},buttonHolder);
+		$C('DIV',{innerHTML:'native:drive:'},buttonHolder);
+
+		var iconCanvas = new widget('_wodIconCanvas',{
+			'onicondrop':function(e){
+				var window = _wodern.window_findParent(this);if(!window){return;}
+				var _icon = window.getIconParams();
+				_desktop.fs_move(_icon);
+			}
+		});
+		panelRight.appendChild(iconCanvas);
 		this.vars.cList.push(iconCanvas);
-		$C('I',{className:'floatSeparator'},iconCanvasParent);
-		this.list(iconCanvas,path);
+		this.list(iconCanvas,params);
 
 
+		var wNum = VAR_apps.lainExplorer.vars.wCounter++;
+		var w = window_create('lainExplorer'+wNum,{wodTitle:'Lain File Explorer','wContainer':wContainer,
+			beforeRemove:function(){VAR_apps.lainExplorer.wList_removeElem(w);},
+			onDropElement:function(elem){VAR_apps.lainExplorer.onDropElement(elem,this);},
+			getIconCanvas: function(){return iconCanvas;},
+			getFileRoute: function(){return w.getAttribute('data-fileRoute');},
+			setFileRoute: function(fileRoute){if(fileRoute[fileRoute.length-1] != '/'){fileRoute = fileRoute+'/';}return w.setAttribute('data-fileRoute',fileRoute);},
+			getIconParams: function(p){var p = w.getAttribute('data-iconParams');return jsonDecode(p);},
+//FIXME: esto no se actualiza :/
+			setIconParams: function(p){return w.setAttribute('data-iconParams',jsonEncode(p));}
+		},VAR_apps.lainExplorer.vars.wHolder);
+
+		w.setFileRoute(params.fileRoute+params.fileName);
+		w.setIconParams(params);
+		VAR_apps.lainExplorer.vars.wList.push(w);
 
 		bt_uponelevel.onclick = function(){this.list_upOneLevel(iconCanvas);}.bind(this);
-
-		this.vars.wCounter++;
 	},
 	list: function(iconCanvas,path){
+//FIXME: mal entera
 		var title = false;
 		if(typeof path == 'string'){
 			//FIXME: parsepath
@@ -64,17 +86,21 @@ $C('LI',{className:'icon_folder_add',innerHTML:'Create new folder',onclick:funct
 			path = path.fileRoute+((path.fileAlias) ? path.fileAlias : path.fileName);
 		}
 
-		var wNum = iconCanvas.id.match(/lainExplorer([0-9]+)_iconCanvas/)[1];
-		var t = $_('wod_lainExplorer'+wNum+'_title',{innerHTML:'Lain File Explorer - '+title});
+//FIXME: hacer un método parse
+if(path[path.length-1] != '/'){path = path+'/';}
+
+		var w = iconCanvas.$P({'className':'wodern'});
+		if(w){
+			w.setFileRoute(path);
+			//FIXME: poner título
+		}
+
+		//var t = $_('wod_lainExplorer'+wNum+'_title',{innerHTML:'Lain File Explorer - '+title});
 		ajaxPetition(this.vars.apiURL,'subcommand=folder_list&fileRoute='+base64.encode(path),function(ajax){
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 			iconCanvas.empty();
 			iconCanvas.innerPath = path;
-			$A(r.folders).each(function(elem){_desktop.icon_create(elem,iconCanvas);}.bind(this));
-			$A(r.files).each(function(elem){_desktop.icon_create(elem,iconCanvas);}.bind(this));
-
-			/* Calculate the height of an iconCanvas, if there is no icons */
-			_desktop.iconCanvas_autoResize(iconCanvas);
+			$A(r.files).each(function(elem){_desktop.icon_create(elem,iconCanvas);});
 		});
 	},
 	list_upOneLevel: function(iconCanvas){
@@ -94,20 +120,10 @@ $A($_('lainPlacesMenu_itemList').childNodes).each(function(el){
 });
 		return sidePanel;
 	},
-	operation_paste: function(iconCanvas){
-		if(_desktop.vars.fileOperation != 'cut' && _desktop.vars.fileOperation != 'copy'){return;}
-		var iconElem = _desktop.vars.fileOrig;
-
-		var destPath = iconCanvas.innerPath;
-		var iProp = _desktop.icon_getProperties(iconElem);
-		var origPath = iProp.fileRoute+iProp.fileName;
-
-		ajaxPetition(this.vars.apiURL,'command=moveFile&path='+origPath+'&dest='+destPath,function(ajax){
-			var r = jsonDecode(ajax.responseText);if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
-			_desktop.icon_create(iProp,iconCanvas);
-			if(_desktop.vars.fileOperation == 'cut'){iconElem.parentNode.removeChild(iconElem);}
-			_desktop.vars.fileOperation = false;
-		}.bind(this));
+	menu_edit_paste: function(){
+//FIXME: fake select
+return;
+		_desktop.fs_paste();
 	},
 	operation_createFolder: function(iconCanvas){
 		var destPath = iconCanvas.innerPath;
@@ -121,22 +137,6 @@ $A($_('lainPlacesMenu_itemList').childNodes).each(function(el){
 			_iface.reveal_folder_create(i.value,destPath,function(d){_desktop.icon_create(d,iconCanvas);});
 		},btHolder);
 	},
-	signal_folderAdd: function(src,fSel){
-		//alert(print_r(fSel));
-		$A(fSel).each(function(el){
-			this.vars.cList.each(function(canvas){
-				if(canvas.innerPath != src){return;}
-				_desktop.icon_create(el,canvas);
-				//alert(canvas.innerPath);
-			}.bind(this));
-		}.bind(this));
-	},
-	signal_iconAdd: function(iconObj){
-		this.vars.cList.each(function(canvas){
-			if(canvas.innerPath != iconObj.fileRoute){return;}
-			_desktop.icon_create(iconObj,canvas);
-		});
-	},
 	dragIconStart: function(e){
 		var elem = e.target;while(elem.parentNode && !elem.className.match(/dragable/)){elem = elem.parentNode;}
 		elem = $fix(elem,{'.opacity':.5,onmouseup:function(){this.$B({'.opacity':1});_littleDrag.vars.applyLimits = true;}});
@@ -144,12 +144,24 @@ $A($_('lainPlacesMenu_itemList').childNodes).each(function(el){
 		_littleDrag.vars.applyLimits = false;
 		_littleDrag.onMouseDown(e);
 	},
+	onFileAdd: function(e){
+		var wList = VAR_apps.lainExplorer.windows_get();
+		var files = e.detail;
+		$each(wList,function(k,v){var fileRoute = v.getFileRoute();
+		if(files[fileRoute]){v.getIconCanvas().iconsAdd(files[fileRoute]);}});
+	},
+	onFileRemove: function(e){
+		var wList = VAR_apps.lainExplorer.windows_get();
+		var files = e.detail;
+		$each(wList,function(k,v){var fileRoute = v.getFileRoute();
+		if(files[fileRoute]){v.getIconCanvas().iconsRemove(files[fileRoute]);}});	
+	},
 	onDropElement: function(iconElem,w){
 		var iconCanvas = w.iconCanvas;
 		if(!iconElem.$B){el = $fix(el);}
 		/* Si el elemento pertenece a la misma ventana, no hacemos nada */
 		if(iconElem.isChildNodeOf(iconCanvas)){return;}
-
+return false;
 		var destPath = iconCanvas.innerPath.replace(/[\/]*$/,'')+'/';
 //FIXME:hack
 if(destPath[0] == '/'){destPath = 'native:drive:'+destPath;}
@@ -169,7 +181,7 @@ if(destPath[0] == '/'){destPath = 'native:drive:'+destPath;}
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 //FIXME: cambiar el sistema
 //alert(print_r(r));
-			_desktop.icon_move(iconElem,iconCanvas);
+			//_desktop.ico//n_move(iconElem,iconCanvas);
 		}.bind(this));
 	}
 };

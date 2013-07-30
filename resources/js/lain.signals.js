@@ -1,11 +1,13 @@
 _desktop.signals = {
 	mouse_down: function(e){
-		if(e.target.tagName == 'INPUT'){return true;}
+		if(e.target.tagName == 'INPUT' || e.target.tagName == 'TEXTAREA'){return true;}
 		e.preventDefault();e.stopPropagation();
+		var el = e.target;do{if(el.onmousedown){var r = el.onmousedown(e,el);if(r === false){return false;}}if(!el.parentNode){break;}el = el.parentNode;}while(el.parentNode);
+
 		var key_control = (_desktop.vars.input_presedKeys.indexOf(17) > -1);
 		/* If the control key is pressed we should check multi selection, if after 
 		 * climb 5 parent elements we dont find an iconCanvas, we are not in a icon pool */
-		if(e.which == 1 && !key_control && $E.classParentHas(e.target,'iconCanvas',5)){_desktop.fileSelection_empty(e);}
+		if(e.which == 1 && !key_control && $E.classParentHas(e.target,'wodIconCanvas',5)){_desktop.fileSelection_empty(e);}
 		/* With the secondary button, we need to break a selection when the click 
 		 * is not over almost one element in the current selection */
 		if(e.which == 3){
@@ -15,8 +17,7 @@ _desktop.signals = {
 			}
 		}
 
-		var el = e.target;do{if(el.onselect){el.onselect(e,el);break;}el = el.parentNode;}while(el.parentNode);
-		var el = e.target;do{if(el.onmousedown){return el.onmousedown(e,el);}el = el.parentNode;}while(el.parentNode);
+		var el = e.target;do{if(el.onselect){el.onselect(e,el);break;}if(!el.parentNode){break;}el = el.parentNode;}while(el.parentNode);
 		if(e.which == 1){return _desktop.signals.mouse_down_left(e);}
 		if(e.which == 3){return _desktop.signals.mouse_down_right(e);}
 	},
@@ -50,7 +51,13 @@ _desktop.signals = {
 		//_desktop.desktop_shorcutKey_check();return false;
 		//FIXME: si hay más de una tecla no seguir
 		var selection = _desktop.fileSelection_get();
-		/* DEL */if(e.keyCode == 46){if(selection.length > 0){return _desktop.fs_trash(selection);}}
+		/* ENTER */if(e.keyCode == 13){
+			if(selection.length == 1 && selection[0].getAttribute('data-status') == 'rename'){return selection[0].onrenameend();}
+			//FIXME: puede ser un intro porque se está canbiando el nombre de una carpeta
+			$each(selection,function(k,elem){elem.launch();});
+		}
+		/* DEL   */if(e.keyCode == 46){if(selection.length > 0){return _desktop.fs_trash(selection);}}
+		/* F2    */if(e.keyCode == 113){if(selection.length == 1){return selection[0].onrename();}}
 		//alert(e.keyCode);
 	},
 	key_up: function(e){
@@ -64,7 +71,16 @@ _desktop.signals = {
 		_desktop.background_init();
 	},
 	file_update: function(files){
-		//$A(files).each(function(elem){_desktop.icon_create(elem,iconCanvas);}.bind(this));
+		if(files.remove){
+			//document.addEventListener('fileRemove',function(e){alert(print_r(e.detail));},true)
+			var event = new CustomEvent('fileRemove',{'detail':files.remove});
+			document.dispatchEvent(event);
+		}
+		if(files.add){
+			//document.addEventListener('fileAdd',function(e){alert(print_r(e.detail));},true)
+			var event = new CustomEvent('fileAdd',{'detail':files.add});
+			document.dispatchEvent(event);
+		}
 	},
 	icon_drop: function(iconElem){
 		//FIXME: faltaría moverlo de verdad

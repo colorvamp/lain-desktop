@@ -3,8 +3,9 @@ var _wodern = {
 		if($_('wod_'+id)){return $_('wod_'+id);}
 		if(!style){var style = {};}
 		var wContainer = (style.wContainer) ? style.wContainer : false;if(style.wContainer){style.wContainer = false;}
-		extend(style,{'id':'wod_'+id,className:'wodern dragable'+(style.className ? ' '+style.className : ''),'.zIndex':_desktop.window_getWindowZ()});
+		extend(style,{'id':'wod_'+id,className:'wodern dragable'+(style.className ? ' '+style.className : ''),'.zIndex':_wodern.window_getZ()});
 		var w = $C('DIV',style);
+		//FIXME: traer aquí
 		w.onclick = function(e){_desktop.window_signals_click(e,w);};
 		w.windowBorder = $C('DIV',{className:'wodThemeBorder'},w);
 		$C('DIV',{className:'wodThemeResize',onmousedown:_wodern.resize_mousedown,'w':w},w.windowBorder);
@@ -23,6 +24,8 @@ var _wodern = {
 		if(el.beforeRemove){el.beforeRemove();};var afterRemove = function(){};if(el.afterRemove){afterRemove=el.afterRemove;}
 		el.parentNode.removeChild(el);if(ev){ev.stopPropagation();}afterRemove();
 	},
+	window_getZ: function(){return _desktop.vars.wHighestZ++;},
+	window_findParent: function(el){while(el.parentNode && !el.className.match(/^wodern( |$)/)){el = el.parentNode;}if(!el.parentNode){return false;}return el;},
 	resize_mousedown: function(e){
 		e.stopPropagation();
 		var el = e.target;
@@ -72,9 +75,11 @@ var _wodern = {
 	position_get: function(w){
 		var a = {'.width':'400px','.height':'auto','.left':( Math.random()*(_desktop.vars.bodyWidth-400) )+'px','.top':( Math.random()*(_desktop.vars.bodyHeight-100) )+'px'};
 		var c = unescape(cookieTake('position:'+w.id));
-		do{if(!c){c = a;break;}c = jsonDecode(c);if(!c){c = a;break;}c = {'.width':(c.width) ? c.width+'px' : a.width,'.height':(c.height) ? c.height+'px' : a.height,'.left':(c.left) ? c.left+'px' : a.left,'.top':(c.top) ? c.top+'px' : a.top};}while(false);
-		//FIXME:
-		c['.height'] = 'auto';
+		do{if(!c){c = a;break;}c = jsonDecode(c);if(!c){c = a;break;}if(!c.width){c = a;break;}
+			if(c.left > (_desktop.vars.bodyWidth-20)){c.left = _desktop.vars.bodyWidth-c.width;}
+			c = {'.width':(c.width) ? c.width+'px' : a.width,'.height':(c.height) ? c.height+'px' : a.height,'.left':(c.left) ? c.left+'px' : a.left,'.top':(c.top) ? c.top+'px' : a.top};
+		}while(false);
+
 		w.$B(c);
 	}
 };

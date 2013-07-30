@@ -22,7 +22,6 @@ VAR_apps.users = {
 		/* app container */
 		h = VAR_apps.users.vars.wContainer = w.windowContainer;
 
-
 		var cont = $C('DIV',{className:'wodContainer'},h);
 
 		/* Load the users list */
@@ -93,7 +92,7 @@ VAR_apps.users = {
 	},
 	action_user_removeByMail: function(mails,callback){
 		callback = typeof callback !== 'undefined' ? callback : false;
-		var userMails = $isString(mails) ? [mails] : mails;
+		var userMails = $is.string(mails) ? [mails] : mails;
 		ajaxPetition('api/users','subcommand=remove&users='+base64.encode(jsonEncode(userMails)),function(ajax){
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 			if(callback){return callback(r);}

@@ -67,7 +67,7 @@
 		}else{func();}
 	}
 	function $each(obj,fun){
-		if('length' in obj && !obj.hasOwnProperty('length')){for(var i=0; i<obj.length; i++){fun.call(this,i,obj[i],i);};return;}
+		if(Array.isArray(obj) || $type(obj.length) === 'number'){for(var i=0; i<obj.length; i++){fun.call(this,i,obj[i],i);};return;}
 		if($type(obj)=='object'){var n=0;for(var a in obj){fun.call(this,a,obj[a],n);n++;}return;}
 	}
 	function $getElementStyle(obj,styleProp){if(obj.currentStyle){return obj.currentStyle[styleProp];}if(window.getComputedStyle){return document.defaultView.getComputedStyle(obj,null).getPropertyValue(styleProp);}}
@@ -81,7 +81,10 @@
 	function $round(num){num = num.toString();if(num.indexOf('.') == -1){return num;}num = (parseFloat(num)*1000).toString().split('.')[0];if(parseInt(num[num.length-1])>4){if(num[0]!='-'){num = (parseInt(num)+10).toString();}else{num = (parseInt(num)-10).toString();}}num = (parseInt(num)/10).toString();num = num.split('.')[0];num = (parseInt(num)/100).toString();return num;}
 	function $toUrl(elem){var str = '';for(var a in elem){str += a+'='+encodeURIComponent(elem[a].toString())+'&';}return str.replace(/&$/,'');}
 	function $type(obj){return typeof(obj);}
-	function $isString(o){return (typeof o == 'string' || o instanceof String);}
+	var $is = {
+		array: function(o){return (Array.isArray(o) || $type(o.length) === 'number');},
+		string: function(o){return (typeof o == 'string' || o instanceof String);}
+	};
 
 	//FIXME: mejorar implementación de isEmpty
 	function isEmpty(elem){if(!elem || elem == ""){return true;}return false;}

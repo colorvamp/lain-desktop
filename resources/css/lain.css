@@ -39,6 +39,14 @@ div.wodInfo .wodInfoContainer.loading{background:URL(../images/load.gif) 3px cen
 .progressBar > div{box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;}
 .progressBar > .background{position:absolute;width:100%;min-height:12px;border-style:solid;border-width:5px 6px;-moz-border-image:url(../images/progressBar_background.png) 5 6 stretch;-o-border-image: url(../images/progressBar_background.png) 5 6 stretch;border-image:url(../images/progressBar_background.png) 5 6 fill stretch;-webkit-border-image:url(../images/progressBar_background.png) 5 6 stretch;}
 .progressBar > .foreground{position:relative;width:0%;min-height:12px;border-style:solid;border-width:5px 6px;-moz-border-image:url(../images/progressBar_foreground.png) 5 6 stretch;-o-border-image: url(../images/progressBar_foreground.png) 5 6 stretch;border-image:url(../images/progressBar_foreground.png) 5 6 fill stretch;-webkit-border-image:url(../images/progressBar_foreground.png) 5 6 stretch;}
+ul.contextMenu{color:black;padding:5px 0;position:absolute;z-index:200;background:white;border-radius:3px;box-shadow:0px 1px 5px #000000;}
+ul.contextMenu > li{padding:2px 4px;margin:0 10px;white-space:nowrap;line-height:18px;background-position:left center;background-repeat:no-repeat;}
+ul.contextMenu > li:hover{color:#999;}
+ul.contextMenu > li.separator{border-bottom:1px solid #eee;border-top:1px solid #bbb;height:0px;font-size:0;overflow:hidden;padding:0;}
+ul.contextMenu > li.disabled{opacity:.5;color:#AAA;}
+ul.contextMenu > li.disabled:hover{color:#AAA;}
+ul.contextMenu > li.noSensitive{color:#333;}
+ul.contextMenu > li.noSensitive:hover{color:#333;}
 
 
 body > img.logo{position:absolute;z-index:10;bottom:20px;right:20px;}
@@ -105,23 +113,14 @@ ul.fileListDetailed > li > img:first-child{width:32px;height:32px;position:absol
 ul.fileListDetailed > li > div.content{margin-left:40px;}
 ul.fileListDetailed > li > div.content > h4{padding-top:4px;}
 
-li.desktop_icon{position:absolute;display:inline-block;width:80px;height:50px;list-style:none;padding:10px 0;cursor:default;}
-li.desktop_icon > i:first-child{display:none;}
-li.desktop_icon > div.icon32_imgHolder{text-align:center;height:32px;}
-li.desktop_icon > div.icon32_textHolder{position:absolute;width:100%;text-align:center;word-wrap:break-word;}
-li.desktop_icon img{width:32px;height:32px;margin:auto;}
-li.desktop_icon.selected{z-index:10;}
-li.desktop_icon.selected > div.icon32_imgHolder{}
-li.desktop_icon.selected > div.icon32_textHolder{background:#3169b6;color:white;border-radius:3px;}
-ul.icon_contextMenu{color:black;padding:5px 0;position:absolute;z-index:200;background:white;border-radius:3px;box-shadow:0px 1px 5px #000000;}
-ul.icon_contextMenu > hr{margin:0 3px;border:0;border-bottom:1px solid #999;}
-ul.icon_contextMenu > li{padding:2px 4px;margin:0 10px;white-space:nowrap;line-height:18px;background-position:left center;background-repeat:no-repeat;}
-ul.icon_contextMenu > li:hover{color:#999;}
-ul.icon_contextMenu > li.separator{border-bottom:1px solid #eee;border-top:1px solid #bbb;height:0px;font-size:0;overflow:hidden;padding:0;}
-ul.icon_contextMenu > li.disabled{opacity:.5;color:#AAA;}
-ul.icon_contextMenu > li.disabled:hover{color:#AAA;}
-ul.icon_contextMenu > li.noSensitive{color:#333;}
-ul.icon_contextMenu > li.noSensitive:hover{color:#333;}
+li.wodIcon{position:absolute;display:inline-block;width:80px;height:50px;list-style:none;padding:10px 0;cursor:default;}
+li.wodIcon > i:first-child{display:none;}
+li.wodIcon > div.icon32_imgHolder{text-align:center;height:32px;}
+li.wodIcon > div.icon32_textHolder{position:absolute;width:100%;text-align:center;word-wrap:break-word;}
+li.wodIcon img{width:32px;height:32px;margin:auto;}
+li.wodIcon.selected{z-index:10;}
+li.wodIcon.selected > div.icon32_imgHolder{}
+li.wodIcon.selected > div.icon32_textHolder{background:#3169b6;color:white;border-radius:3px;}
 img.icon32_generic{background:URL(../images/iconSet/text-x-generic.png) no-repeat;}
 img.icon32_folder{background:URL(../images/iconSet/folder.png) no-repeat;}
 img.icon32_application\/ogg{background:URL(../images/iconSet/audio-x-vorbis+ogg.png) no-repeat;}
@@ -144,6 +143,10 @@ table.dataTable tbody > tr td:first-child{}
 .wodContainer h1.header{color:#464646;text-align:center;font-size:20px;line-height:30px;padding-top:10px;}
 .wodContainer p.header{color:#808080;text-align:center;padding-bottom:10px;}
 .wodContainer hr{height:1px;border:0;background:-moz-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:-webkit-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:-o-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:-ms-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);}
+
+.wodIconCanvas{padding:0 5px;height:100%;overflow-y:auto;background:white;}
+.wodIconCanvas > li{position:relative;}
+.wodButtonMenu + .wodIconCanvas{height:-webkit-calc(100% - 28px);height:calc(100% - 28px);}
 
 .wodForm{padding:25px 30px;}
 .wodForm > div{}
@@ -170,6 +173,15 @@ table.dataTable tbody > tr td:first-child{}
 .wodTable .wodTr.selected .wodTd{color:white;border-right:1px solid #cc6b44;background:transparent;}
 .wodTable .wodTr.selected .wodTd.wodCheck div.checkbox{border:1px solid #b75229;border-top:1px solid #9c4d2d;border-bottom:1px solid #d97e59;}
 .wodTable .resize{position:absolute;/*background:red;*/width:4px;height:100%;top:0;right:0;cursor:col-resize;}
+
+.wodVContainer{position:relative;display:inline-block;width:100%;height:100%;overflow-y:auto;}
+.wodMenuHolder + .wodVContainer{height:-webkit-calc(100% - 20px);height:calc(100% - 20px);}
+.wodHContainer{position:relative;display:inline-block;height:100%;vertical-align:top;overflow-y:auto;}
+
+.wodButtonMenu{padding:3px 0 1px 0;height:28px;}
+.wodButtonMenu > div{display:inline-block;height:21px;line-height:19px;padding:0 5px;border:1px solid #717171;border-radius:3px;box-shadow:0 1px 0 #dcdcdc;background:-webkit-linear-gradient(top,#ededed 1px,#cacaca 1px,#c2c2c2 50%,#b8b8b8);background:-moz-linear-gradient(top,#ededed 1px,#cacaca 1px,#c2c2c2 50%,#b8b8b8);background:-ms-linear-gradient(top,#ededed 1px,#cacaca 1px,#c2c2c2 50%,#b8b8b8);background:linear-gradient(top,#ededed 1px,#cacaca 1px,#c2c2c2 50%,#b8b8b8);}
+.wodButtonMenu > div + div{margin-left:2px;}
+.wodButtonMenu > div:active{box-shadow: inset 0px 1px 5px #555;}
 /* END-WIDGETS */
 
 
@@ -194,11 +206,6 @@ ul.buttonHolder > li.gnomeButtonMini:active{border-width:3px;-moz-border-image:U
 
 
 
-	.wodButtonMenu{padding:0 5px;margin-bottom:5px;}
-	.wodButtonMenu > div{display:inline-block;height:20px;line-height:20px;padding:0 1px;border:1px solid #4f4f4f;border-radius:3px;box-shadow:0 1px 0 #dcdcdc;background:URL(../images/buttons/buttonMenuBg.png) repeat-x;}
-	.wodButtonMenu > div:active{box-shadow: inset 0px 1px 5px #555;}
-	.wodButtonMenu > div > img.icon{width:20px;height:20px;}
-
 	.wodThemeContainerCenter div.buttonHeader{clear:both;padding:3px 0;}
 	.wodThemeContainerCenter div.buttonHeader div.button{float:left;}
 
@@ -210,13 +217,10 @@ ul.buttonHolder > li.gnomeButtonMini:active{border-width:3px;-moz-border-image:U
 	div#mouseTrayIcon{position:absolute;right:180px;top:1px;width:20px;height:20px;}
 	div#mouseTrayIcon img{background:URL(../images/devices/mouse.png) no-repeat;width:20px;height:20px;}
 
-.lainExplorer_explorerBody{position:relative;}
-.lainExplorer_sidePanel{width:140px;position:absolute;top:0;padding-top:5px;overflow-x:hidden;}
+.lainExplorer_sidePanel{width:140px;top:0;padding-top:5px;overflow-x:hidden;}
 .lainExplorer_sidePanel > li{line-height:18px;padding-left:30px;background-position:11px center;background-repeat:no-repeat;cursor:default;}
-.lainExplorer_iconHolder{margin-left:120px;}
 
 .icon{height:16px;width:16px;background-position:center;background-repeat:no-repeat;}
-.icon_application_cascade{background-image:URL(../images/icons/application_cascade.png) !important;}
 .icon_applications_system{background-image:URL(../images/icons/applications_system.png) !important;}
 .icon_bin{background-image:URL(../images/icons/user-trash.png) !important;}
 .icon_control_centre{background-image:URL(../images/icons/control_centre.png) !important;}
