@@ -33,7 +33,7 @@ VAR_apps.lainExplorer = {
 		var s = this.sidePanel_create();
 		panelLeft.appendChild(s);
 
-		var panelRight = $C('DIV',{className:'wodHContainer','.width':'-webkit-calc(100% - 140px)'},cont);
+		var panelRight = $C('DIV',{className:'wodHContainer','.width':'calc(100% - 140px)'},cont);
 
 
 		var buttonHolder = $C("DIV",{className:"wodButtonMenu"},panelRight);
