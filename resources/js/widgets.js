@@ -117,8 +117,7 @@ var _wodTable = {
 			//FIXME: habría que convertirlo a porcentaje
 			//wodTable.columns.childs[k].width = columnsWidth+'px';
 			//wodTable.columns.childs[k].width = columnsPercentage+'%';
-//FIXME: esto no funcionará en firefox
-wodTable.columns.childs[k].width = '-webkit-calc('+columnsPercentage+' * (100% - '+reservedWidth+'px))';
+			wodTable.columns.childs[k].width = 'calc('+columnsPercentage+' * (100% - '+reservedWidth+'px))';
 		});
 
 		if(wodTable.thead){$each(wodTable.thead.firstChild.childNodes,function(k,v){if(!v.nodeType){return;}v.style.width = wodTable.columns.childs[k].width;});}
