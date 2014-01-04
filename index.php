@@ -19,6 +19,7 @@
 			case 'css':header('Content-type: text/css');break;
 			case 'js':header('Content-type: application/javascript');break;
 			case 'png':header('Content-type: image/png');break;
+			case 'jpeg':header('Content-type: image/jpeg');break;
 			case 'gif':header('Content-type: image/gif');break;
 			case 'woff':header('Content-type: application/x-font-woff');break;
 			case 'ttf':case 'otf':case 'eot':header('Content-type: application/x-unknown-content-type');break;
@@ -38,15 +39,19 @@
 	include_once('inc.common.php');
 	include_once('api.users.php');
 	$r = users_isLogged();
-	if(!$r && $params != '/login'){header('Location: '.$GLOBALS['baseURL'].'login');exit;}
+	if(!$r && $params != '/login' && substr($params,0,4) != '/av/'){header('Location: '.$GLOBALS['baseURL'].'login');exit;}
 	if($r){$GLOBALS['TEMPLATE']['user'] = $GLOBALS['user'];}
 
 	do{
 		/* Obtenemos la paginación */
-		if(preg_match('/page\/([0-9]+)$/',$params,$m)){
-			$params = substr($params,0,-strlen($m[0]));
+		$d = 0;while(preg_match('/page\/([0-9]+)$/',$params,$m) && ++$d){
+			if($d > 1){common_r($GLOBALS['currentURL'],301);}
+			$c = strlen($m[0])+1;
+			$params = substr($params,0,-$c);
+			$GLOBALS['currentURL'] = substr($GLOBALS['currentURL'],0,-$c);
 			$GLOBALS['currentPage'] = $m[1];if($GLOBALS['currentPage'] < 1){$GLOBALS['currentPage'] = 1;}
 		}
+
 		$params = parse_url($params);
 		$params = $params['path'];
 		$params = explode('/',$params);

@@ -4,14 +4,14 @@
 		<p class="header">There is no users yet in Lain.</p>
 		<hr>
 		<form class="wodForm" method="post">
-			<input type="hidden" name="subcommand" value="userRegister"/>
+			<input type="hidden" name="subcommand" value="user.register"/>
 			<table><tbody>
 				<tr><td>Full name</td><td><input type="text" name="userName"/></td></tr>
 				<tr><td>Mail</td><td><input type="text" name="userMail"/></td></tr>
 				<tr><td>Password</td><td><input type="password" name="userPass"/></td></tr>
 				<tr><td>Repeat Password</td><td><input type="password" name="userPassR"/></td></tr>
 			</tbody></table>
-			<ul class="buttonHolder"><li class="gnomeButton">Register</li></ul>
+			<div class="btn-group right"><button class="btn">Register</button></div>
 		</form>
 	</div>
 </div>

@@ -26,12 +26,7 @@
 		if($shouldClose){sqlite3_close($params['db']);}
 		return $r;
 	}
-	function desktop_app_getWhere($whereClause = false,$params = array()){
-		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['desktop']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
-		$r = sqlite3_getWhere('apps',$whereClause,$params);
-		if($shouldClose){sqlite3_close($params['db']);}
-		return $r;
-	}
+	function desktop_app_getWhere($whereClause = false,$params = array()){$params['db.file'] = $GLOBALS['api']['desktop']['db'];return sqlite3_getWhere('apps',$whereClause,$params);}
 
 	function desktop_background_set($filePath = false){
 		include_once('api.fs.php');
