@@ -29,12 +29,15 @@ _desktop.signals = {
 	},
 	mouse_click: function(e){
 		//e.preventDefault();e.stopPropagation();
-		if(_desktop.vars.currentContextMenu){/* FIXME: hacer de esto una api */_desktop.vars.currentContextMenu.parentNode.removeChild(_desktop.vars.currentContextMenu);_desktop.vars.currentContextMenu = false;}
+		//if(_desktop.vars.currentContextMenu){/* FIXME: hacer de esto una api */_desktop.vars.currentContextMenu.parentNode.removeChild(_desktop.vars.currentContextMenu);_desktop.vars.currentContextMenu = false;}
 	},
 	mouse_down_left: function(e){
+		e.preventDefault();e.stopPropagation();
+		if(_desktop.vars.currentContextMenu){/* FIXME: hacer de esto una api */_desktop.vars.currentContextMenu.parentNode.removeChild(_desktop.vars.currentContextMenu);_desktop.vars.currentContextMenu = false;}
 		return false;
 	},
 	mouse_down_right: function(e){
+		e.preventDefault();e.stopPropagation();
 		/* The context menu on desktop expands on mousedown, no needed for complete click,
 		 * Search for contectMenu */
 		var el = e.target;do{if(el.oncontextmenu){el.oncontextmenu(e,el);break;}el = el.parentNode;}while(el.parentNode);
@@ -44,6 +47,7 @@ _desktop.signals = {
 		return false;
 	},
 	mouse_up_right: function(e){
+		e.preventDefault();e.stopPropagation();
 		return false;
 	},
 	key_down: function(e){

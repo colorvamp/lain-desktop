@@ -40,7 +40,7 @@
 	include_once('api.users.php');
 	$r = users_isLogged();
 	if(!$r && $params != '/login' && substr($params,0,4) != '/av/'){header('Location: '.$GLOBALS['baseURL'].'login');exit;}
-	if($r){$GLOBALS['TEMPLATE']['user'] = $GLOBALS['user'];}
+	if($r){$GLOBALS['userPah'] = users_getPath($GLOBALS['user']['id']);$GLOBALS['TEMPLATE']['user'] = $GLOBALS['user'];}
 
 	do{
 		/* Obtenemos la paginación */

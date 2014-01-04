@@ -63,6 +63,7 @@ var _wodIconCanvas = {
 				var el = elem;do{if(el[v.op]){return el[v.op](e,el);}el = el.parentNode;}while(el.parentNode);
 			});
 		});
+		return false;
 	}
 };
 
