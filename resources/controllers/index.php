@@ -3,11 +3,6 @@
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
 		include_once('api.desktop.php');
 		include_once('api.fs.php');
-		if(!file_exists($GLOBALS['userPath'])){
-			//FIXME: arreglarlo en condiciones
-			echo $GLOBALS['userPath'];exit;
-			users_logout();header('Location: '.$GLOBALS['baseURL']);exit;
-		}
 		$apps = desktop_app_getWhere('(appStatus = 1)');
 		//FIXME: hack
 		if(!$apps){$apps = array(array('appCode'=>'synaptic','appName'=>'Synaptic'),array('appCode'=>'users','appName'=>'Users and groups'));}
@@ -49,12 +44,11 @@
 				$user = $r;
 				/* Activate the new user so he can log into the system */
 				$r = users_update($user['userMail'],array('userStatus'=>1,'userModes'=>',regular,admin,','userCode'=>''));
-				users_getPath($user['id'],'',true);
 				header('Location: '.$GLOBALS['baseURL']);exit;
 		}}
 
 		/* INI-print all the allowed users */
-		$users = users_getWhere('(userModes LIKE \'%,admin,%\' OR userModes LIKE \'%,writer,%\' OR userModes LIKE \'%,publisher,%\')',array('indexBy'=>'userMail'));
+		$users = users_getWhere(1,array('indexBy'=>'userMail'));
 		if(!$users){return common_renderTemplate('u/register');}
 		$usersGrid = '';
 		foreach($users as $user){
