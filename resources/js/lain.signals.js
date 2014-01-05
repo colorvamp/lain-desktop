@@ -53,8 +53,6 @@ if(_desktop.vars.currentContextMenuClick){_desktop.vars.currentContextMenuClick 
 		//FIXME: si hay más de una tecla no seguir
 		var selection = _desktop.fileSelection_get();
 		/* ENTER */if(e.keyCode == 13){
-			if(selection.length == 1 && selection[0].getAttribute('data-status') == 'rename'){return selection[0].onrenameend();}
-			//FIXME: puede ser un intro porque se está canbiando el nombre de una carpeta
 			$each(selection,function(k,elem){elem.launch();});
 		}
 		/* DEL   */if(e.keyCode == 46){if(selection.length > 0){return _desktop.fs_trash(selection);}}
@@ -62,7 +60,8 @@ if(_desktop.vars.currentContextMenuClick){_desktop.vars.currentContextMenuClick 
 		//alert(e.keyCode);
 	},
 	key_up: function(e){
-		var index = _desktop.vars.input_presedKeys.indexOf(e.keyCode);if(index > -1){_desktop.vars.input_presedKeys.splice(index,1);}
+		var index = _desktop.vars.input_presedKeys.indexOf(e.keyCode);
+		while(index > -1){_desktop.vars.input_presedKeys.splice(index,1);var index = _desktop.vars.input_presedKeys.indexOf(e.keyCode);}
 	},
 	resize: function(e){if(window.resizeTimer){clearTimeout(window.resizeTimer);window.resizeTimer = false;}window.resizeTimer = setTimeout(function(){_desktop.signals.resize_end(e);},500);},
 	resize_end: function(e){
