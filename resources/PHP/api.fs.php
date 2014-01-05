@@ -1,4 +1,5 @@
 <?php
+if(!isset($GLOBALS['userPath'])){exit;}
 	$GLOBALS['tables']['trash'] = array('_fileHash_'=>'TEXT NOT NULL','fileRoute'=>'TEXT NOT NULL','fileName'=>'TEXT NOT NULL',
 	'fileMime'=>'TEXT NOT NULL','fileSize'=>'INTEGER NOT NULL','filePermissions'=>'TEXT NOT NULL','fileChilds'=>'INTEGER NOT NULL','fileOwner'=>'TEXT NOT NULL','fileGroup'=>'TEXT NOT NULL',
 	'fileDate'=>'TEXT NOT NULL','fileTime'=>'TEXT NOT NULL');

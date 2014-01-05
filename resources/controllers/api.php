@@ -13,7 +13,7 @@
 				break;
 			case 'file.move':$r = fs_file_move(base64_decode($_POST['files']),base64_decode($_POST['target']));echo json_encode($r);break;
 			case 'file_copy':$r = fs_file_copy(base64_decode($_POST['files']),base64_decode($_POST['target']));echo json_encode($r);break;
-			case 'file_rename':$r = fs_file_rename(base64_decode($_POST['file']),base64_decode($_POST['name']));echo json_encode($r);break;
+			case 'file.rename':$r = fs_file_rename(base64_decode($_POST['file']),base64_decode($_POST['name']));echo json_encode($r);break;
 			case 'file_trash':$r = fs_file_trash(base64_decode($_POST['files']));echo json_encode($r);break;
 			case 'transfer_fragment':
 				$neededParams = array('fileName','fileRoute','base64string_sum','base64string_len','fragment_string','fragment_num','fragment_sum');

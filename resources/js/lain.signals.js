@@ -1,8 +1,8 @@
 _desktop.signals = {
 	mouse_down: function(e){
 		if(e.target.tagName == 'INPUT' || e.target.tagName == 'TEXTAREA'){return true;}
-		e.preventDefault();e.stopPropagation();
-		var el = e.target;do{if(el.onmousedown){var r = el.onmousedown(e,el);if(r === false){return false;}}if(!el.parentNode){break;}el = el.parentNode;}while(el.parentNode);
+		//e.preventDefault();e.stopPropagation();
+		//var el = e.target;do{if(el.onmousedown){var r = el.onmousedown(e,el);if(r === false){return false;}}if(!el.parentNode){break;}el = el.parentNode;}while(el.parentNode);
 
 		var key_control = (_desktop.vars.input_presedKeys.indexOf(17) > -1);
 		/* If the control key is pressed we should check multi selection, if after 
@@ -22,22 +22,20 @@ _desktop.signals = {
 		if(e.which == 3){return _desktop.signals.mouse_down_right(e);}
 	},
 	mouse_up: function(e){
-		e.preventDefault();e.stopPropagation();
-		var el = e.target;do{if(el.onmouseup){return el.onmouseup(e);}el = el.parentNode;}while(el.parentNode);
+		//e.preventDefault();e.stopPropagation();
+		//var el = e.target;do{if(el.onmouseup){return el.onmouseup(e);}el = el.parentNode;}while(el.parentNode);
+if(!_desktop.vars.currentContextMenuClick && _desktop.vars.currentContextMenu){/* FIXME: hacer de esto una api */_desktop.vars.currentContextMenu.parentNode.removeChild(_desktop.vars.currentContextMenu);_desktop.vars.currentContextMenu = false;}
+if(_desktop.vars.currentContextMenuClick){_desktop.vars.currentContextMenuClick = false;}
 		if(e.which == 1){return _desktop.signals.mouse_up_left(e);}
 		if(e.which == 3){return _desktop.signals.mouse_up_right(e);}
 	},
 	mouse_click: function(e){
-		//e.preventDefault();e.stopPropagation();
-		//if(_desktop.vars.currentContextMenu){/* FIXME: hacer de esto una api */_desktop.vars.currentContextMenu.parentNode.removeChild(_desktop.vars.currentContextMenu);_desktop.vars.currentContextMenu = false;}
+
 	},
 	mouse_down_left: function(e){
-		e.preventDefault();e.stopPropagation();
-		if(_desktop.vars.currentContextMenu){/* FIXME: hacer de esto una api */_desktop.vars.currentContextMenu.parentNode.removeChild(_desktop.vars.currentContextMenu);_desktop.vars.currentContextMenu = false;}
 		return false;
 	},
 	mouse_down_right: function(e){
-		e.preventDefault();e.stopPropagation();
 		/* The context menu on desktop expands on mousedown, no needed for complete click,
 		 * Search for contectMenu */
 		var el = e.target;do{if(el.oncontextmenu){el.oncontextmenu(e,el);break;}el = el.parentNode;}while(el.parentNode);
@@ -47,7 +45,6 @@ _desktop.signals = {
 		return false;
 	},
 	mouse_up_right: function(e){
-		e.preventDefault();e.stopPropagation();
 		return false;
 	},
 	key_down: function(e){
@@ -89,6 +86,6 @@ _desktop.signals = {
 	icon_drop: function(iconElem){
 		//FIXME: faltaría moverlo de verdad
 		
-alert(iconElem);
+//alert(iconElem);
 	}
 };

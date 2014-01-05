@@ -100,7 +100,7 @@ if(path[path.length-1] != '/'){path = path+'/';}
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 			iconCanvas.empty();
 			iconCanvas.innerPath = path;
-			$A(r.files).each(function(elem){_desktop.icon_create(elem,iconCanvas);});
+			$A(r.files).each(function(elem){_icon.create(elem,iconCanvas);});
 		});
 	},
 	list_upOneLevel: function(iconCanvas){
@@ -134,7 +134,7 @@ return;
 		var btHolder = $C('UL',{className:'buttonHolder'},h);
 		gnomeButton_create('Cancel',function(){info_destroy(h);},btHolder);
 		gnomeButton_create('OK',function(){
-			_iface.reveal_folder_create(i.value,destPath,function(d){_desktop.icon_create(d,iconCanvas);});
+			_iface.reveal_folder_create(i.value,destPath,function(d){_icon.create(d,iconCanvas);});
 		},btHolder);
 	},
 	dragIconStart: function(e){

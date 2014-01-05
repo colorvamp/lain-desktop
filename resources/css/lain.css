@@ -134,6 +134,7 @@ li.wodIcon{position:absolute;display:inline-block;width:80px;height:50px;list-st
 li.wodIcon > i:first-child{display:none;}
 li.wodIcon > div.icon32_imgHolder{text-align:center;height:32px;}
 li.wodIcon > div.icon32_textHolder{position:absolute;width:100%;text-align:center;word-wrap:break-word;}
+li.wodIcon textarea{width:100%;}
 li.wodIcon img{width:32px;height:32px;margin:auto;}
 li.wodIcon.selected{z-index:10;}
 li.wodIcon.selected > div.icon32_imgHolder{}
