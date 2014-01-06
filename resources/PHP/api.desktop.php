@@ -1,4 +1,5 @@
 <?php
+if(!isset($GLOBALS['userPath'])){exit;}
 	$GLOBALS['tables']['apps'] = array('_appCode_'=>'TEXT NOT NULL','appName'=>'TEXT NOT NULL','appMenu'=>'TEXT','appStatus'=>'INTEGER DEFAULT 1','appPosition'=>'INTEGER');
 	$GLOBALS['api']['desktop'] = array('db'=>$GLOBALS['userPath'].'desktop.db');
 

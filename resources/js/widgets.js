@@ -52,7 +52,9 @@ var _wodIconCanvas = {
 //FIXME: mejor indexar el array
 		$each(wodIconCanvas.childNodes,function(k,v){
 			var iProp = _icon.getProperties(v);
-			if(iconsNames.indexOf(iProp.fileName) > -1){_icon.destroy(v);}
+			if(iconsNames.indexOf(iProp.fileName) > -1){
+alert(print_r(iProp));
+_icon.destroy(v);}
 		});
 	},
 	folder: {

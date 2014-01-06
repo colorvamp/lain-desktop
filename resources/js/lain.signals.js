@@ -23,6 +23,8 @@ _desktop.signals = {
 	},
 	mouse_up: function(e){
 		//e.preventDefault();e.stopPropagation();
+//FIXME: además de este bucle tenemos que lanzar eventos por cada padre para los listeners,
+//hasta entonces no podemos hacer stopPropagation
 		//var el = e.target;do{if(el.onmouseup){return el.onmouseup(e);}el = el.parentNode;}while(el.parentNode);
 if(!_desktop.vars.currentContextMenuClick && _desktop.vars.currentContextMenu){/* FIXME: hacer de esto una api */_desktop.vars.currentContextMenu.parentNode.removeChild(_desktop.vars.currentContextMenu);_desktop.vars.currentContextMenu = false;}
 if(_desktop.vars.currentContextMenuClick){_desktop.vars.currentContextMenuClick = false;}
@@ -39,6 +41,7 @@ if(_desktop.vars.currentContextMenuClick){_desktop.vars.currentContextMenuClick 
 		/* The context menu on desktop expands on mousedown, no needed for complete click,
 		 * Search for contectMenu */
 		var el = e.target;do{if(el.oncontextmenu){el.oncontextmenu(e,el);break;}el = el.parentNode;}while(el.parentNode);
+//FIXME: quizá si ha encontrado un evento oncontextmenu debemos hacer stopPropagation para que no llame al evento propio del navegador
 		return false;
 	},
 	mouse_up_left: function(e){
@@ -71,11 +74,8 @@ if(_desktop.vars.currentContextMenuClick){_desktop.vars.currentContextMenuClick 
 		_desktop.background_init();
 	},
 	file_update: function(files){
-		if(files.remove){
-			//document.addEventListener('fileRemove',function(e){alert(print_r(e.detail));},true)
-			var event = new CustomEvent('fileRemove',{'detail':files.remove});
-			document.dispatchEvent(event);
-		}
+		//document.addEventListener('fileRemove',function(e){alert(print_r(e.detail));},true)
+		if(files.remove){var event = new CustomEvent('fileRemove',{'detail':files.remove});document.dispatchEvent(event);}
 		if(files.add){
 			//document.addEventListener('fileAdd',function(e){alert(print_r(e.detail));},true)
 			var event = new CustomEvent('fileAdd',{'detail':files.add});

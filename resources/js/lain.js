@@ -199,30 +199,6 @@ var _desktop = {
 
 		return false;
 	},
-	desktop_signals_keyPress: function(e){
-		/* LEFTCUR */if(e.keyCode == 37){
-			if(_desktop.vars.fileSelection.length > 0){
-				var elem = _desktop.vars.fileSelection[0];
-				if(_desktop.vars.fileSelection.length == 1 && elem == elem.parentNode.firstChild){return;}
-				_desktop.vars.fileSelection.empty();
-				elem.onUnSelect();
-				if(elem.previousSibling){elem.previousSibling.onSelect();}
-				else{elem.parentNode.firstChild.onSelect();}
-			}
-		}
-		/* RIGHTCUR */if(e.keyCode == 39){
-			if(_desktop.vars.fileSelection.length > 0){
-				var elem = _desktop.vars.fileSelection[_desktop.vars.fileSelection.length-1];
-				if(_desktop.vars.fileSelection.length == 1 && elem == elem.parentNode.lastChild){return;}
-				_desktop.vars.fileSelection.empty();
-				elem.onUnSelect();
-				if(elem.nextSibling){elem.nextSibling.onSelect();}
-				else{elem.parentNode.lastChild.onSelect();}
-			}
-		}
-		//alert(e.keyCode);
-		//alert(e.ctrlKey);
-	},
 	desktop_shorcutKey_check: function(){
 		var inLen = _desktop.vars.input_presedKeys.length;
 		var values = _desktop.vars.input_presedKeys.values();
@@ -455,7 +431,7 @@ var _fs = {
 	create: function(f){
 alert(f);
 	},
-	rename: function(icon){
+	rename: function(icon,name){
 		var target = _icon.getProperties(icon);
 		ajaxPetition('api/fs','subcommand=file.rename&file='+base64.encode(jsonEncode(target))+'&name='+base64.encode(jsonEncode(name)),function(ajax){var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);});
 	}
@@ -482,7 +458,11 @@ var _icon = {
 				if(e.which == 1){return _littleDrag.onMouseDown(e);}
 				if(e.which == 3){return this.oncontextmenu(e,el);}
 			},
-			oncontextmenu: function(e,el){_icon.contextmenu(e,el);}
+			oncontextmenu: function(e,el){
+//FIXME: el e.stopPropagation no debería ser necesario, pero lo es
+				e.stopPropagation();
+				_icon.contextmenu(e,el);
+			}
 		};
 		if(s){signals = extend(signals,s);}
 		var li = $C('LI',extend({className:'wodIcon icon32_'+iProp.fileMime+' dragable'},signals),h);
@@ -540,17 +520,13 @@ var _icon = {
 		t.addEventListener('keydown',icon.rename_keydown);
 	},
 	renameend: function(icon){
-		icon.onrenameend = false;
 		var iconName = icon.$T('TEXTAREA')[0].value;
+//FIXME: si ya existe?
 if(isEmpty(iconName)){iconName = 'New Folder';}
 		var iProp = _icon.getProperties(icon);
-		iProp.fileName = iconName;
-//_desktop.fs_rename(icon,iconName);
-		_icon.setProperties(icon,iProp);
-		_icon.unselect(icon);
-		_icon.select(icon);
+		_fs.rename(icon,iconName);
 		icon.parentNode.removeEventListener('mousedown',icon.rename_mousedown);
-//FIXME: enviar señal
+		_icon.destroy(icon);
 		return false;
 	},
 	contextmenu: function(e,elem){

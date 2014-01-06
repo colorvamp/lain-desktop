@@ -153,8 +153,12 @@ return;
 	onFileRemove: function(e){
 		var wList = VAR_apps.lainExplorer.windows_get();
 		var files = e.detail;
-		$each(wList,function(k,v){var fileRoute = v.getFileRoute();
-		if(files[fileRoute]){v.getIconCanvas().iconsRemove(files[fileRoute]);}});	
+		$each(wList,function(k,v){
+			var fileRoute = v.getFileRoute();
+			if(files[fileRoute]){
+v.getIconCanvas().iconsRemove(files[fileRoute]);
+			}
+		});
 	},
 	onDropElement: function(iconElem,w){
 		var iconCanvas = w.iconCanvas;
