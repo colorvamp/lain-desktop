@@ -139,12 +139,22 @@ var _desktop = {
 		document.addEventListener('keydown',_desktop.signals.key_down,true);
 		document.addEventListener('keyup',_desktop.signals.key_up,true);
 		document.addEventListener('contextmenu',function(e){e.preventDefault();e.stopPropagation();return false;},true);
+		document.addEventListener('dragover',_desktop.signals_dragover,true);
+		document.addEventListener('drop',_desktop.signals_drop,true);
 		window.addEventListener('contextmenu',function(e){e.preventDefault();e.stopPropagation();return false;},true);
 		window.addEventListener('resize',_desktop.signals.resize,true);
 
+		var iconCanvas = new widget('_wodIconCanvas');
+		$_('lainDesktop').appendChild(iconCanvas);
+//FIXME: esto va a _fs
+		ajaxPetition('api/fs','subcommand=folder.list&fileRoute='+base64.encode('native:drive:/'),function(ajax){
+			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
+			iconCanvas.setIconParams(r.folder);
+			iconCanvas.icon.add(r.files);
+		});
 
-		document.addEventListener('dragover',_desktop.signals_dragover,true);
-		document.addEventListener('drop',_desktop.signals_drop,true);
+
+
 		_desktop.signals.resize_end();
 		var a = $_('lainPlacesMenu_itemList',{'onDropElement':_desktop.menu_places_mouseDown});
 		lWindows = $_('lainWindows');

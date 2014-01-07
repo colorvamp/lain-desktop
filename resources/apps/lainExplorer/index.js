@@ -1,11 +1,6 @@
 VAR_apps.lainExplorer = {
 	init: function(holder,params){
 		if(!VAR_apps.lainExplorer.vars){VAR_apps.lainExplorer.vars = {apiURL:'api/fs',wCounter:0,wHolder:holder,wList:[],cList:$A([])};}
-		if(!VAR_apps.lainExplorer.events){
-			document.addEventListener('fileRemove',VAR_apps.lainExplorer.onFileRemove,true);
-			document.addEventListener('fileAdd',VAR_apps.lainExplorer.onFileAdd,true);
-			VAR_apps.lainExplorer.events = true;
-		}
 		if(params && params.tagName && params.tagName == 'LI'){var iProp = _desktop.icon_getProperties(params);VAR_apps.lainExplorer.client(iProp);return;}
 		if(params && params.constructor == String){VAR_apps.lainExplorer.client(params);return;}
 	},
@@ -18,13 +13,7 @@ VAR_apps.lainExplorer = {
 },
 	client: function(params){
 		var wContainer = window_container();
-		var iconCanvas = new widget('_wodIconCanvas',{
-			'onicondrop':function(e){
-				var window = _wodern.window_findParent(this);if(!window){return;}
-				var _icon = window.getIconParams();
-				_desktop.fs_move(_icon);
-			}
-		});
+		var iconCanvas = new widget('_wodIconCanvas');
 
 		/* INI-MENU */
 		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},wContainer);
@@ -90,8 +79,9 @@ if(path[path.length-1] != '/'){path = path+'/';}
 
 		//var t = $_('wod_lainExplorer'+wNum+'_title',{innerHTML:'Lain File Explorer - '+title});
 //FIXME: mal
-		ajaxPetition(this.vars.apiURL,'subcommand=folder_list&fileRoute='+base64.encode(path),function(ajax){
+		ajaxPetition(this.vars.apiURL,'subcommand=folder.list&fileRoute='+base64.encode(path),function(ajax){
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
+			iconCanvas.setIconParams(r.folder);
 			if(w){w.setIconParams(r.folder);}
 
 //FIXME: innerPath no debe existir
@@ -129,24 +119,6 @@ return;
 
 		_littleDrag.vars.applyLimits = false;
 		_littleDrag.onMouseDown(e);
-	},
-	onFileAdd: function(e){
-		var wList = VAR_apps.lainExplorer.windows_get();
-		var files = e.detail;
-		$each(wList,function(k,v){
-			var iProp = v.getIconParams();
-			var path = iProp.fileRoute+iProp.fileName+((iProp.fileName.length) ? '/' : '');
-			if(files[path]){v.getIconCanvas().iconsAdd(files[path]);}
-		});
-	},
-	onFileRemove: function(e){
-		var wList = VAR_apps.lainExplorer.windows_get();
-		var files = e.detail;
-		$each(wList,function(k,v){
-			var iProp = v.getIconParams();
-			var path = iProp.fileRoute+iProp.fileName+((iProp.fileName.length) ? '/' : '');
-			if(files[path]){v.getIconCanvas().iconsRemove(files[path]);}
-		});
 	},
 	onDropElement: function(iconElem,w){
 		var iconCanvas = w.iconCanvas;

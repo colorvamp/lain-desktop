@@ -9,14 +9,7 @@
 		$HTML_apps = '';foreach($apps as $app){$HTML_apps .= J.'<li onclick="launchApp(\''.$app['appCode'].'\');">'.$app['appName'].'</li>'.N;}
 		$TEMPLATE['HTML_apps'] = $HTML_apps;
 
-		$desktopIcons = fs_folder_list('/');
-		$HTML_icons = '';
-		foreach($desktopIcons['files'] as $f){
-			$shortedText = (strlen($f['fileName']) > 13) ? substr($f['fileName'],0,10).'...' : $f['fileName'];
-			$HTML_icons .= J.'<li class="desktop_icon wodIcon icon32_'.$f['fileMime'].' dragable" onmousedown="_littleDrag.onMouseDown(event);"><i>'.json_encode($f).'</i><div class="icon32_imgHolder"><img class="icon32_generic icon32_'.$f['fileMime'].'" src="resources/images/t.gif"/></div><div class="icon32_textHolder">'.$shortedText.'</div></li>'.N;
-		}
-		$TEMPLATE['HTML_icons'] = $HTML_icons;
-
+		//$desktopIcons = fs_folder_list('/');
 		common_renderTemplate('desktop');
 	}
 

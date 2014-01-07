@@ -6,7 +6,7 @@
 	function api_fs(){
 		include_once('api.fs.php');
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
-			case 'folder_list':
+			case 'folder.list':
 				if(!isset($_POST['fileRoute']) || empty($_POST['fileRoute'])){break;}
 				$r = fs_folder_list(base64_decode($_POST['fileRoute']));
 				echo json_encode($r);

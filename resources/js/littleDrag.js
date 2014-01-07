@@ -62,6 +62,9 @@ var _littleDrag = {
 			if((new Date().getTime() - elem.firstClick) < this.vars.clickDelay){break;}
 			var x = e.clientX;var y = e.clientY;
 			var candidate = document.elementFromPoint(x,y);if(!candidate){break;}
+//FIXME: en vez de elem deberíamos enviar la selección
+			var event = new CustomEvent('file.drop',{'detail':elem});candidate.dispatchEvent(event);
+
 //FIXME: sustituir esto por un evento
 			do{if(candidate.onicondrop && $type(candidate.onicondrop) === 'function'){break;}candidate = candidate.parentNode;}while(candidate.parentNode);
 			if(candidate.onicondrop){candidate.onicondrop(e,elem);}

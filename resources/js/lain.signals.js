@@ -73,15 +73,17 @@ _desktop.signals = {
 		window.resizeTimer = false;
 		extend(_desktop.vars,{'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight});
 		_desktop.icons_organize();
-		_desktop.background_init();
+_desktop.background_init();
 	},
 	file_update: function(files){
 		//document.addEventListener('fileRemove',function(e){alert(print_r(e.detail));},true)
-		if(files.remove){var event = new CustomEvent('fileRemove',{'detail':files.remove});document.dispatchEvent(event);}
+		if(files.remove){
+			var event = new CustomEvent('file.remove',{'detail':files.remove});dispatchEvent(event);
+var event = new CustomEvent('fileRemove',{'detail':files.remove});document.dispatchEvent(event);
+		}
 		if(files.add){
-			//document.addEventListener('fileAdd',function(e){alert(print_r(e.detail));},true)
-			var event = new CustomEvent('fileAdd',{'detail':files.add});
-			document.dispatchEvent(event);
+			var event = new CustomEvent('file.add',{'detail':files.add});dispatchEvent(event);
+var event = new CustomEvent('fileAdd',{'detail':files.add});document.dispatchEvent(event);
 		}
 	},
 	icon_drop: function(iconElem){

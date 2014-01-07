@@ -26,7 +26,7 @@
 			<li id="tray_desktop_progress"><div class="perm"><i class="icon-user"></i></div></li>
 			<li id="tray_desktop_tasks"><div class="perm"><i class="icon-reorder"></i></div></li>
 		</ul>
-		<ul id="lainIcons" class="wodIconCanvas">{%HTML_icons%}</ul>
+<ul id="lainIcons" class="wodIconCanvas"></ul>
 		<ul id='lainWindows'></ul>
 <div id='log' style='position:absolute;top:0;right:0;background:white;z-index:1000;'></div>
 	</div>

@@ -33,15 +33,31 @@ var _wodIconCanvas = {
 		var wodIconCanvas = $C('UL',{className:'wodIconCanvas',
 			'iconsRemove': function(iconsNames){return _wodIconCanvas.icons_remove(this,iconsNames);},
 			'iconsAdd': function(icons){return _wodIconCanvas.icons_add(this,icons);},
+			'icon': {
+				'add': function(icons/* array of objects */){return _wodIconCanvas.icon.add(wodIconCanvas,icons);},
+				'remove': function(icons/* array of names*/){return _wodIconCanvas.icon.remove(wodIconCanvas,icons);}
+			},
 			'folder': {
 				'create': function(){return _wodIconCanvas.folder.create(wodIconCanvas);}
 			},
 			'onicondrop': function(e){return false;},
-			'oncontextmenu': function(e){return _wodIconCanvas.oncontextmenu(e,this);}
+			'oncontextmenu': function(e){return _wodIconCanvas.oncontextmenu(e,this);},
+			'getFileRoute': function(){return this.getAttribute('data-fileRoute');},
+			'setFileRoute': function(fileRoute){if(fileRoute[fileRoute.length-1] != '/'){fileRoute = fileRoute+'/';}return this.setAttribute('data-fileRoute',fileRoute);},
+			'getIconParams': function(p){var p = this.getAttribute('data-iconParams');return jsonDecode(p);},
+			'setIconParams': function(p){if(p.fileRoute){this.setFileRoute(p.fileRoute);}return this.setAttribute('data-iconParams',jsonEncode(p));},
+			'signals':{
+				'fileadd': function(e){return _wodIconCanvas.signals.fileadd(wodIconCanvas,e);},
+				'fileremove': function(e){return _wodIconCanvas.signals.fileremove(wodIconCanvas,e);},
+				'filedrop': function(e){return _wodIconCanvas.signals.filedrop(wodIconCanvas,e);}
+			}
 		});
 		if(params){
 			if(params.onicondrop){wodIconCanvas.onicondrop = params.onicondrop;}
 		}
+		addEventListener('file.add',wodIconCanvas.signals.fileadd);
+		addEventListener('file.remove',wodIconCanvas.signals.fileremove);
+		wodIconCanvas.addEventListener('file.drop',wodIconCanvas.signals.filedrop);
 		return wodIconCanvas;
 	},
 	icons_add: function(wodIconCanvas,icons){
@@ -57,10 +73,33 @@ var _wodIconCanvas = {
 			if(iconsNames.indexOf(iProp.fileName) > -1){_icon.destroy(v);}
 		});
 	},
+	icon: {
+		add: function(wodIconCanvas,icons/* array of objects */){$each(icons,function(k,v){_icon.create(v,wodIconCanvas);});},
+		remove: function(wodIconCanvas,iconsNames){$each(wodIconCanvas.childNodes,function(k,v){var iProp = _icon.getProperties(v);if(iconsNames.indexOf(iProp.fileName) > -1){_icon.destroy(v);}});}
+	},
 	folder: {
-		create:  function(wodIconCanvas){
+		create: function(wodIconCanvas){
 			var icon = _icon.create({'fileName':'','fileMime':'folder'},wodIconCanvas);
 			_icon.rename(icon);
+		}
+	},
+	signals: {
+		fileadd: function(wodIconCanvas,e){
+			var files = e.detail;
+			var iProp = wodIconCanvas.getIconParams();
+			var path = iProp.fileRoute+iProp.fileName+((iProp.fileName.length) ? '/' : '');
+			if(files[path]){wodIconCanvas.icon.add(files[path]);}
+		},
+		fileremove: function(wodIconCanvas,e){
+			var files = e.detail;
+			var iProp = wodIconCanvas.getIconParams();
+			var path = iProp.fileRoute+iProp.fileName+((iProp.fileName.length) ? '/' : '');
+			if(files[path]){wodIconCanvas.icon.remove(files[path]);}
+		},
+		filedrop: function(wodIconCanvas,e){
+			var iProp = wodIconCanvas.getIconParams();
+//FIXME: ya no se llama asi
+			_desktop.fs_move(iProp);
 		}
 	},
 	oncontextmenu: function(e,elem){

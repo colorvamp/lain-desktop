@@ -92,16 +92,15 @@ ul.list > li:nth-child(even){background-color:#ebe8e3;}
 
 div#lainBackground{position:absolute;left:0;top:0;width:100%;height:100%;z-index:10;background:#453c3a;background-position:center;}
 div#lainBackground img{width:100%;height:100%;position:absolute;top:0;left:0;}
-div#lainDesktop{position:absolute;left:0;top:0;width:100%;height:100%;z-index:20;}
-div#lainDesktop b.lainLeyend{color:white;padding:0 5px;}
-div#lainDesktop div#lainFlowIcon{position:absolute;top:0;z-index:100;}
-div#lainDesktop div#lainFlowIcon > *{position:absolute;}
-div#lainDesktop div#lainFlowIcon > div#selectionSquare{position:absolute;border:1px solid blue;width:0px;height:0px;background:red;opacity:.6;}
-div#lainDesktop ul#lainIcons{position:absolute;width:100%;height:100%;z-index:4;color:white;overflow:hidden;background:transparent;}
-div#lainDesktop ul#lainIcons > li{position:absolute;}
-div#lainDesktop ul#lainWindows{position:absolute;top:0;height:0;width:0;z-index:5;}
-div#lainDesktop ul#lainWindows > li{position:absolute;height:0;width:0;}
-div#lainDesktop ul#lainWindows > li > div{position:absolute;}
+#lainDesktop{position:absolute;left:0;top:0;width:100%;height:100%;z-index:20;}
+#lainDesktop b.lainLeyend{color:white;padding:0 5px;}
+#lainDesktop div#lainFlowIcon{position:absolute;top:0;z-index:100;}
+#lainDesktop div#lainFlowIcon > *{position:absolute;}
+#lainDesktop div#lainFlowIcon > div#selectionSquare{position:absolute;border:1px solid blue;width:0px;height:0px;background:red;opacity:.6;}
+#lainDesktop ul#lainWindows{position:absolute;top:0;height:0;width:0;z-index:5;}
+#lainDesktop ul#lainWindows > li{position:absolute;height:0;width:0;}
+#lainDesktop ul#lainWindows > li > div{position:absolute;}
+#lainDesktop > .wodIconCanvas{position:absolute;top:0;left:0;width:100%;background:transparent;color:white;padding:40px 0 0 0;}
 
 
 .wodern{position:absolute;border:1px solid #cccbc9;border-top:1px solid #e1e1e3;background-color:#bdbdbd;border-radius:3px;box-shadow:0 2px 3px rgba(0,0,0,.7);}
@@ -164,7 +163,7 @@ table.dataTable tbody > tr td:first-child{}
 
 .wodIconCanvas{padding:0 5px;height:100%;overflow-y:auto;background:white;}
 .wodIconCanvas > li{position:relative;}
-.wodButtonMenu + .wodIconCanvas{height:-webkit-calc(100% - 28px);height:calc(100% - 28px);}
+.wodButtonMenu + .wodIconCanvas{height:calc(100% - 28px);}
 
 .wodForm{padding:25px 30px;}
 .wodForm > div{}
