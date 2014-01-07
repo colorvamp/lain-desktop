@@ -429,7 +429,7 @@ return false;
 
 var _fs = {
 	create: function(f){
-alert(f);
+//alert(f);
 	},
 	rename: function(icon,name){
 		var target = _icon.getProperties(icon);
@@ -516,7 +516,8 @@ var _icon = {
 				case 13:return _icon.renameend(icon);break;
 			}
 		};
-		icon.parentNode.addEventListener('mousedown',icon.rename_mousedown);
+		icon.parentNode.addEventListener('mousedownleft',icon.rename_mousedown);
+		icon.parentNode.addEventListener('mousedownright',icon.rename_mousedown);
 		t.addEventListener('keydown',icon.rename_keydown);
 	},
 	renameend: function(icon){
@@ -525,7 +526,8 @@ var _icon = {
 if(isEmpty(iconName)){iconName = 'New Folder';}
 		var iProp = _icon.getProperties(icon);
 		_fs.rename(icon,iconName);
-		icon.parentNode.removeEventListener('mousedown',icon.rename_mousedown);
+		icon.parentNode.removeEventListener('mousedownleft',icon.rename_mousedown);
+		icon.parentNode.removeEventListener('mousedownright',icon.rename_mousedown);
 		_icon.destroy(icon);
 		return false;
 	},

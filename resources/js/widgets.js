@@ -247,7 +247,8 @@ var _wodTable = {
 	},
 	col_signal_resize_mouseup: function(wodTable,e,td){
 		var eL = e.clientX-td.startX;
-		document.removeEventListener('mousemove',td.mousemovehandler,true);document.removeEventListener('mouseup',td.mouseuphandler,true);
+		document.removeEventListener('mousemove',td.mousemovehandler,true);
+		document.removeEventListener('mouseup',td.mouseuphandler,true);
 		var index = parseInt(td.getAttribute('data-index'));
 		var newWidth = td.clientWidth+eL+1;
 		extend(wodTable.columns.childs[index],{'widthCalc':'fixed','columnWidth':newWidth+'px'});
@@ -278,7 +279,7 @@ var _wodContextMenu = {
 	},
 	item_add: function(wodContextMenu,text,callback,disabled){
 		var li = $C('LI',{className:(disabled) ? 'disabled' : '',innerHTML:text,
-			onmouseup:function(e){if(disabled || !callback){return;};callback(e,wodContextMenu.target);}
+			onmouseup:function(e){if(disabled || !callback){return;};callback(e,wodContextMenu.target);_desktop.contextMenu_close();}
 		},wodContextMenu);
 	},
 	separator_add: function(wodContextMenu){$C('LI',{className:'separator'},wodContextMenu);}
