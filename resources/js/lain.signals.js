@@ -42,7 +42,6 @@ _desktop.signals = {
 		/* The context menu on desktop expands on mousedown, no needed for complete click,
 		 * Search for contectMenu */
 		var el = e.target;do{if(el.oncontextmenu){el.oncontextmenu(e,el);break;}el = el.parentNode;}while(el.parentNode);
-//FIXME: quizá si ha encontrado un evento oncontextmenu debemos hacer stopPropagation para que no llame al evento propio del navegador
 		return false;
 	},
 	mouse_up_left: function(e){

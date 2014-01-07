@@ -1,6 +1,6 @@
 var widgets = {};
 function widget(widgetname,params){
-	$findFunc = function(l){var func = window;var funcSplit = l.split('.');var e = true;for(i = 0;i < funcSplit.length;i++){if(!func[funcSplit[i]]){e = false;break;}func = func[funcSplit[i]];}return e ? func : false;};
+	$findFunc = function(l,pool){if(!pool){pool = window;}var func = pool;var funcSplit = l.split('.');var e = true;for(i = 0;i < funcSplit.length;i++){if(!func[funcSplit[i]]){e = false;break;}func = func[funcSplit[i]];}return e ? func : false;};
 	if(!(func = $findFunc(widgetname))){return false;}
 	function w(){};
 	w.prototype = func;
@@ -33,7 +33,9 @@ var _wodIconCanvas = {
 		var wodIconCanvas = $C('UL',{className:'wodIconCanvas',
 			'iconsRemove': function(iconsNames){return _wodIconCanvas.icons_remove(this,iconsNames);},
 			'iconsAdd': function(icons){return _wodIconCanvas.icons_add(this,icons);},
-			'folder.create': function(params){return _wodIconCanvas.folder.create(this,params);},
+			'folder': {
+				'create': function(){return _wodIconCanvas.folder.create(wodIconCanvas);}
+			},
 			'onicondrop': function(e){return false;},
 			'oncontextmenu': function(e){return _wodIconCanvas.oncontextmenu(e,this);}
 		});
@@ -59,11 +61,9 @@ var _wodIconCanvas = {
 		create:  function(wodIconCanvas){
 			var icon = _icon.create({'fileName':'','fileMime':'folder'},wodIconCanvas);
 			_icon.rename(icon);
-//FIXME: usar icon_rename
 		}
 	},
 	oncontextmenu: function(e,elem){
-		$findFunc = function(l){var func = window;var funcSplit = l.split('.');var e = true;for(i = 0;i < funcSplit.length;i++){if(!func[funcSplit[i]]){e = false;break;}func = func[funcSplit[i]];}return e ? func : false;};
 		ops = [];
 		ops.push({'text':'<i class="icon-paste"></i> Create new folder','op':'folder.create'});
 		ops.push({'text':'<i class="icon-paste"></i> Paste','op':'fs_paste'});
@@ -74,7 +74,7 @@ var _wodIconCanvas = {
 			ctx.addItem(v.text,function(e,tr){
 				if(v.op.substr(0,1) == '_'){var f = $findFunc(v.op);return f(elem);}
 				if(_desktop[v.op]){return _desktop[v.op](elem);}
-				var el = elem;do{if(el[v.op]){return el[v.op](e,el);}el = el.parentNode;}while(el.parentNode);
+				var f = $findFunc(v.op,elem);return f(elem);
 			});
 		});
 		return false;

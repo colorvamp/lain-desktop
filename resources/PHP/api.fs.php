@@ -38,6 +38,18 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		list($fileMimeType) = explode('; ',finfo_file($finfo,$filePath.$fileName));
 		return array('fileName'=>$fileName,'fileRoute'=>$fileRoute,'fileMime'=>$fileMimeType,'fileSize'=>$fileData['size'],'fileDateM'=>$fileData['mtime']);
 	}
+	function fs_native_getInfo($file,$finfo = false){
+		$fileData = stat($file);
+		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? 'native:drive:'.substr($file,strlen(realpath($GLOBALS['api']['fs']['root']))) : $file;
+		$fileName = ($GLOBALS['api']['fs']['serverCage']) ? substr($file,strlen(realpath($GLOBALS['api']['fs']['root']))) : $file;
+		$fileName = basename($fileName);
+		if($fileName && substr($fileRoute,-1) == '/'){$fileRoute = substr($fileRoute,0,-1);}
+		if($fileName){$fileRoute = substr($fileRoute,0,strlen($fileName)*-1);}
+		if(is_dir($file)){return array('fileName'=>$fileName,'fileRoute'=>$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);}
+		//FIXME: poner un mime por defecto
+		$fileMimeType = '';if($finfo){list($fileMimeType) = explode('; ',finfo_file($finfo,$filePath.$fileName));}
+		return array('fileName'=>$fileName,'fileRoute'=>$fileRoute,'fileMime'=>$fileMimeType,'fileDateM'=>$fileData['mtime']);
+	}
 
 	function fs_folder_list($fileRoute = ''){
 		if(strpos($fileRoute,'native:trash:') === 0){return fs_trash_list($fileRoute);}
@@ -55,12 +67,15 @@ if(!isset($GLOBALS['userPath'])){exit;}
 				//echo $file.print_r(stat($driveDir.$fileName)).'\n';
 				$files[] = fs_file_getInfo($fileName,$filePath,$fileRoute,$finfo);
 			}
-			finfo_close($finfo);
 			closedir($handle);
+			finfo_close($finfo);
 		}
 
+		/* Al ser una carpeta no necesitamos mime */
+		$folder = fs_native_getInfo($filePath);
+
 		sort($files);
-		return array('files'=>$files);
+		return array('folder'=>$folder,'files'=>$files);
 	}
 	function fs_folder_create($fileName,$path = ''){
 		if(strpos($path,'native:drive:') === 0){$path = substr($path,13);}

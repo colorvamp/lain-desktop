@@ -18,10 +18,18 @@ VAR_apps.lainExplorer = {
 },
 	client: function(params){
 		var wContainer = window_container();
+		var iconCanvas = new widget('_wodIconCanvas',{
+			'onicondrop':function(e){
+				var window = _wodern.window_findParent(this);if(!window){return;}
+				var _icon = window.getIconParams();
+				_desktop.fs_move(_icon);
+			}
+		});
+
 		/* INI-MENU */
 		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},wContainer);
 		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'File'},wodMenuHolder));
-		$C('LI',{innerHTML:'Create new folder',onclick:function(){VAR_apps.lainExplorer.operation_createFolder(iconCanvas);}},ul);
+		$C('LI',{innerHTML:'Create new folder',onclick:function(){iconCanvas.folder.create();}},ul);
 		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'Edit'},wodMenuHolder));
 		$C('LI',{innerHTML:'<i class="icon-paste"></i> Paste',onclick:function(){VAR_apps.lainExplorer.menu_edit_paste();}},ul);
 		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'View'},wodMenuHolder));
@@ -40,17 +48,8 @@ VAR_apps.lainExplorer = {
 		var bt_uponelevel = $C('DIV',{innerHTML:'<i class="icon-arrow-up"></i>'},buttonHolder);
 		$C('DIV',{innerHTML:'native:drive:'},buttonHolder);
 
-		var iconCanvas = new widget('_wodIconCanvas',{
-			'onicondrop':function(e){
-				var window = _wodern.window_findParent(this);if(!window){return;}
-				var _icon = window.getIconParams();
-				_desktop.fs_move(_icon);
-			}
-		});
 		panelRight.appendChild(iconCanvas);
 		this.vars.cList.push(iconCanvas);
-		this.list(iconCanvas,params);
-
 
 		var wNum = VAR_apps.lainExplorer.vars.wCounter++;
 		var w = window_create('lainExplorer'+wNum,{wodTitle:'Lain File Explorer','wContainer':wContainer,
@@ -60,12 +59,10 @@ VAR_apps.lainExplorer = {
 			getFileRoute: function(){return w.getAttribute('data-fileRoute');},
 			setFileRoute: function(fileRoute){if(fileRoute[fileRoute.length-1] != '/'){fileRoute = fileRoute+'/';}return w.setAttribute('data-fileRoute',fileRoute);},
 			getIconParams: function(p){var p = w.getAttribute('data-iconParams');return jsonDecode(p);},
-//FIXME: esto no se actualiza :/
-			setIconParams: function(p){return w.setAttribute('data-iconParams',jsonEncode(p));}
+			setIconParams: function(p){if(p.fileRoute){this.setFileRoute(p.fileRoute);}return w.setAttribute('data-iconParams',jsonEncode(p));}
 		},VAR_apps.lainExplorer.vars.wHolder);
 
-		w.setFileRoute(params.fileRoute+params.fileName);
-		w.setIconParams(params);
+		this.list(iconCanvas,params);
 		VAR_apps.lainExplorer.vars.wList.push(w);
 
 		bt_uponelevel.onclick = function(){this.list_upOneLevel(iconCanvas);}.bind(this);
@@ -90,20 +87,21 @@ VAR_apps.lainExplorer = {
 if(path[path.length-1] != '/'){path = path+'/';}
 
 		var w = iconCanvas.$P({'className':'wodern'});
-		if(w){
-			w.setFileRoute(path);
-			//FIXME: poner título
-		}
 
 		//var t = $_('wod_lainExplorer'+wNum+'_title',{innerHTML:'Lain File Explorer - '+title});
+//FIXME: mal
 		ajaxPetition(this.vars.apiURL,'subcommand=folder_list&fileRoute='+base64.encode(path),function(ajax){
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
+			if(w){w.setIconParams(r.folder);}
+
+//FIXME: innerPath no debe existir
 			iconCanvas.empty();
 			iconCanvas.innerPath = path;
 			$A(r.files).each(function(elem){_icon.create(elem,iconCanvas);});
 		});
 	},
 	list_upOneLevel: function(iconCanvas){
+//FIXME: no basarse en esto
 		if(iconCanvas.innerPath == ''){return;}
 		var baseName = iconCanvas.innerPath.replace(/\/[^\/]*\/$/,'/');
 		if(baseName == '/'){baseName = '';}
@@ -125,18 +123,6 @@ $A($_('lainPlacesMenu_itemList').childNodes).each(function(el){
 return;
 		_desktop.fs_paste();
 	},
-	operation_createFolder: function(iconCanvas){
-		var destPath = iconCanvas.innerPath;
-		var h = info_create('createFolder',{},iconCanvas).infoContainer;
-		$C('DIV',{innerHTML:'Name the new folder'},h);
-		var i = $C('INPUT',{},$C('DIV',{className:'inputText'},h));
-
-		var btHolder = $C('UL',{className:'buttonHolder'},h);
-		gnomeButton_create('Cancel',function(){info_destroy(h);},btHolder);
-		gnomeButton_create('OK',function(){
-			_iface.reveal_folder_create(i.value,destPath,function(d){_icon.create(d,iconCanvas);});
-		},btHolder);
-	},
 	dragIconStart: function(e){
 		var elem = e.target;while(elem.parentNode && !elem.className.match(/dragable/)){elem = elem.parentNode;}
 		elem = $fix(elem,{'.opacity':.5,onmouseup:function(){this.$B({'.opacity':1});_littleDrag.vars.applyLimits = true;}});
@@ -147,17 +133,19 @@ return;
 	onFileAdd: function(e){
 		var wList = VAR_apps.lainExplorer.windows_get();
 		var files = e.detail;
-		$each(wList,function(k,v){var fileRoute = v.getFileRoute();
-		if(files[fileRoute]){v.getIconCanvas().iconsAdd(files[fileRoute]);}});
+		$each(wList,function(k,v){
+			var iProp = v.getIconParams();
+			var path = iProp.fileRoute+iProp.fileName+((iProp.fileName.length) ? '/' : '');
+			if(files[path]){v.getIconCanvas().iconsAdd(files[path]);}
+		});
 	},
 	onFileRemove: function(e){
 		var wList = VAR_apps.lainExplorer.windows_get();
 		var files = e.detail;
 		$each(wList,function(k,v){
-			var fileRoute = v.getFileRoute();
-			if(files[fileRoute]){
-v.getIconCanvas().iconsRemove(files[fileRoute]);
-			}
+			var iProp = v.getIconParams();
+			var path = iProp.fileRoute+iProp.fileName+((iProp.fileName.length) ? '/' : '');
+			if(files[path]){v.getIconCanvas().iconsRemove(files[path]);}
 		});
 	},
 	onDropElement: function(iconElem,w){

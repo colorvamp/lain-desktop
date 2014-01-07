@@ -56,7 +56,7 @@
 	function $capitalize(str){return str.replace(/\w+/g,function(a){return a.charAt(0).toUpperCase()+a.slice(1).toLowerCase();});}
 	function $clone(obj){if(obj == null || typeof(obj) != 'object'){return obj;}var temp = obj.constructor();for(var key in obj){temp[key] = clone(obj[key]);}return temp;}
 	function $execWhenExists(funcName,params){
-		$findFunc = function(l){var func = window;var funcSplit = l.split('.');var e = true;for(i = 0;i < funcSplit.length;i++){if(!func[funcSplit[i]]){e = false;break;}func = func[funcSplit[i]];}return e ? func : false;}
+		$findFunc = function(l,pool){if(!pool){pool = window;}var func = pool;var funcSplit = l.split('.');var e = true;for(i = 0;i < funcSplit.length;i++){if(!func[funcSplit[i]]){e = false;break;}func = func[funcSplit[i]];}return e ? func : false;}
 		if(func = $findFunc(funcName)){func.apply(func,params);return true;}
 		var l = 'launcher_'+funcName;var body = document.body;if(body[l]){return false;}
 		body[l] = setInterval(function(){if(func = $findFunc(funcName)){clearInterval(body[l]);func.apply(func,params);return true;}},200);

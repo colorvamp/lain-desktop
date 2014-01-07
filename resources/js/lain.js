@@ -1,4 +1,3 @@
-var VAR_lain = {'bodyWidth':0,'bodyHeight':0};
 var lWindows = false;
 var VAR_MIMES = {'folder':'lainExplorer','image/jpeg':'eyeOfLain','image/png':'eyeOfLain','application/ogg':'melodiamePlayer','application/ogv':'lainPlayer'};
 
@@ -458,11 +457,7 @@ var _icon = {
 				if(e.which == 1){return _littleDrag.onMouseDown(e);}
 				if(e.which == 3){return this.oncontextmenu(e,el);}
 			},
-			oncontextmenu: function(e,el){
-//FIXME: el e.stopPropagation no debería ser necesario, pero lo es
-				e.stopPropagation();
-				_icon.contextmenu(e,el);
-			}
+			oncontextmenu: function(e,el){_icon.contextmenu(e,el);}
 		};
 		if(s){signals = extend(signals,s);}
 		var li = $C('LI',extend({className:'wodIcon icon32_'+iProp.fileMime+' dragable'},signals),h);
