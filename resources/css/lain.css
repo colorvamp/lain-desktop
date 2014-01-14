@@ -141,6 +141,7 @@ li.wodIcon.selected > div.icon32_textHolder{background:#3169b6;color:white;borde
 img.icon32_generic{background:URL(../images/iconSet/text-x-generic.png) no-repeat;}
 img.icon32_folder{background:URL(../images/iconSet/folder.png) no-repeat;}
 img.icon32_application\/ogg{background:URL(../images/iconSet/audio-x-vorbis+ogg.png) no-repeat;}
+img.icon32_application\/zip{background:URL(../images/iconSet/application-x-zip.png) no-repeat;}
 img.icon32_image\/jpeg{background:URL(../images/iconSet/image-jpeg.png) no-repeat;}
 img.icon32_image\/png{background:URL(../images/iconSet/image-png.png) no-repeat;}
 

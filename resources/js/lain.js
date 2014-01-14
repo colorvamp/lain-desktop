@@ -1,5 +1,5 @@
 var lWindows = false;
-var VAR_MIMES = {'folder':'lainExplorer','image/jpeg':'eyeOfLain','image/png':'eyeOfLain','application/ogg':'melodiamePlayer','application/ogv':'lainPlayer'};
+var VAR_MIMES = {'folder':'lainExplorer','application/zip':'lainExplorer','image/jpeg':'eyeOfLain','image/png':'eyeOfLain','application/ogg':'melodiamePlayer','application/ogv':'lainPlayer'};
 
 function test(){
 _desktop.signals.file_update('aa');
@@ -106,7 +106,6 @@ function menu_switch(el){
 }
 
 var VAR_apps = {};
-var VAR_appsPath = 'resources/apps/';
 function launchApp(appName,params){
 	var pool = 'r/apps/';
 	var holder = launchApp_createHolder(appName);
@@ -349,9 +348,6 @@ return false;
 		if(selection.length != 1){return false;}
 		if(_desktop[f]){return _desktop[f](selection[0]);}
 	},
-	fs_rename: function(icon,name){
-		
-	},
 	fs_trash: function(e){
 		var selection = _desktop.fileSelection_get();if(!selection.length){return false;}
 		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
@@ -443,6 +439,10 @@ var _fs = {
 	rename: function(icon,name){
 		var target = _icon.getProperties(icon);
 		ajaxPetition('api/fs','subcommand=file.rename&file='+base64.encode(jsonEncode(target))+'&name='+base64.encode(jsonEncode(name)),function(ajax){var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);});
+	},
+	compress: function(){
+		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
+		ajaxPetition('api/fs','subcommand=file.compress&files='+base64.encode(jsonEncode(files)),function(ajax){var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();});
 	}
 };
 
@@ -538,7 +538,6 @@ if(isEmpty(iconName)){iconName = 'New Folder';}
 	},
 	contextmenu: function(e,elem){
 //FIXME: la distancia desde target
-		var ctx = new widget('_wodContextMenu',{'target':elem});
 		var ops = [	{'text':'<i class="icon-ok"></i> Open','op':'onopen'},
 				{'text':'-'},
 				{'text':'<i class="icon-copy"></i> Copy','op':'oncopy'},
@@ -551,13 +550,15 @@ if(isEmpty(iconName)){iconName = 'New Folder';}
 		ops.push({'text':'-'});
 		ops.push({'text':'<i class="icon-trash"></i> Trash','op':'fs_trash'});
 		ops.push({'text':'-'});
-		ops.push({'text':'<i class="icon-plus-sign-alt"></i> Compress','op':'oncompress'});
+		ops.push({'text':'<i class="icon-plus-sign-alt"></i> Compress','op':'_fs.compress'});
 
+		var ctx = new widget('_wodContextMenu',{'target':elem});
 		$each(ops,function(k,v){
 			if(v.text == '-'){ctx.addSeparator();return;}
 			ctx.addItem(v.text,function(e,tr){
-				if(_desktop[v.op]){return _desktop[v.op](el);}
-				var el = elem;do{if(el[v.op]){return el[v.op](e,el);}el = el.parentNode;}while(el.parentNode);
+				if(v.op.substr(0,1) == '_'){var f = $findFunc(v.op);return f(elem);}
+				if(_desktop[v.op]){return _desktop[v.op](elem);}
+				var f = $findFunc(v.op,elem);return f(elem);
 			});
 		});
 	},

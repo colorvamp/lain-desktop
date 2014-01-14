@@ -31,8 +31,6 @@ var _wodIconCanvas = {
 	vars: {},
 	init: function(params){
 		var wodIconCanvas = $C('UL',{className:'wodIconCanvas',
-			'iconsRemove': function(iconsNames){return _wodIconCanvas.icons_remove(this,iconsNames);},
-			'iconsAdd': function(icons){return _wodIconCanvas.icons_add(this,icons);},
 			'icon': {
 				'add': function(icons/* array of objects */){return _wodIconCanvas.icon.add(wodIconCanvas,icons);},
 				'remove': function(icons/* array of names*/){return _wodIconCanvas.icon.remove(wodIconCanvas,icons);}
@@ -59,19 +57,6 @@ var _wodIconCanvas = {
 		addEventListener('file.remove',wodIconCanvas.signals.fileremove);
 		wodIconCanvas.addEventListener('file.drop',wodIconCanvas.signals.filedrop);
 		return wodIconCanvas;
-	},
-	icons_add: function(wodIconCanvas,icons){
-		/* icons are properties */
-		$each(icons,function(k,v){
-			_icon.create(v,wodIconCanvas);
-		});
-	},
-	icons_remove: function(wodIconCanvas,iconsNames){
-//FIXME: mejor indexar el array
-		$each(wodIconCanvas.childNodes,function(k,v){
-			var iProp = _icon.getProperties(v);
-			if(iconsNames.indexOf(iProp.fileName) > -1){_icon.destroy(v);}
-		});
 	},
 	icon: {
 		add: function(wodIconCanvas,icons/* array of objects */){$each(icons,function(k,v){_icon.create(v,wodIconCanvas);});},

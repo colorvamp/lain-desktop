@@ -9,8 +9,6 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		$command = $_POST['command'];unset($_POST['command']);
 		header('Content-type: text/json');
 		switch($command){
-//FIXME: esto debe desaparecer
-			case 'folder_create':$r = fs_folder_create(base64_decode($_POST['fileName']),base64_decode($_POST['fileRoute']));echo json_encode($r);break;
 			case 'transfer_unify':$r = fs_transfer_fragment($_POST['base64string_sum']);echo json_encode($r);break;
 		}
 		exit;
@@ -19,9 +17,14 @@ if(!isset($GLOBALS['userPath'])){exit;}
 	function fs_helper_parsePath($path){
 		$driveDir = $GLOBALS['api']['fs']['root'];
 		if(!file_exists($driveDir)){$oldmask = umask(0);$r = @mkdir($driveDir,0777,1);umask($oldmask);}
-		$path = realpath($driveDir.$path);
-		if($GLOBALS['api']['fs']['serverCage']){$baseDir = realpath(getcwd().'/'.$driveDir);if(substr($path,0,strlen($baseDir)) != $baseDir){return false;}}
-		return $path.'/';
+		$q = realpath($driveDir.$path);$e = '';
+		/* Soporte para usar ficheros zip como carpetas */
+		if(!$q && $p = strpos($path,'.zip/')){$e = substr($path,$p+4);$path = substr($path,0,$p).'.zip';$q = realpath($driveDir.$path).$e;}
+		if(!$q){return false;}
+		$path = $q;
+		if($GLOBALS['api']['fs']['serverCage']){$baseDir = realpath(getcwd().'/'.$driveDir);
+		if(substr($path,0,strlen($baseDir)) != $baseDir){return false;}}
+		return $path.(substr($path,-1) == '/' ? '' : '/');
 	}
 
 	function fs_helper_parsePath_trash($path){
@@ -47,17 +50,20 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		if($fileName){$fileRoute = substr($fileRoute,0,strlen($fileName)*-1);}
 		if(is_dir($file)){return array('fileName'=>$fileName,'fileRoute'=>$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);}
 		//FIXME: poner un mime por defecto
-		$fileMimeType = '';if($finfo){list($fileMimeType) = explode('; ',finfo_file($finfo,$filePath.$fileName));}
-		return array('fileName'=>$fileName,'fileRoute'=>$fileRoute,'fileMime'=>$fileMimeType,'fileDateM'=>$fileData['mtime']);
+		$fileMimeType = '';if($finfo){list($fileMimeType) = explode('; ',finfo_file($finfo,$file));}
+		return array('fileName'=>$fileName,'fileRoute'=>$fileRoute,'fileMime'=>$fileMimeType,'fileSize'=>$fileData['size'],'fileDateM'=>$fileData['mtime']);
 	}
 
 	function fs_folder_list($fileRoute = ''){
 		if(strpos($fileRoute,'native:trash:') === 0){return fs_trash_list($fileRoute);}
-		if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
-		$filePath = fs_helper_parsePath($fileRoute);
-
-		if($filePath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		if(!is_dir($filePath)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
+		if(strpos($fileRoute,'native:drive:/') === 0){$fileRoute = substr($fileRoute,14);}
+		$filePath = fs_helper_parsePath($fileRoute);if($filePath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		if(!is_dir($filePath)){
+			switch(true){
+				case (strpos($filePath,'.zip/')):include_once('inc.fs.zip.php');return fs_zip_list($filePath);
+			}
+			return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);
+		}
 		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? 'native:drive:'.substr($filePath,strlen(realpath($GLOBALS['api']['fs']['root']))) : $fileRoute;
 
 		$files = array();
@@ -74,6 +80,7 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		/* Al ser una carpeta no necesitamos mime */
 		$folder = fs_native_getInfo($filePath);
 
+//FIXME: esto no sirve para nada -> ksort
 		sort($files);
 		return array('folder'=>$folder,'files'=>$files);
 	}
@@ -100,7 +107,7 @@ if(!isset($GLOBALS['userPath'])){exit;}
 	function fs_file_move($files,$target){
 		/* $files could be json_encoded */
 		if(is_string($files)){$files = json_decode($files,1);if($files === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}}
-		if($target[0] == '{'){$target = json_decode($target,1);if($files === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}$target = $target['fileRoute'].$target['fileName'].'/';}
+		if($target[0] == '{'){$target = json_decode($target,1);if($target === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}$target = $target['fileRoute'].$target['fileName'].'/';}
 //FIXME: if(!count($files))
 		$destRoute = $target;
 
@@ -139,7 +146,7 @@ if(!isset($GLOBALS['userPath'])){exit;}
 	function fs_file_copy($files,$target){
 		/* $files could be json_encoded */
 		if(is_string($files)){$files = json_decode($files,1);if($files === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}}
-		if($target[0] == '{'){$target = json_decode($target,1);if($files === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}$target = $target['fileRoute'].$target['fileName'].'/';}
+		if($target[0] == '{'){$target = json_decode($target,1);if($target === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}$target = $target['fileRoute'].$target['fileName'].'/';}
 //FIXME: if(!count($files))
 		$destRoute = $target;
 
@@ -168,6 +175,39 @@ if(!isset($GLOBALS['userPath'])){exit;}
 				if(!$r){return array('errorDescription'=>'UNKNOWN_ERROR_WHILE_MOVING'.' '.$sourceFile.' to '.$targetFile,'file'=>__FILE__,'line'=>__LINE__);}
 				$return['add'][$destRoute][] = fs_file_getInfo($file['fileName'],$destPath,$destRoute,$finfo);
 			}
+		}
+		finfo_close($finfo);
+
+		return $return;
+	}
+
+	function fs_file_compress($files,$target = false,$algorithm = 'zip'){
+		$return = array('add'=>array());
+		/* $files could be json_encoded */
+		if(is_string($files)){$files = json_decode($files,1);if($files === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}}
+		if(!count($files)){return $return;}
+		if($target && $target[0] == '{'){$target = json_decode($target,1);if($target === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}$target = $target['fileRoute'].$target['fileName'].'/';}
+		$targetName = false;if(!$target){$targetName = uniqid().'.'.$algorithm;}
+
+		$fileRoutes = array();foreach($files as $file){$fileRoutes[$file['fileRoute']][] = $file;}
+		$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
+		$zip = new ZipArchive;
+		foreach($fileRoutes as $fileRoute=>$files){
+			if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
+			$filePath = fs_helper_parsePath($fileRoute);
+			if($filePath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+			if(!is_dir($filePath)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
+			$destRoute = ($GLOBALS['api']['fs']['serverCage']) ? 'native:drive:'.substr($filePath,strlen(realpath($GLOBALS['api']['fs']['root']))) : $filePath;
+
+			$oldmask = umask(0);
+			if($zip->open($filePath.$targetName,ZIPARCHIVE::CREATE) !== true){return array('errorDescription'=>'COMPRESS_ERROR '.$filePath.$targetName,'file'=>__FILE__,'line'=>__LINE__);}
+			foreach($files as $file){
+				$sourceFile = $filePath.$file['fileName'];
+				$zip->addFile($sourceFile,$file['fileName']);
+			}
+			$zip->close();
+			umask($oldmask);
+			$return['add'][$destRoute][] = fs_native_getInfo($filePath.$targetName,$finfo);
 		}
 		finfo_close($finfo);
 

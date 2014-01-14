@@ -1,7 +1,7 @@
 VAR_apps.lainExplorer = {
 	init: function(holder,params){
 		if(!VAR_apps.lainExplorer.vars){VAR_apps.lainExplorer.vars = {apiURL:'api/fs',wCounter:0,wHolder:holder,wList:[],cList:$A([])};}
-		if(params && params.tagName && params.tagName == 'LI'){var iProp = _desktop.icon_getProperties(params);VAR_apps.lainExplorer.client(iProp);return;}
+		if(params && params.tagName && params.tagName == 'LI'){var iProp = _icon.getProperties(params);return VAR_apps.lainExplorer.client(iProp);}
 		if(params && params.constructor == String){VAR_apps.lainExplorer.client(params);return;}
 	},
 	appKill: function(){this.vars.wList.each(function(w){_wodern.window_destroy(w);}.bind(this));},

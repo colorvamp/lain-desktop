@@ -5,11 +5,11 @@
 		include_once('api.fs.php');
 		$apps = desktop_app_getWhere('(appStatus = 1)');
 		//FIXME: hack
-		if(!$apps){$apps = array(array('appCode'=>'synaptic','appName'=>'Synaptic'),array('appCode'=>'users','appName'=>'Users and groups'));}
+		if(!$apps){$apps = array(array('appCode'=>'synaptic','appName'=>'Synaptic'),array('appCode'=>'users','appName'=>'Users and groups'),array('appCode'=>'fileRoller','appName'=>'Compress Manager'));}
 		$HTML_apps = '';foreach($apps as $app){$HTML_apps .= J.'<li onclick="launchApp(\''.$app['appCode'].'\');">'.$app['appName'].'</li>'.N;}
 		$TEMPLATE['HTML_apps'] = $HTML_apps;
 
-		//$desktopIcons = fs_folder_list('/');
+		//$desktopIcons = fs_folder_list('native:drive:/52cdd120a91ca.zip/Music/');print_r($desktopIcons);exit;
 		common_renderTemplate('desktop');
 	}
 
