@@ -10,6 +10,7 @@
 		$TEMPLATE['HTML_apps'] = $HTML_apps;
 
 		//$desktopIcons = fs_folder_list('native:drive:/52cdd120a91ca.zip/Music/');print_r($desktopIcons);exit;
+		//$desktopIcons = fs_folder_list('native:drive:/52cdd120a91ca.zip/');print_r($desktopIcons);exit;
 		common_renderTemplate('desktop');
 	}
 
