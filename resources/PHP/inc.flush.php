@@ -1,4 +1,5 @@
 <?php
+set_time_limit(0);
 header('Content-type: text/plain');
 ini_set('output_buffering','off');
 ini_set('zlib.output_compression',false);

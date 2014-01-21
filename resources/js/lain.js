@@ -256,7 +256,6 @@ var _desktop = {
 	},
 	desktop_properties: function(elem){
 		var iProp = _icon.getProperties(elem);
-		var origPath = iProp.filePath+iProp.fileName;
 
 		var h = elem.lastChild;
 		if(h.tagName != 'UL'){return;}
@@ -267,8 +266,8 @@ var _desktop = {
 		$C('LI',{className:'noSensitive',innerHTML:'Type: '+iProp.fileMime},h);
 		$C('LI',{className:'noSensitive',innerHTML:'Size: '+$round(iProp.fileSize/1024)+'KB'},h);
 		$C('HR',{},h);
-		$C('LI',{className:'noSensitive',innerHTML:'Path: '+iProp.filePath},h);
-		$C('LI',{className:'noSensitive',innerHTML:'Link: <a href="users/'+VAR_loggedUser.userAlias+'/drive'+origPath+'">'+iProp.fileName+'</a>'},h);
+		$C('LI',{className:'noSensitive',innerHTML:'Path: '+iProp.fileRoute},h);
+		$C('LI',{className:'noSensitive',innerHTML:'Link: <a href="users/'+VAR_loggedUser.userAlias+'/drive'+iProp.fileRoute+'">'+iProp.fileName+'</a>'},h);
 	},
 	desktop_launch: function(iconElem){
 		var iProp = _icon.getProperties(iconElem);
@@ -334,11 +333,7 @@ var _desktop = {
 		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});var target = _icon.getProperties(icon);
 		ajaxPetition('api/fs','subcommand=file_copy&files='+base64.encode(jsonEncode(files))+'&target='+base64.encode(jsonEncode(target)),function(ajax){var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();});
 	},
-	fs_move: function(icon){
-//FIXME: comprobar si en destino existen ficheros con el mismo nombre
-		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});var target = _icon.getProperties(icon);
-		ajaxPetition('api/fs','subcommand=file.move&files='+base64.encode(jsonEncode(files))+'&target='+base64.encode(jsonEncode(target)),function(ajax){var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();});
-	},
+	fs_move: function(icon){_fs.move(icon);},
 	fs_paste: function(){
 //FIXME: hay que pasar el destino por parámetros
 return false;
@@ -421,8 +416,7 @@ return false;
 	},
 	background_set: function(iconElem){
 		var iProp = _icon.getProperties(iconElem);
-		var filePath = iProp.fileRoute+iProp.fileName;
-		ajaxPetition('api/desktop/background_set/'+base64.encode(filePath),'',function(ajax){_desktop.background_init(1);});
+		ajaxPetition('api/desktop/background_set/'+base64.encode(iProp.fileRoute+iProp.fileName),'',function(ajax){_desktop.background_init(1);});
 	},
 	helper_bytesToSize: function(bytes){
 		var sizes = ['Bytes','KB','MB','GB','TB'];
@@ -436,9 +430,21 @@ var _fs = {
 	create: function(f){
 //alert(f);
 	},
+	move: function(icon){/* Icon es el destino, lo que deseamos movel lo cogemos de la selección */
+		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}
+		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
+		var target = _icon.getProperties(icon);
+		var params = {'subcommand':'file.move','files':base64.encode(jsonEncode(files)),'target':base64.encode(jsonEncode(target))};
+		$ajax('api/fs',params,{
+			'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();}
+		});
+	},
 	rename: function(icon,name){
 		var target = _icon.getProperties(icon);
-		ajaxPetition('api/fs','subcommand=file.rename&file='+base64.encode(jsonEncode(target))+'&name='+base64.encode(jsonEncode(name)),function(ajax){var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);});
+		var params = {'subcommand':'file.rename','file':base64.encode(jsonEncode(target)),'name':base64.encode(jsonEncode(name))};
+		$ajax('api/fs',params,{
+			'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();}
+		});
 	},
 	compress: function(){
 		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
@@ -449,7 +455,6 @@ var _fs = {
 var _icon = {
 	create: function(iProp,h,s){
 		/* Necesitamos actualizar el path del icono por si está siendo movido */
-		if(iProp.filePath != h.innerPath){iProp.filePath = h.innerPath;}
 		var shortedText = (iProp.fileName.length > 13) ? iProp.fileName.substr(0,10)+'...' : iProp.fileName;
 
 		var signals = {

@@ -11,10 +11,14 @@
 				$r = fs_folder_list(base64_decode($_POST['fileRoute']));
 				echo json_encode($r);
 				break;
-			case 'file.move':$r = fs_file_move(base64_decode($_POST['files']),base64_decode($_POST['target']));echo json_encode($r);break;
+			case 'file.move':$r = fs_move(base64_decode($_POST['files']),base64_decode($_POST['target']));echo json_encode($r);break;
 			case 'file_copy':$r = fs_file_copy(base64_decode($_POST['files']),base64_decode($_POST['target']));echo json_encode($r);break;
-			case 'file.rename':$r = fs_file_rename(base64_decode($_POST['file']),base64_decode($_POST['name']));echo json_encode($r);break;
-case 'file.compress':
+			case 'file.rename':
+				$fileOB = json_decode(base64_decode($_POST['file']),1);
+				$fileName = json_decode(base64_decode($_POST['name']),1);
+				$r = fs_rename($fileOB,$fileName);
+				echo json_encode($r);break;
+			case 'file.compress':
 $r = fs_file_compress(base64_decode($_POST['files']));echo json_encode($r);break;
 			case 'file_trash':$r = fs_file_trash(base64_decode($_POST['files']));echo json_encode($r);break;
 			case 'transfer_fragment':

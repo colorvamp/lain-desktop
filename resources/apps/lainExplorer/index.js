@@ -87,7 +87,8 @@ if(path[path.length-1] != '/'){path = path+'/';}
 //FIXME: innerPath no debe existir
 			iconCanvas.empty();
 			iconCanvas.innerPath = path;
-			$A(r.files).each(function(elem){_icon.create(elem,iconCanvas);});
+			$each(r.files,function(k,v){if(v.fileMime != 'folder'){return;}_icon.create(v,iconCanvas);});
+			$each(r.files,function(k,v){if(v.fileMime == 'folder'){return;}_icon.create(v,iconCanvas);});
 		});
 	},
 	list_upOneLevel: function(iconCanvas){

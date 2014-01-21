@@ -54,7 +54,7 @@
 	});
 
 	function $capitalize(str){return str.replace(/\w+/g,function(a){return a.charAt(0).toUpperCase()+a.slice(1).toLowerCase();});}
-	function $clone(obj){if(obj == null || typeof(obj) != 'object'){return obj;}var temp = obj.constructor();for(var key in obj){temp[key] = clone(obj[key]);}return temp;}
+	function $clone(obj){if(obj == null || typeof(obj) != 'object'){return obj;}var temp = obj.constructor();for(var key in obj){temp[key] = $clone(obj[key]);}return temp;}
 	function $execWhenExists(funcName,params){
 		$findFunc = function(l,pool){if(!pool){pool = window;}var func = pool;var funcSplit = l.split('.');var e = true;for(i = 0;i < funcSplit.length;i++){if(!func[funcSplit[i]]){e = false;break;}func = func[funcSplit[i]];}return e ? func : false;}
 		if(func = $findFunc(funcName)){func.apply(func,params);return true;}
@@ -82,11 +82,14 @@
 	function $toUrl(elem){var str = '';for(var a in elem){str += a+'='+encodeURIComponent(elem[a].toString())+'&';}return str.replace(/&$/,'');}
 	function $type(obj){return typeof(obj);}
 	var $is = {
+		empty: function(o){if(!elem || ($is.string(elem) && elem == '') || ($is.array(elem) && !elem.length)){return true;}return false;},
 		array: function(o){return (Array.isArray(o) || $type(o.length) === 'number');},
-		string: function(o){return (typeof o == 'string' || o instanceof String);}
+		string: function(o){return (typeof o == 'string' || o instanceof String);},
+		object: function(o){return (o.constructor.toString().indexOf('function Object()') == 0);},
+		formData: function(o){return (o.constructor.toString().indexOf('function FormData()') == 0);}
 	};
 
-	//FIXME: mejorar implementación de isEmpty
+	//FIXME: DEPRECATED: usar $is.empty
 	function isEmpty(elem){if(!elem || elem == ""){return true;}return false;}
 	function print_r(obj,i){
 		var s="";if(!i){i = "    ";}else{i += "    ";}
@@ -151,35 +154,45 @@
 	}
 	/*==END-COOKIE-MANAGEMENT==*/
 
-	var TEMPLATES = new Object();
-	function $downloadTemplate(templatePath,callBack){
-		if(TEMPLATES[templatePath]){callBack(TEMPLATES[templatePath]);
-		}else{ajaxPetition(templatePath,"",function(ajax){TEMPLATES[templatePath]=ajax.responseText;callBack(ajax.responseText);});}
-	}
 
-	var Class = function(properties){
-		function type(el,type){ return (el instanceof type);}
-		var klass = function(){var e = $clone(this);e.init.apply(e,arguments);return e;};
-		klass.prototype = $clone(properties);
-		return klass;
-	};
-	function clone(obj){return $clone(obj);}/* DEPRECATED */
-
-
-
-
-	function ajaxObject(){var xmlhttp=false;try{xmlhttp = new ActiveXObject('Msxml2.XMLHTTP');}catch(e){try{xmlhttp = new ActiveXObject('Microsoft.XMLHTTP');}catch(E){xmlhttp = false;}}if(!xmlhttp && typeof XMLHttpRequest!='undefined'){xmlhttp = new XMLHttpRequest();}return xmlhttp;}
 	function ajaxPetition(url,params,callback){
 		//if(!url){return;}if(!params){params = '';}
 		var method = 'GET';if(url.match(/\.php$/) || params !== ''){method = 'POST';}
 
 		var rnd = Math.floor(Math.random()*10000);
-		var ajax = new ajaxObject();
+		var ajax = new XMLHttpRequest();
 //FIXME:quizá con extend?
 		ajax.open(method,url+'?rnd='+rnd,true);
 		ajax.onreadystatechange=function(){if(ajax.readyState==4){callback(ajax);return;}}
 		ajax.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
 		ajax.send(params);
+	}
+	function $ajax(url,params,callbacks){
+		var method = 'GET';if(params){method = 'POST';}
+		var rnd = Math.floor(Math.random()*10000);
+		var data = false;
+		if(params){switch(true){
+			case ($is.object(params)):data = new FormData();$each(params,function(k,v){data.append(k,v);});break;
+			default:data = params;
+		}}
+
+		var xhr = new XMLHttpRequest();
+		xhr.open(method,url+'?rnd='+rnd,true);
+		xhr.onreadystatechange = function(){
+			if(callbacks.onEnd && xhr.readyState == XMLHttpRequest.DONE){return callbacks.onEnd(xhr.responseText);}
+		}
+		if(!$is.formData(data)){xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');}
+		xhr.send(data);
+
+		if(callbacks.onUpdate){var offset = 0;var timer = setInterval(function(){
+			if(xhr.readyState == XMLHttpRequest.DONE){clearInterval(timer);}
+			var text = xhr.responseText.substr(offset);
+			if(!$is.empty(text)){var cmds = text.split("\n");$each(cmds,function(k,v){
+				if($is.empty(v)){return false;}
+				callbacks.onUpdate(v);
+			});}
+			offset = xhr.responseText.length;
+		},1000);}
 	}
 
 	var VAR_schedules = Object();
@@ -247,7 +260,6 @@
 		info_transition(i.infoContainer,n);
 	}
 
-	function createGnomeButton(text,callback,variant){return gnomeButton_create(text,callback,false,variant);}/* DEPRECATED */
 	function gnomeButton_create(text,callback,holder,variant){/* DEPRECATED - HOLDER MUST BE UL EVER */
 		if(!variant){variant = "gnomeButton";}
 		if(holder && holder.tagName == 'UL'){return gnomeButton_create_li(text,callback,holder,variant);}

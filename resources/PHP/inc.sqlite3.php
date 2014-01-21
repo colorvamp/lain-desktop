@@ -3,7 +3,7 @@
 	function sqlite3_open($filePath = false,$mode = 6){
 		/* Mode 6 = (SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE) */
 		$oldmask = umask(0);
-		if(!file_exists($filePath)){$r = file_put_contents($filePath,'');if($r === false){return false;}}
+		if(!file_exists($filePath)){$r = file_put_contents($filePath,'',LOCK_EX);chmod($filePath,0777);if($r === false){return false;}}
 		$filePath = realpath($filePath);
 		$fileSum = md5($filePath);
 		$fileName = basename($filePath);
@@ -21,7 +21,7 @@
 	}
 
 	function sqlite3_close(&$db = false,$shouldCommit = false){
-		if($shouldCommit){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_QUERY_LAST_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_QUERY_LAST_ERROR'] = $db->lastErrorMsg();}
+		if($shouldCommit){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();}
 		foreach($GLOBALS['SQLITE3']['databases'] as $sum=>$database){
 			if($database['resource'] === $db){unset($GLOBALS['SQLITE3']['databases'][$sum]);}
 		}
@@ -33,8 +33,8 @@
 	function sqlite3_cache_set($db,$table,$query,$data){
 		$dbObj = false;foreach($GLOBALS['SQLITE3']['databases'] as $sum=>$database){if($database['resource'] === $db){$dbObj = $database;}}
 		if(!$dbObj){return false;}
-		$cachePath = $GLOBALS['SQLITE3']['cachePath'].'/'.$dbObj['fileSum'].'/'.md5($table).'/';
-		if(!file_exists($cachePath)){$r = mkdir($cachePath,0777,1);}
+		$cachePath = $GLOBALS['SQLITE3']['cachePath'].$dbObj['fileSum'].'/'.md5($table).'/';
+		if(!file_exists($cachePath)){$oldmask = umask(0);$r = mkdir($cachePath,0777,1);umask($oldmask);}
 		$cacheFile = $cachePath.md5($query);
 		$r = file_put_contents($cacheFile,json_encode($data));
 		return true;
@@ -49,7 +49,7 @@
 	function sqlite3_cache_destroy($db,$table = false,$query = false){
 		$dbObj = false;foreach($GLOBALS['SQLITE3']['databases'] as $sum=>$database){if($database['resource'] === $db){$dbObj = $database;}}
 		if(!$dbObj){return false;}
-		$cachePath = $GLOBALS['SQLITE3']['cachePath'].'/'.$dbObj['fileSum'].'/';
+		$cachePath = $GLOBALS['SQLITE3']['cachePath'].$dbObj['fileSum'].'/';
 		if($table != false){$cachePath .= md5($table).'/';}
 		if($query != false){$cachePath .= md5($query);}
 		if(!file_exists($cachePath)){return false;}
@@ -76,7 +76,7 @@
 
 	function sqlite3_query($q,$db){$oldmask = umask(0);$r = @$db->query($q);$secure = 0;while($secure < 5 && !$r && $db->lastErrorCode() == 5){usleep(200000);$r = @$db->query($q);$secure++;}umask($oldmask);return $r;}
 	function sqlite3_querySingle($q,$db){$oldmask = umask(0);$r = @$db->querySingle($q,1);$secure = 0;while($secure < $GLOBALS['SQLITE3']['queryRetries'] && !$r && $db->lastErrorCode() == 5){usleep(200000);$r = @$db->querySingle($q,1);$secure++;}umask($oldmask);return $r;}
-	function sqlite3_exec($q,$db){$oldmask = umask(0);$r = @$db->exec($q);$secure = 0;while($secure < $GLOBALS['SQLITE3']['queryRetries'] && !$r && $db->lastErrorCode() == 5){usleep(200000);$r = @$db->exec($q);$secure++;}umask($oldmask);return $r;}
+	function sqlite3_exec($q,$db){$oldmask = umask(0);$r = @$db->exec($q);$secure = 0;while($secure < $GLOBALS['SQLITE3']['queryRetries'] && !$r && $db->lastErrorCode() == 5){usleep(200000);$r = @$db->exec($q);$secure++;}umask($oldmask);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();return $r;}
 	function sqlite3_tableExists($tableName,$db = false){$row = sqlite3_querySingle('SELECT * FROM sqlite_master WHERE name = \''.$tableName.'\';',$db);return $row;}
 
 	function sqlite3_createTable($tableName,$array,$db){
@@ -88,22 +88,17 @@
 		$query = substr($query,0,-1).');';
 
 		$q = sqlite3_exec($query,$db);
-		$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();
-		$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();
 		if(!$q){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
 		return true;
 	}
 
 	function sqlite3_createIndex($tableName = '',$indexes = array(),$db = false){
-		/* array('fields'=>array('fieldName'=>'ASC|DESC'),'params'=>array('unique'=>true)) */
 		foreach($indexes as $index){
-			$indexname = 'idx.'.$tableName;foreach($index['fields'] as $n=>$p){$indexname .= '.'.$n;if(strlen($p)){$indexname .= '.'.strtolower($p);}}
+			$indexname = 'idx';foreach($index['fields'] as $n=>$p){$indexname .= '-'.$n;if(strlen($p)){$indexname .= '.'.$p;}}
 			$query = 'CREATE '.(isset($index['params']['unique']) ? 'UNIQUE' : '').' INDEX ['.$indexname.'] ON ['.$tableName.'] (';
 			foreach($index['fields'] as $n=>$p){$query .= '\''.$n.'\' '.$p.',';}
 			$query = substr($query,0,-1).');';
 			$q = sqlite3_exec($query,$db);
-			$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();
-			$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();
 			if(!$q){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
 		}
 		return true;
@@ -123,7 +118,8 @@
 		$r = sqlite3_exec($query,$db);
 		if(!$r && $db->lastErrorCode() == 1){
 			if(!isset($GLOBALS['tables'][$tableName]) && !isset($GLOBALS['tables'][$aTableName])){if($shouldClose){sqlite3_close($db);}return array('OK'=>false,'id'=>false,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);}
-			$ret = sqlite3_createTable($tableName,($aTableName ? $GLOBALS['tables'][$aTableName] : $GLOBALS['tables'][$tableName]),$db);if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($db);}return array('OK'=>false,'id'=>false,'errno'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'error'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'query'=>$query,'errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
+			$r = sqlite3_createTable($tableName,($aTableName ? $GLOBALS['tables'][$aTableName] : $GLOBALS['tables'][$tableName]),$db);
+			if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($db);}return array('OK'=>false,'id'=>false,'errno'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'error'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'query'=>$query,'errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
 			if(isset($GLOBALS['indexes'][$tableName])){$r = sqlite3_createIndex($tableName,$GLOBALS['indexes'][$tableName],$db);if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($db);}return $r;}}
 			if(isset($GLOBALS['indexes'][$aTableName])){$r = sqlite3_createIndex($tableName,$GLOBALS['indexes'][$aTableName],$db);if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($db);}return $r;}}
 			$r = sqlite3_exec($query,$db);
@@ -131,9 +127,11 @@
 
 		$lastID = $db->lastInsertRowID();
 		if(!$r && $db->lastErrorCode() == 19 && count($tableKeys)){
+			$insertError = false;/* Hay errores que pueden ser significativos, como una contraseña que no puede ser null, pero saltarán incluso si quiero actualizar */
+			if(substr($db->lastErrorMsg(),-15) == 'may not be NULL'){$insertError = array('OK'=>false,'id'=>false,'errno'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'error'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'query'=>$query,'errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}
 			if(substr($db->lastErrorMsg(),0,7) == 'column ' && count($tableKeys) < 2){
 				$columnName = substr($db->lastErrorMsg(),7,-14);
-				if(!isset($tableKeys[$columnName])){return array('OK'=>$r,'id'=>$lastID,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);}
+				if(!isset($tableKeys[$columnName])){$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();return array('OK'=>$r,'id'=>$lastID,'error'=>$db->lastErrorMsg(),'errno'=>$db->lastErrorCode(),'query'=>$query);}
 			}
 			$query = 'UPDATE \''.$tableName.'\' SET ';
 			$tableKeysValues = array_keys($tableKeys);
@@ -142,6 +140,7 @@
 			foreach($tableKeys as $k=>$v){$query .= ' '.$k.' = \''.$v.'\' AND';}
 			$query = substr($query,0,-4).';';
 			$r = sqlite3_exec($query,$db);
+			if(!$r && $insertError){if($shouldClose){sqlite3_close($db);}return $insertError;}
 			$lastID = array_shift($tableKeys);
 		}
 
@@ -189,13 +188,12 @@
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open((isset($params['db.file'])) ? $params['db.file'] : $GLOBALS['SQLITE3']['database']);sqlite3_exec('BEGIN',$params['db']);$shouldClose = true;}
 		$GLOBALS['DB_LAST_QUERY'] = 'DELETE FROM ['.$tableName.'] '.(($whereClause !== false) ? 'WHERE '.$whereClause : '');
 		$r = sqlite3_exec($GLOBALS['DB_LAST_QUERY'],$params['db']);
-		$GLOBALS['DB_LAST_QUERY_ERRNO'] = $params['db']->lastErrorCode();
-		$GLOBALS['DB_LAST_QUERY_ERROR'] = $params['db']->lastErrorMsg();
 		$GLOBALS['DB_LAST_QUERY_CHANG'] = $params['db']->changes();
 		$r = sqlite3_cache_destroy($params['db'],$tableName);
 		if($shouldClose){$r = sqlite3_close($params['db'],true);if(!$r){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}}
 		return $r;
 	}
+
 
 	//FIXME: rehacer
 	/* $origTableName = string - $tableSchema = string ($GLOBALS['tables'][$tableSchema]) */
@@ -211,14 +209,12 @@
 		$fields = implode(',',array_diff(array_keys($tableSchema),array_values($tableKeys)));
 		foreach($tableKeys as $k=>$v){$fields .= ','.$k.' as '.$v;}
 		$continue = true;while($continue){
-			$r = sqlite3_querySingle('SELECT '.$fields.' FROM '.$origTableName,$db);
+			$r = sqlite3_querySingle('SELECT '.$fields.' FROM ['.$origTableName.']',$db);
 			if($r){break;}
 			if(!$r && substr($db->lastErrorMsg(),0,14) == 'no such column'){
 				$errorField = substr($db->lastErrorMsg(),16);
 				$fields = preg_replace('/(^|,)'.$errorField.'(,|$)/',',',$fields);
-				$fields = preg_replace('/(^|,)'.$errorField.' as _[^_]+_(,|$)/',',',$fields);
 				if($fields[0] == ','){$fields = substr($fields,1);}
-				if($fields[strlen($fields)-1] == ','){$fields = substr($fields,0,-1);}
 				continue;
 			}
 			if(!$r){
@@ -226,24 +222,25 @@
 			}
 		}
 
-		$db->exec('BEGIN;');
-		$r = $db->exec('ALTER TABLE '.$origTableName.' RENAME TO '.$origTableName.'_backup;');
-		if(!$r){return json_encode(array('errorCode'=>1));}
+		sqlite3_exec('BEGIN;',$db);
+		$GLOBALS['DB_LAST_QUERY'] = 'ALTER TABLE ['.$origTableName.'] RENAME TO ['.$origTableName.'_backup];';
+		$r = sqlite3_exec($GLOBALS['DB_LAST_QUERY'],$db);
+		if($db->lastErrorCode() > 0){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$db->lastErrorCode(),'errorDescription'=>$db->lastErrorMsg(),'file'=>__FILE__,'line'=>__LINE__);}
 
-		$a = sqlite3_query('SELECT '.$fields.' FROM '.$origTableName.'_backup;',$db);
+		$a = sqlite3_query('SELECT '.$fields.' FROM ['.$origTableName.'_backup];',$db);
 		$rows = array();if($r){while($row = $a->fetchArray(SQLITE3_ASSOC)){
-			$r = sqlite3_insertIntoTable($tableName,$row,$db);
-			if(!$r['OK']){if($shouldClose){$db->close();}return array('errorCode'=>$r['errno'],'errorDescripcion'=>$r['error'],'query'=>$r['query'],'file'=>__FILE__,'line'=>__LINE__);}
+			$r = sqlite3_insertIntoTable($tableName,$row,$db,$schemaName);
+			if(!$r['OK']){if($shouldClose){$db->close();}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'query'=>$r['query'],'file'=>__FILE__,'line'=>__LINE__);}
 		}}
 
-		$oldCount = sqlite3_querySingle('SELECT count(*) as count FROM '.$origTableName.'_backup;',$db);
-		$newCount = sqlite3_querySingle('SELECT count(*) as count FROM '.$origTableName.';',$db);
-		if($oldCount['count'] != $newCount['count']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>3,'errorDescripcion'=>'COUNT_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		$r = $db->exec('DROP TABLE IF EXISTS '.$origTableName.'_backup');
+		$oldCount = sqlite3_querySingle('SELECT count(*) as count FROM ['.$origTableName.'_backup];',$db);
+		$newCount = sqlite3_querySingle('SELECT count(*) as count FROM ['.$origTableName.'];',$db);
+		if($oldCount['count'] != $newCount['count']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>3,'errorDescription'=>'COUNT_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		$r = $db->exec('DROP TABLE IF EXISTS ['.$origTableName.'_backup];');
 		$db->exec('COMMIT;');
 
 		$r = sqlite3_cache_destroy($db,$origTableName);
 		if($shouldClose){$db->close();}
-		return json_encode(array("errorCode"=>(int)0));
+		return true;
 	}
 ?>

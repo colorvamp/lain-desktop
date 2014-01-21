@@ -11,6 +11,10 @@
 
 		//$desktopIcons = fs_folder_list('native:drive:/52cdd120a91ca.zip/Music/');print_r($desktopIcons);exit;
 		//$desktopIcons = fs_folder_list('native:drive:/52cdd120a91ca.zip/');print_r($desktopIcons);exit;
+		//$desktopIcons = fs_folder_list('native:drive:/lalala.zip/');print_r($desktopIcons);exit;
+		//$desktopIcons = fs_folder_list('native:drive:/');print_r($desktopIcons);exit;
+		//$r = fs_rename(array('fileName'=>'.','fileRoute'=>'ziparc:drive:/52cdd120a91ca.zip/'),'asd');print_r($r);exit;
+		//$r = fs_rename(array('fileName'=>'lololo.txt','fileRoute'=>'ziparc:drive:/lalala.zip/'),'2lololo.txt');print_r($r);exit;
 		common_renderTemplate('desktop');
 	}
 

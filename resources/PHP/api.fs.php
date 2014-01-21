@@ -14,7 +14,19 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		exit;
 	}
 
+	function fs_protocol($fileRoute,$functionName = '',$functionArgs = array()){
+		$funcName = substr($functionName,3);
+		$protocol = substr($fileRoute,0,6);
+		switch($protocol){
+			case 'native':include_once('fs/inc.fs.native.php');return call_user_func_array('fs_native_'.$funcName,$functionArgs);
+			case 'gdrive':include_once('fs/inc.fs.gdrive.php');return call_user_func_array('fs_gdrive_'.$funcName,$functionArgs);
+			case 'ziparc':include_once('fs/inc.fs.zip.php');return call_user_func_array('fs_zip_'.$funcName,$functionArgs);
+		}
+	}
+	
+
 	function fs_helper_parsePath($path){
+		if(strpos($path,'native:drive:') === 0){$path = substr($path,13);}
 		$driveDir = $GLOBALS['api']['fs']['root'];
 		if(!file_exists($driveDir)){$oldmask = umask(0);$r = @mkdir($driveDir,0777,1);umask($oldmask);}
 		$q = realpath($driveDir.$path);$e = '';
@@ -39,6 +51,7 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		$fileData = stat($filePath.$fileName);
 		if(is_dir($filePath.$fileName)){return array('fileName'=>$fileName,'fileRoute'=>$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);}
 		list($fileMimeType) = explode('; ',finfo_file($finfo,$filePath.$fileName));
+		if($fileMimeType == 'application/zip'){$fileRoute = 'ziparc'.substr($fileRoute,6);}
 		return array('fileName'=>$fileName,'fileRoute'=>$fileRoute,'fileMime'=>$fileMimeType,'fileSize'=>$fileData['size'],'fileDateM'=>$fileData['mtime']);
 	}
 	function fs_native_getInfo($file,$finfo = false){
@@ -51,16 +64,22 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		if(is_dir($file)){return array('fileName'=>$fileName,'fileRoute'=>$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);}
 		//FIXME: poner un mime por defecto
 		$fileMimeType = '';if($finfo){list($fileMimeType) = explode('; ',finfo_file($finfo,$file));}
+		if($fileMimeType == 'application/zip'){$fileRoute = 'ziparc'.substr($fileRoute,6);}
 		return array('fileName'=>$fileName,'fileRoute'=>$fileRoute,'fileMime'=>$fileMimeType,'fileSize'=>$fileData['size'],'fileDateM'=>$fileData['mtime']);
 	}
 
 	function fs_folder_list($fileRoute = ''){
+		$protocol = substr($fileRoute,0,6);
+		switch($protocol){
+			case 'gdrive':include_once('fs/inc.fs.gdrive.php');return fs_gdrive_list($fileRoute);
+		}
 		if(strpos($fileRoute,'native:trash:') === 0){return fs_trash_list($fileRoute);}
 		if(strpos($fileRoute,'native:drive:/') === 0){$fileRoute = substr($fileRoute,14);}
+		if(strpos($fileRoute,'ziparc:drive:/') === 0){$fileRoute = substr($fileRoute,14);}
 		$filePath = fs_helper_parsePath($fileRoute);if($filePath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 		if(!is_dir($filePath)){
 			switch(true){
-				case (strpos($filePath,'.zip/')):include_once('inc.fs.zip.php');return fs_zip_list($filePath);
+				case (strpos($filePath,'.zip/')):include_once('fs/inc.fs.zip.php');return fs_zip_list($filePath);
 			}
 			return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);
 		}
@@ -109,12 +128,23 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		if(is_string($files)){$files = json_decode($files,1);if($files === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}}
 		if($target[0] == '{'){$target = json_decode($target,1);if($target === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}$target = $target['fileRoute'].$target['fileName'].'/';}
 //FIXME: if(!count($files))
-		$destRoute = $target;
+//$target.='Music/';
 
-		if(strpos($destRoute,'native:drive:') === 0){$destRoute = substr($destRoute,13);}
-		$destPath = fs_helper_parsePath($destRoute);
-		if($destPath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		if(!is_dir($destPath)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
+		$destRoute = $target;
+		$protocol = substr($destRoute,0,6);
+		switch($protocol){
+			//case 'gdrive':include_once('fs/inc.fs.gdrive.php');return fs_gdrive_list($fileRoute);
+		}
+
+		$destPath = fs_helper_parsePath($destRoute);if($destPath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		/* INI-Recursos nativos */
+		if(!is_dir($destPath)){
+			switch(true){
+				case (strpos($destPath,'.zip/')):include_once('fs/inc.fs.zip.php');return fs_zip_move($files,$destPath);
+			}
+			return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);
+		}
+		/* END-Recursos nativos */
 		$destRoute = ($GLOBALS['api']['fs']['serverCage']) ? 'native:drive:'.substr($destPath,strlen(realpath($GLOBALS['api']['fs']['root']))) : $destPath;
 
 		$fileRoutes = array();foreach($files as $file){$fileRoutes[$file['fileRoute']][] = $file;}
@@ -122,6 +152,7 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		$return = array('add'=>array(),'remove'=>array());
 		foreach($fileRoutes as $fileRoute=>$files){
 			if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
+else{continue;}
 			$filePath = fs_helper_parsePath($fileRoute);
 			if($filePath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 			if(!is_dir($filePath)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
@@ -214,44 +245,7 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		return $return;
 	}
 
-	function fs_file_rename($file,$name){
-		if(is_string($file)){$file = json_decode($file,1);if($file === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}}
-		$name = json_decode($name,1);
-
-		$name = preg_replace('/[\/]*/','',$name);
-//FIXME: while(!file_exists())
-		if(!isset($file['fileName']) || empty($file['fileName'])){$file['fileName'] = uniqid();}
-		if(!isset($file['filePath']) || empty($file['filePath'])){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		$filePath = $file['filePath'];if(strpos($filePath,'native:drive:') === 0){$filePath = substr($filePath,13);}
-		$filePath = fs_helper_parsePath($filePath);
-		if($filePath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		if(!is_dir($filePath)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
-		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? 'native:drive:'.substr($filePath,strlen(realpath($GLOBALS['api']['fs']['root']))) : $filePath;
-
-		$return = array('add'=>array(),'remove'=>array());
-		$sourceFile = $filePath.$file['fileName'];
-		$targetFile = $filePath.$name;
-		if(!file_exists($sourceFile)){do{
-			$c = false;switch($file['fileMime']){
-				case 'folder':$oldmask = umask(0);$r = @mkdir($sourceFile,0777,1);umask($oldmask);$c = true;break;
-			}
-			if($c){continue;}
-			return array('errorDescription'=>'FILE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);
-		}while(false);}
-//echo $sourceFile.PHP_EOL;
-//echo $targetFile.PHP_EOL;
-
-		if($sourceFile != $targetFile){
-			$r = @rename($sourceFile,$targetFile);
-			if(!$r){return array('errorDescription'=>'UNKNOWN_ERROR_WHILE_MOVING'.' '.$sourceFile.' to '.$targetFile,'file'=>__FILE__,'line'=>__LINE__);}
-		}
-		$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
-		$return['remove'][$fileRoute][] = $file['fileName'];
-		$return['add'][$fileRoute][] = fs_file_getInfo($name,$filePath,$fileRoute,$finfo);
-		finfo_close($finfo);
-
-		return $return;
-	}
+	function fs_rename($fileOB,$name){return fs_protocol($fileOB['fileRoute'],__FUNCTION__,func_get_args());}
 
 	function fs_file_trash($files,$db = false){
 		/* $files could be json_encoded */

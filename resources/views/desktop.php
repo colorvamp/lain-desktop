@@ -14,6 +14,7 @@
 				<ul id='lainPlacesMenu_itemList'>
 					<li class='icon_desktop' onclick='launchApp("lainExplorer","native:drive:/");'>Desktop</li>
 					<li class='icon_desktop' onclick='launchApp("lainExplorer","native:trash:/");'>Trash</li>
+					<li class='icon_desktop' onclick='launchApp("lainExplorer","gdrive:52d8759872254:/");'>gtest</li>
 					<?php //echo desktop_placesToCanvas(); ?>
 					<li class='dropLeyend'><i class="icon-link"></i> Drop folders here</li>
 				</ul>
