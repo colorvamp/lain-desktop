@@ -67,7 +67,7 @@ var _wodIconCanvas = {
 			'oncontextmenu': function(e){return _wodIconCanvas.oncontextmenu(e,this);},
 			'getFileRoute': function(){return this.getAttribute('data-fileRoute');},
 			'setFileRoute': function(fileRoute){if(fileRoute[fileRoute.length-1] != '/'){fileRoute = fileRoute+'/';}return this.setAttribute('data-fileRoute',fileRoute);},
-			'getIconParams': function(p){var p = this.getAttribute('data-iconParams');return jsonDecode(p);},
+			'getIconParams': function(){var p = this.getAttribute('data-iconParams');return jsonDecode(p);},
 			'setIconParams': function(p){if(p.fileRoute){this.setFileRoute(p.fileRoute);}return this.setAttribute('data-iconParams',jsonEncode(p));},
 			'signals':{
 				'fileadd': function(e){return _wodIconCanvas.signals.fileadd(wodIconCanvas,e);},
@@ -89,7 +89,9 @@ var _wodIconCanvas = {
 	},
 	folder: {
 		create: function(wodIconCanvas){
-			var icon = _icon.create({'fileName':'','fileMime':'folder'},wodIconCanvas);
+			var iProp = wodIconCanvas.getIconParams();
+			iProp = {'fileName':'','fileMime':'folder','fileRoute':iProp.fileRoute+iProp.fileName+'/'};
+			var icon = _icon.create(iProp,wodIconCanvas);
 			_icon.rename(icon);
 		}
 	},

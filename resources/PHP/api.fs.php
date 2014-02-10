@@ -103,25 +103,6 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		sort($files);
 		return array('folder'=>$folder,'files'=>$files);
 	}
-	function fs_folder_create($fileName,$path = ''){
-		if(strpos($path,'native:drive:') === 0){$path = substr($path,13);}
-		$path = fs_helper_parsePath($path);
-		if($path === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		if(!is_dir($path)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
-		$fileRoute = ($GLOBALS['api']['fs']['serverCage']) ? 'native:drive:'.substr($path,strlen(realpath($GLOBALS['api']['fs']['root']))) : $path;
-
-		$fileName = str_replace(array('/'),'',$fileName);
-		$targetFolder = $path.$fileName;
-		if(empty($fileName)){return array('errorDescription'=>'FOLDER_NAME_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		if(file_exists($targetFolder)){return array('errorDescription'=>'FOLDER_ALREADY_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
-		$oldmask = umask(0);$r = @mkdir($targetFolder,0777,1);umask($oldmask);
-		if(!$r){return array('errorDescription'=>'MKDIR_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-
-		$fileData = stat($targetFolder);
-		//FIXME
-		$f = array('fileName'=>$fileName,'fileRoute'=>'native:drive:'.$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);
-		return $f;
-	}
 
 	function fs_file_move($files,$target){
 		/* $files could be json_encoded */
@@ -245,7 +226,10 @@ else{continue;}
 		return $return;
 	}
 
-	function fs_rename($fileOB,$name){return fs_protocol($fileOB['fileRoute'],__FUNCTION__,func_get_args());}
+	function fs_rename($fileOB,$name){
+		if(!isset($fileOB['fileRoute'])){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		return fs_protocol($fileOB['fileRoute'],__FUNCTION__,func_get_args());
+	}
 	function fs_trash($fileOBs = array()){
 		$filesByProtocol = array();
 		foreach($fileOBs as $fileOB){$protocol = substr($fileOB['fileRoute'],0,6);$filesByProtocol[$protocol][] = $fileOB;}

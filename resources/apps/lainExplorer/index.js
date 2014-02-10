@@ -77,18 +77,10 @@ if(path[path.length-1] != '/'){path = path+'/';}
 
 		var w = iconCanvas.$P({'className':'wodern'});
 
-		//var t = $_('wod_lainExplorer'+wNum+'_title',{innerHTML:'Lain File Explorer - '+title});
-//FIXME: mal
-		ajaxPetition(this.vars.apiURL,'subcommand=folder.list&fileRoute='+base64.encode(path),function(ajax){
+		ajaxPetition('api/fs','subcommand=folder.list&fileRoute='+base64.encode(path),function(ajax){
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 			iconCanvas.setIconParams(r.folder);
-			if(w){w.setIconParams(r.folder);}
-
-//FIXME: innerPath no debe existir
-			iconCanvas.empty();
-			iconCanvas.innerPath = path;
-			$each(r.files,function(k,v){if(v.fileMime != 'folder'){return;}_icon.create(v,iconCanvas);});
-			$each(r.files,function(k,v){if(v.fileMime == 'folder'){return;}_icon.create(v,iconCanvas);});
+			iconCanvas.icon.add(r.files);
 		});
 	},
 	list_upOneLevel: function(iconCanvas){
