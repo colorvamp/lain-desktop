@@ -5,8 +5,18 @@ var _wodern = {
 		var wContainer = (style.wContainer) ? style.wContainer : false;if(style.wContainer){style.wContainer = false;}
 		extend(style,{'id':'wod_'+id,className:'wodern dragable'+(style.className ? ' '+style.className : ''),'.zIndex':_wodern.window_getZ()});
 		var w = $C('DIV',style);
-		//FIXME: traer aquí
-		w.onclick = function(e){_desktop.window_signals_click(e,w);};
+
+		w.addEventListener('mousedownleft',function(e){
+			w.$B({'.zIndex':_wodern.window_getZ()});
+			 _desktop.vars.window_top = w;
+		});
+
+		w.$B({
+			'buttons':{
+				'add': function(){var args = Array.prototype.slice.call(arguments);args.unshift(w);return _wodern.window.buttons.add.apply({},args);}
+			}
+		});
+
 		w.windowBorder = $C('DIV',{className:'wodThemeBorder'},w);
 		$C('DIV',{className:'wodThemeResize',onmousedown:_wodern.resize_mousedown,'w':w},w.windowBorder);
 		w.titleContainer = $C('DIV',{className:'wodThemeTitle'},w.windowBorder);
@@ -15,6 +25,7 @@ var _wodern = {
 		$C('IMG',{className:'wodThemeTitleButton wodButtonClose',src:'r/images/t.gif',onmousedown:function(e){e.stopPropagation();},onclick:function(){_wodern.window_destroy(w);}},w.titleContainer);
 		if(wContainer){w.windowBorder.appendChild(wContainer);window_container_init(wContainer);}
 		w.windowContainer = (wContainer) ? wContainer : window_container(w.windowBorder);
+		$C('DIV',{className:'btn-group'},w.windowBorder);
 		_wodern.position_get(w);
 		if(holder){holder.appendChild(w);}
 		return w;
@@ -25,7 +36,21 @@ var _wodern = {
 		el.parentNode.removeChild(el);if(ev){ev.stopPropagation();}afterRemove();
 	},
 	window_getZ: function(){return _desktop.vars.wHighestZ++;},
+//FIXME: usar API
 	window_findParent: function(el){while(el.parentNode && !el.className.match(/^wodern( |$)/)){el = el.parentNode;}if(!el.parentNode){return false;}return el;},
+	window: {
+		buttons: {
+			add: function(wodWindow,text,f,align){
+				var h = wodWindow.querySelector('.btn-group');if(!h){return false;}
+				$C('DIV',{className:'btn',innerHTML:text},h);
+				_wodern.window.buttons.reflow(wodWindow);
+			},
+			reflow: function(wodWindow){
+				var h = wodWindow.querySelector('.btn-group');if(!h){return false;}
+				$E.classAdd(h.parentNode,'withButtons');
+			}
+		}
+	},
 	resize_mousedown: function(e){
 		e.stopPropagation();
 		var el = e.target;

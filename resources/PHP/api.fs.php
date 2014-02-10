@@ -246,6 +246,13 @@ else{continue;}
 	}
 
 	function fs_rename($fileOB,$name){return fs_protocol($fileOB['fileRoute'],__FUNCTION__,func_get_args());}
+	function fs_trash($fileOBs = array()){
+		$filesByProtocol = array();
+		foreach($fileOBs as $fileOB){$protocol = substr($fileOB['fileRoute'],0,6);$filesByProtocol[$protocol][] = $fileOB;}
+		foreach($filesByProtocol as $protocol=>$fileOBs){
+			$r = fs_protocol($protocol,__FUNCTION__,array($fileOBs));
+		}
+	}
 
 	function fs_file_trash($files,$db = false){
 		/* $files could be json_encoded */

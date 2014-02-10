@@ -308,8 +308,6 @@ var _desktop = {
 		});
 		setTimeout(function(){_wodern.position_set(elem);},500);
 	},
-	window_signals_click: function(e,elem){if(!elem){elem = e.target;while(elem.parentNode && !elem.className.match(/wodTheme/)){elem = elem.parentNode;};if(!elem.className.match(/wodTheme/)){return;};}this.window_registerTop(elem);},
-	window_registerTop: function(elem){elem.$B({'.zIndex':_wodern.window_getZ()});this.vars.window_top = elem;},
 	icons_organize: function(){
 		var h = $_('lainIcons',{innerPath:'/'});
 		//FIXME: hace 2 peticiones, no se x que
@@ -344,6 +342,7 @@ return false;
 		if(_desktop[f]){return _desktop[f](selection[0]);}
 	},
 	fs_trash: function(e){
+return _fs.trash();
 		var selection = _desktop.fileSelection_get();if(!selection.length){return false;}
 		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
 		ajaxPetition('api/fs','subcommand=file_trash&files='+base64.encode(jsonEncode(files)),function(ajax){
@@ -430,7 +429,7 @@ var _fs = {
 	create: function(f){
 //alert(f);
 	},
-	move: function(icon){/* Icon es el destino, lo que deseamos movel lo cogemos de la selección */
+	move: function(icon){/* Icon es el destino, lo que deseamos mover lo cogemos de la selección */
 		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}
 		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
 		var target = _icon.getProperties(icon);
@@ -442,6 +441,14 @@ var _fs = {
 	rename: function(icon,name){
 		var target = _icon.getProperties(icon);
 		var params = {'subcommand':'file.rename','file':base64.encode(jsonEncode(target)),'name':base64.encode(jsonEncode(name))};
+		$ajax('api/fs',params,{
+			'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();}
+		});
+	},
+	trash: function(){
+		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}
+		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
+		var params = {'subcommand':'file.trash','files':base64.encode(jsonEncode(files))};
 		$ajax('api/fs',params,{
 			'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();}
 		});
@@ -542,6 +549,7 @@ if(isEmpty(iconName)){iconName = 'New Folder';}
 		return false;
 	},
 	contextmenu: function(e,elem){
+//FIXME: deprecated
 //FIXME: la distancia desde target
 		var ops = [	{'text':'<i class="icon-ok"></i> Open','op':'onopen'},
 				{'text':'-'},

@@ -3,6 +3,13 @@
 		
 	}
 
+	function api_test(){
+		//include_once('fs/inc.fs.gdrive.php');
+		//fs_gdrive_sync('52f7fd3dc8086');
+		//include_once('api.drives.php');
+		//drives_status();
+	}
+
 	function api_fs(){
 		include_once('api.fs.php');
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
@@ -17,6 +24,10 @@
 				$fileOB = json_decode(base64_decode($_POST['file']),1);
 				$fileName = json_decode(base64_decode($_POST['name']),1);
 				$r = fs_rename($fileOB,$fileName);
+				echo json_encode($r);break;
+			case 'file.trash':
+				$fileOBs = json_decode(base64_decode($_POST['files']),1);
+				$r = fs_trash($fileOBs);
 				echo json_encode($r);break;
 			case 'file.compress':
 $r = fs_file_compress(base64_decode($_POST['files']));echo json_encode($r);break;
@@ -88,6 +99,76 @@ $r = fs_file_compress(base64_decode($_POST['files']));echo json_encode($r);break
 				//FIXME: los diferentes tamaños
 				$r = desktop_background_get();
 				exit;
+		}}
+	}
+
+	function api_drives($mod = false){
+		include_once('api.drives.php');
+		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
+			case 'list':$r = drives_list();echo json_encode(array('drives'=>$r));break;
+			case 'status':$r = drives_status();echo json_encode(array('drives'=>$r));break;
+			case 'create':
+				$params = array();foreach($_POST as $k=>$v){$params[$k] = base64_decode($v);}
+				$r = drives_create($params);
+				echo json_encode($r);
+				break;
+			case 'sync':
+				if(!isset($_POST['driveID']) || empty($_POST['driveID'])){break;}
+				$driveID = preg_replace('/[^a-z0-9:]/','',base64_decode($_POST['driveID']));
+//FIXME: debería ser genérico para todos los $driveTypes
+include_once('fs/inc.fs.gdrive.php');
+				$r = fs_gdrive_sync($driveID);
+				echo json_encode($r);
+				break;
+		}}
+
+		$GLOBALS['COMMON']['BASE'] = 'base.dummy';
+		$TEMPLATE = &$GLOBALS['TEMPLATE'];
+		if($mod){switch($mod){
+//FIXME: control de errores
+			case 'code':
+				$args = func_get_args();
+				array_shift($args);/* Eliminamos $mod */
+				if(!$args){echo 'No args';exit;}
+				$driveID = preg_replace('/[^a-z0-9:]/','',array_shift($args));
+				if(empty($driveID)){echo 'No exists';exit;}
+				/* Comprobamos que el drive exista realmente */
+				$exists = drives_getSingle('(pool = \''.$driveID.'\')');
+				if(!$exists){echo 'No exists';exit;}
+				$driveType = substr($driveID,0,6);
+				$driveHash = substr($driveID,7);
+				/* INI-check for the lib */
+				$lib = 'fs/inc.fs.'.$driveType.'.php';
+				if(!file_exists($lib)){echo 'No support';exit;}
+				include_once($lib);
+				/* END-check for the lib */
+				$retURL = parse_url('http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']);
+				$retURL = $retURL['scheme'].'://'.$retURL['host'].$retURL['path'];
+
+				if(isset($_GET['code'])){
+					$_GET['code'] = preg_replace('/[^a-zA-Z0-9:\/\._\-]/','',$_GET['code']);
+					if(isset($_GET['state']) && $_GET['state'] != $driveID){/* FIXME: */}
+//FIXME: hacer llamada generica con $func
+					$r = fs_gdrive_code_set($driveHash,$_GET['code']);
+					if(isset($r['errorDescription'])){print_r($r);exit;}
+					$r = fs_gdrive_token_request($driveHash,$retURL);
+//FIXME: actualizar el global de la lib
+//FIXME:recuperar token
+//print_r($_GET);
+//exit;
+					return common_renderTemplate('drives/drive.approved');
+				}
+
+				/* INI-check for the func */
+				$func = 'fs_'.$driveType.'_code_request';
+				if(!function_exists($func)){echo 'No support';exit;}
+				/* END-check for the func */
+
+				$location = $func($driveHash,$retURL);
+				if(is_array($location) && isset($location['errorCode'])){print_r($location);exit;}
+				//header('Location: '.$location);exit;
+				$TEMPLATE['drive.url'] = $location;
+				return common_renderTemplate('drives/drive.approval');
 		}}
 	}
 

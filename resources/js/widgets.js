@@ -88,6 +88,7 @@ var _wodIconCanvas = {
 		}
 	},
 	oncontextmenu: function(e,elem){
+//FIXME: deprecated
 		ops = [];
 		ops.push({'text':'<i class="icon-paste"></i> Create new folder','op':'folder.create'});
 		ops.push({'text':'<i class="icon-paste"></i> Paste','op':'fs_paste'});

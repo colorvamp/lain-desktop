@@ -5,7 +5,12 @@
 		include_once('api.fs.php');
 		$apps = desktop_app_getWhere('(appStatus = 1)');
 		//FIXME: hack
-		if(!$apps){$apps = array(array('appCode'=>'synaptic','appName'=>'Synaptic'),array('appCode'=>'users','appName'=>'Users and groups'),array('appCode'=>'fileRoller','appName'=>'Compress Manager'));}
+		if(!$apps){$apps = array(
+			array('appCode'=>'synaptic','appName'=>'Synaptic'),
+			array('appCode'=>'users','appName'=>'Users and groups'),
+			array('appCode'=>'disks','appName'=>'Volume Manager'),
+			array('appCode'=>'fileRoller','appName'=>'Compress Manager')
+		);}
 		$HTML_apps = '';foreach($apps as $app){$HTML_apps .= J.'<li onclick="launchApp(\''.$app['appCode'].'\');">'.$app['appName'].'</li>'.N;}
 		$TEMPLATE['HTML_apps'] = $HTML_apps;
 

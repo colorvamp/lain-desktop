@@ -5,7 +5,7 @@
 			$T: function(tag){ return this.getElementsByTagName(tag); },
 			$B: function(obj){for(var o in obj){if(o.indexOf('.')==0){this.style[o.replace(/^./,'')] = obj[o];continue;}this[o] = obj[o];}return this;},
 			$L: function(c){ return this.getElementsByClassName(c); },
-			$P: function(p){/* p = {tagName:false,className:false} */if(p.tagName){p.tagName = p.tagName.toUpperCase();}var el = this;if(p.className){p.className = new RegExp(p.className);}while(el.parentNode && ((p.tagName && el.tagName!=p.tagName) || (p.className && !el.className.match(p.className)))){el = el.parentNode;}if(!el.parentNode){return false;}return $fix(el);},
+			$P: function(p){return $E.parent.find(this,p);},
 			empty: function(){while(this.firstChild){this.removeChild(this.firstChild);}return this;},
 			isChildNodeOf: function(parent){var isChild = false;var child = this;while(child.parentNode && !isChild){if(child.parentNode == parent){var isChild = true;continue;}child = child.parentNode;}return isChild;},
 			outerHeight: function(){var s = window.getComputedStyle(this,null);return (this.offsetHeight/*+parseInt(s.paddingTop)+parseInt(s.paddingBottom)*/);},
@@ -45,7 +45,14 @@
 			if($E.classHas(elem,className)){return elem;}
 			if(!elem.parentNode){return false;}
 			do{if($E.classHas(elem.parentNode,className)){return elem.parentNode;}elem = elem.parentNode;}while(elem.parentNode && limit--);return false;
+		},
+		parent: {
+			find: function(elem,p){/* p = {tagName:false,className:false} */if(p.tagName){p.tagName = p.tagName.toUpperCase();}if(p.className){p.className = new RegExp(p.className);}while(elem.parentNode && ((p.tagName && elem.tagName!=p.tagName) || (p.className && !elem.className.match(p.className)))){elem = elem.parentNode;}if(!elem.parentNode){return false;}return $fix(elem);}
 		}
+	}
+	/* extended $F-unctions functions */
+	var $F = {
+		find: function(l,pool){if(!pool){pool = window;}var func = pool;var funcSplit = l.split('.');var e = true;for(i = 0;i < funcSplit.length;i++){if(!func[funcSplit[i]]){e = false;break;}func = func[funcSplit[i]];}return e ? func : false;}
 	}
 
 	extend(Function.prototype,{
@@ -56,6 +63,7 @@
 	function $capitalize(str){return str.replace(/\w+/g,function(a){return a.charAt(0).toUpperCase()+a.slice(1).toLowerCase();});}
 	function $clone(obj){if(obj == null || typeof(obj) != 'object'){return obj;}var temp = obj.constructor();for(var key in obj){temp[key] = $clone(obj[key]);}return temp;}
 	function $execWhenExists(funcName,params){
+//FIXME: deberia ser var para que solo estuviera disponible localmente
 		$findFunc = function(l,pool){if(!pool){pool = window;}var func = pool;var funcSplit = l.split('.');var e = true;for(i = 0;i < funcSplit.length;i++){if(!func[funcSplit[i]]){e = false;break;}func = func[funcSplit[i]];}return e ? func : false;}
 		if(func = $findFunc(funcName)){func.apply(func,params);return true;}
 		var l = 'launcher_'+funcName;var body = document.body;if(body[l]){return false;}

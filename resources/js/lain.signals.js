@@ -34,10 +34,12 @@ _desktop.signals = {
 
 	},
 	mouse_down_left: function(e){
+		var event = new CustomEvent('mouse.down.left',{'detail':{'clientX':e.clientX,'clientY':e.clientY},'bubbles':true,'cancelable':true});e.target.dispatchEvent(event);
 		var event = new CustomEvent('mousedownleft',{'detail':{},'bubbles':true,'cancelable':true});e.target.dispatchEvent(event);
 		return false;
 	},
 	mouse_down_right: function(e){
+		var event = new CustomEvent('mouse.down.right',{'detail':{'clientX':e.clientX,'clientY':e.clientY},'bubbles':true,'cancelable':true});e.target.dispatchEvent(event);
 		var event = new CustomEvent('mousedownright',{'detail':{},'bubbles':true,'cancelable':true});e.target.dispatchEvent(event);
 		/* The context menu on desktop expands on mousedown, no needed for complete click,
 		 * Search for contectMenu */
