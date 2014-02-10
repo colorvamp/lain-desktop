@@ -2,8 +2,21 @@
 	function index_main(){
 		$TEMPLATE = &$GLOBALS['TEMPLATE'];
 		include_once('api.desktop.php');
+		include_once('api.drives.php');
 		include_once('api.fs.php');
 		$apps = desktop_app_getWhere('(appStatus = 1)');
+		//FIXME:
+		$places = array(
+			array('placeName'=>'Desktop','placeType'=>'desktop','placeRoute'=>'native:drive:/'),
+			array('placeName'=>'Trash','placeType'=>'trash','placeRoute'=>'native:trash:/')
+		);
+		if($drives = drives_status()){
+			foreach($drives as $drive){
+				$drive['driveStatus'] = str_replace(array('unknown'),array('disabled'),$drive['driveStatus']);
+				$places[] = array('placeName'=>$drive['pool'],'placeType'=>'drive','placeRoute'=>$drive['pool'].':/','placeStatus'=>$drive['driveStatus']);
+			}
+		}
+
 		//FIXME: hack
 		if(!$apps){$apps = array(
 			array('appCode'=>'synaptic','appName'=>'Synaptic'),
@@ -11,6 +24,9 @@
 			array('appCode'=>'disks','appName'=>'Volume Manager'),
 			array('appCode'=>'fileRoller','appName'=>'Compress Manager')
 		);}
+		$TEMPLATE['JSON.apps'] = json_encode($apps);
+		$TEMPLATE['JSON.places'] = json_encode($places);
+
 		$HTML_apps = '';foreach($apps as $app){$HTML_apps .= J.'<li onclick="launchApp(\''.$app['appCode'].'\');">'.$app['appName'].'</li>'.N;}
 		$TEMPLATE['HTML_apps'] = $HTML_apps;
 

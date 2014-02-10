@@ -19,7 +19,8 @@ i.floatSeparator{display:block;clear:both;}
 /*END-login*/
 
 /* INI-buttons */
-.btn,.select{position:relative;display:inline-block;line-height:19px !important;height:21px;
+.btn,.select{
+position:relative;display:inline-block;line-height:19px !important;height:21px;
 font-size:13px;color:#444;text-shadow:0 1px 0 rgba(255,255,255,.5);vertical-align:top;
 background:linear-gradient(to bottom,#fcfcfc,#fcfcfc 1px,#eeeeee 1px,#d5d5d5 calc(100% - 1px),#fff);
 padding:0 4px;margin:0;border-radius:3px;border:1px solid rgba(0,0,0,.4);border-top:1px solid rgba(0,0,0,.2);border-bottom:1px solid rgba(0,0,0,.5);box-shadow:0 1px 2px rgba(66,66,66,.2);
@@ -85,18 +86,19 @@ ul.contextMenu > li.noSensitive:hover{color:#333;}
 body > img.logo{position:absolute;z-index:10;bottom:20px;right:20px;}
 div#null{position:absolute;height:0px;width:0px;overflow:hidden;}
 div#lainMenu{position:absolute;top:20px;left:15px;z-index:7;}
-div#lainMenu > div{position:relative;padding:2px 10px;background:white;border-radius:3px;cursor:pointer;display:inline-block;margin-right:10px;}
-div#lainMenu > div > h1{font-weight:normal;}
-div#lainMenu > div > ul{display:none;position:absolute;left:0;top:22px;background:white;border-radius:3px;padding:5px 0;}
-div#lainMenu > div > ul > li{padding:2px 10px;padding-left:22px;margin:0 10px;white-space:nowrap;line-height:18px;}
-div#lainMenu > div > ul > li:hover{color:#999;}
-div#lainMenu > div.visible > ul{display:block;}
-div#lainMenu > div#lainAppsMenu > ul > li{background:URL(../images/icons/page_gear.png) left center no-repeat;}
-div#lainMenu > div#lainPlacesMenu > ul > li{background-position:left center;background-repeat:no-repeat;}
-div#lainMenu > div#lainPlacesMenu > ul > li:last-child{background-position:8px center;border:1px dashed #AAA;padding:2px 8px 2px 8px;border-radius:5px;margin:8px 10px 4px 10px;}
+		div#lainMenu > div{position:relative;padding:2px 10px;background:white;border-radius:3px;cursor:pointer;display:inline-block;margin-right:10px;}
+		div#lainMenu > div > h1{font-weight:normal;}
+		div#lainMenu > div > ul{display:none;position:absolute;left:0;top:22px;background:white;border-radius:3px;padding:5px 0;}
+		div#lainMenu > div > ul > li{padding:2px 10px;padding-left:22px;margin:0 10px;white-space:nowrap;line-height:18px;}
+		div#lainMenu > div > ul > li:hover{color:#999;}
+		div#lainMenu > div.visible > ul{display:block;}
+		div#lainMenu > div#lainAppsMenu > ul > li{background:URL(../images/icons/page_gear.png) left center no-repeat;}
+		div#lainMenu > div#lainPlacesMenu > ul > li{background-position:left center;background-repeat:no-repeat;}
+		div#lainMenu > div#lainPlacesMenu > ul > li:last-child{background-position:8px center;border:1px dashed #AAA;padding:2px 8px 2px 8px;border-radius:5px;margin:8px 10px 4px 10px;}
 ul#lainWindows{position:absolute;top:0;height:0;width:0;z-index:6;}
 ul#lainWindows > li{position:absolute;height:0;width:0;}
 ul#lainWindows > li > div{position:absolute;}
+div.lainStorage{display:none;}
 
 
 ul#systemTray{position:absolute;top:0;right:0px;font-size:11px;padding-right:10px;line-height:20px;color:white;}
@@ -223,12 +225,21 @@ background:white URL(../images/inputBg.png) repeat-x;}
 .wodList > .wodItem.selected{color:white;background:linear-gradient(to bottom,#e1632f,#e1632f 1px,#f58151 1px,#e96d3a);}
 .wodList > .wodItem.disabled{color:#959595;}
 
+.wodMenu > .menu{display:none;position:absolute;left:0;top:22px;background:white;border-radius:3px;padding:5px 0;}
+.wodMenu > .menu > .wodItem{padding:3px 10px;white-space:nowrap;line-height:16px;}
+.wodMenu > .menu > .wodItem:hover{color:white;background:linear-gradient(to bottom,#e1632f,#e1632f 1px,#f58151 1px,#e96d3a);}
+.wodMenu > .menu > .wodItem.disabled{background:none;color:#959595;}
+.wodMenu > .menu > .wodItem .icon16{margin-right:6px;}
+.wodMenu.open > .menu{display:block;}
+
+
 .wodIframe{display:block;width:100%;height:100%;border:0;}
 
 .wodVContainer{position:relative;display:inline-block;width:100%;height:100%;overflow-y:auto;}
 .wodMenuHolder + .wodVContainer{height:-webkit-calc(100% - 20px);height:calc(100% - 20px);}
 .wodHContainer{position:relative;display:inline-block;height:100%;vertical-align:top;overflow-y:auto;}
 
+/* Los botones de final de ventana */
 .wodButtonMenu{padding:3px 0 1px 0;height:28px;}
 .wodButtonMenu > div{display:inline-block;height:21px;line-height:19px;padding:0 5px;border:1px solid #717171;border-radius:3px;box-shadow:0 1px 0 #dcdcdc;background:-webkit-linear-gradient(top,#ededed 1px,#cacaca 1px,#c2c2c2 50%,#b8b8b8);background:-moz-linear-gradient(top,#ededed 1px,#cacaca 1px,#c2c2c2 50%,#b8b8b8);background:-ms-linear-gradient(top,#ededed 1px,#cacaca 1px,#c2c2c2 50%,#b8b8b8);background:linear-gradient(top,#ededed 1px,#cacaca 1px,#c2c2c2 50%,#b8b8b8);}
 .wodButtonMenu > div + div{margin-left:2px;}
@@ -270,6 +281,10 @@ ul.buttonHolder > li.gnomeButtonMini:active{border-width:3px;-moz-border-image:U
 
 .lainExplorer_sidePanel{width:140px;top:0;padding-top:5px;overflow-x:hidden;}
 .lainExplorer_sidePanel > li{line-height:18px;padding-left:30px;background-position:11px center;background-repeat:no-repeat;cursor:default;}
+
+.icon16{display:inline-block;height:16px;min-width:16px;background-position:center;background-repeat:no-repeat;vertical-align:middle;}
+.icon_drive{background-image:url(../images/icons/16/drive-removable-media-ieee1394.png) !important;}
+
 
 .icon{height:16px;width:16px;background-position:center;background-repeat:no-repeat;}
 .icon_applications_system{background-image:URL(../images/icons/applications_system.png) !important;}

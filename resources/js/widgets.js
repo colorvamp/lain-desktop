@@ -17,6 +17,31 @@ var _widgets = {
 	}
 }
 
+
+widgets.wodItem = {
+	init: function(params){
+		if(!params){params = {};}
+		var wodItem = $C('DIV',{className:'wodItem',
+			'vars': {'text':false},
+			'set': {
+				'text': function(){var args = Array.prototype.slice.call(arguments);args.unshift(wodItem);return wodItem.wodMenu.set.text.apply({},args);}
+			},
+			'disable': function(){var args = Array.prototype.slice.call(arguments);args.unshift(wodItem);return widgets.wodItem.disable.apply({},args);}
+		});
+		if(params.text){wodItem.set.text(params.text);}
+		/*wodMenu.addEventListener('mouse.down.left',function(e){
+			if($E.class.exists(wodMenu,'open')){return $E.class.remove(wodMenu,'open');}
+			return $E.class.add(wodMenu,'open');
+		});*/
+		return wodItem;
+	},
+	set:{
+		text: function(wodItem,name){wodItem.vars.text = name;wodItem.innerHTML = name;return wodItem;}
+	},
+	disable: function(wodItem){$E.class.add(wodItem,'disabled');return wodItem;}
+}
+
+
 var _wodHContainer = {
 	vars: {},
 	init: function(params){

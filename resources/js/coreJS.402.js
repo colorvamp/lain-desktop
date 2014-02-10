@@ -46,6 +46,11 @@
 			if(!elem.parentNode){return false;}
 			do{if($E.classHas(elem.parentNode,className)){return elem.parentNode;}elem = elem.parentNode;}while(elem.parentNode && limit--);return false;
 		},
+		class: {
+			exists: function(elem,className){var p = new RegExp('(^| )'+className+'( |$)');return (elem.className && elem.className.match(p));},
+			add: function(elem,className){if($E.classHas(elem,className)){return true;}elem.className += ' '+className;},
+			remove: function(elem,className){var c = elem.className;var p = new RegExp('(^| )'+className+'( |$)');c = c.replace(p,' ').replace(/  /g,' ');elem.className = c;}
+		},
 		parent: {
 			find: function(elem,p){/* p = {tagName:false,className:false} */if(p.tagName){p.tagName = p.tagName.toUpperCase();}if(p.className){p.className = new RegExp(p.className);}while(elem.parentNode && ((p.tagName && elem.tagName!=p.tagName) || (p.className && !elem.className.match(p.className)))){elem = elem.parentNode;}if(!elem.parentNode){return false;}return $fix(elem);}
 		}
@@ -90,11 +95,21 @@
 	function $toUrl(elem){var str = '';for(var a in elem){str += a+'='+encodeURIComponent(elem[a].toString())+'&';}return str.replace(/&$/,'');}
 	function $type(obj){return typeof(obj);}
 	var $is = {
-		empty: function(o){if(!elem || ($is.string(elem) && elem == '') || ($is.array(elem) && !elem.length)){return true;}return false;},
+		empty: function(o){if(!o || ($is.string(o) && o == '') || ($is.array(o) && !o.length)){return true;}return false;},
 		array: function(o){return (Array.isArray(o) || $type(o.length) === 'number');},
 		string: function(o){return (typeof o == 'string' || o instanceof String);},
 		object: function(o){return (o.constructor.toString().indexOf('function Object()') == 0);},
 		formData: function(o){return (o.constructor.toString().indexOf('function FormData()') == 0);}
+	};
+	var $json = {
+		encode: function(obj){if(JSON.stringify){return JSON.stringify(obj);}},
+		decode: function(str){
+			if($is.empty(str)){return {errorDescription:"La cadena está vacía, revise la API o el COMANDO"};}
+			if(!$is.string(str)){return {errorDescription:'JSON_ERROR'};}
+			if(str.match("<title>404 Not Found</title>")){return {errorDescription:"La URL de la API es errónea: 404"};}
+			if(!JSON || !JSON.parse){return eval('('+str+')');}
+			try{return JSON.parse(str);}catch(err){return {errorDescription:str};}
+		}
 	};
 
 	//FIXME: DEPRECATED: usar $is.empty

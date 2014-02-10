@@ -6,9 +6,9 @@ if(!isset($GLOBALS['userPath'])){exit;}
 	function desktop_app_save($app){
 		$valid = array('appCode'=>0,'appMenu'=>0,'appStatus'=>0,'appPosition'=>0);
 		foreach($data as $k=>$v){if(!isset($valid[$k])){unset($data[$k]);continue;}}
-		if(!isset($app['appCode'])){return array('errorCode'=>1,'errorDescription'=>'INVALID_APP_CODE','file'=>__FILE__,'line'=>__LINE__);}
+		if(!isset($app['appCode'])){return array('errorDescription'=>'INVALID_APP_CODE','file'=>__FILE__,'line'=>__LINE__);}
 		$app['appCode'] = preg_replace('/[^a-zA-Z0-9]*/','',$app['appCode']);
-		if(empty($app['appCode'])){return array('errorCode'=>1,'errorDescription'=>'INVALID_APP_CODE','file'=>__FILE__,'line'=>__LINE__);}
+		if(empty($app['appCode'])){return array('errorDescription'=>'INVALID_APP_CODE','file'=>__FILE__,'line'=>__LINE__);}
 		if(isset($app['appName'])){$app['appName'] = preg_replace('/[^a-zA-Z0-9 ]*/','',$app['appName']);}
 		if(isset($app['appMenu'])){$app['appMenu'] = preg_replace('/[^a-zA-Z0-9 ]*/','',$app['appMenu']);}
 		if(isset($app['appStatus'])){if($app['appStatus'] != 0 || $app['appStatus'] != 1){unset($app['appStatus']);}}
@@ -22,6 +22,7 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		return $app;
 	}
 	function desktop_app_getSingle($whereClause = false,$params = array()){
+//FIXME:
 		$shouldClose = false;if(!isset($params['db']) || !$params['db']){$params['db'] = sqlite3_open($GLOBALS['api']['desktop']['db'],SQLITE3_OPEN_READONLY);$shouldClose = true;}
 		$r = sqlite3_getSingle('apps',$whereClause,$params);
 		if($shouldClose){sqlite3_close($params['db']);}

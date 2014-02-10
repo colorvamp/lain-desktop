@@ -152,7 +152,17 @@ var _desktop = {
 			iconCanvas.icon.add(r.files);
 		});
 
-
+		var lainMenuHolder = document.querySelector('.lainDesktop > .lainMenu');
+		var storagePlaces = document.querySelector('.lainStorage > .places');
+		if(storagePlaces){
+			storagePlaces = $json.decode(storagePlaces.innerHTML);
+			var wodMenu = new widget('widgets.wodMenu',{'title':'<i class="icon-folder-close"></i> Places'});
+			lainMenuHolder.appendChild(wodMenu);
+			$each(storagePlaces,function(k,v){
+				var wodItem = wodMenu.item.add('<span class="icon16 icon_'+v.placeType+'"></span>'+v.placeName,function(e){launchApp('lainExplorer',v.placeRoute);});
+				if(v.placeStatus && v.placeStatus == 'disabled'){wodItem.disable();}
+			});
+		}
 
 		_desktop.signals.resize_end();
 		var a = $_('lainPlacesMenu_itemList',{'onDropElement':_desktop.menu_places_mouseDown});
