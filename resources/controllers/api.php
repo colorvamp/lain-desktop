@@ -18,7 +18,10 @@
 				$r = fs_folder_list(base64_decode($_POST['fileRoute']));
 				echo json_encode($r);
 				break;
-			case 'file.move':$r = fs_move(base64_decode($_POST['files']),base64_decode($_POST['target']));echo json_encode($r);break;
+			case 'file.move':
+				$fileOBs = json_decode(base64_decode($_POST['files']),1);
+				$target = json_decode(base64_decode($_POST['target']),1);
+				$r = fs_move($fileOBs,$target);echo json_encode($r);break;
 			case 'file_copy':$r = fs_file_copy(base64_decode($_POST['files']),base64_decode($_POST['target']));echo json_encode($r);break;
 			case 'file.rename':
 				$fileOB = json_decode(base64_decode($_POST['file']),1);

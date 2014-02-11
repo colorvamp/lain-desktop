@@ -4,6 +4,11 @@
 		include_once('api.desktop.php');
 		include_once('api.drives.php');
 		include_once('api.fs.php');
+
+		//$r = fs_rename(array('fileName'=>'lololo.txt','fileRoute'=>'native:drive:/'),'test.txt');print_r($r);exit;
+		//$r = fs_rename(array('fileName'=>'','fileMime'=>'folder','fileRoute'=>'native:drive:/'),'nueva');print_r($r);exit;
+		//$r = fs_move(array('fileName'=>'as','fileMime'=>'folder','fileRoute'=>'native:drive:/'),'native:drive:/a/');print_r($r);exit;
+
 		$apps = desktop_app_getWhere('(appStatus = 1)');
 		//FIXME:
 		$places = array(

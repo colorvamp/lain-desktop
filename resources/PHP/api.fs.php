@@ -3,7 +3,9 @@ if(!isset($GLOBALS['userPath'])){exit;}
 	$GLOBALS['tables']['trash'] = array('_fileHash_'=>'TEXT NOT NULL','fileRoute'=>'TEXT NOT NULL','fileName'=>'TEXT NOT NULL',
 	'fileMime'=>'TEXT NOT NULL','fileSize'=>'INTEGER NOT NULL','filePermissions'=>'TEXT NOT NULL','fileChilds'=>'INTEGER NOT NULL','fileOwner'=>'TEXT NOT NULL','fileGroup'=>'TEXT NOT NULL',
 	'fileDate'=>'TEXT NOT NULL','fileTime'=>'TEXT NOT NULL');
-	$GLOBALS['api']['fs'] = array('root'=>$GLOBALS['userPath'].'drive/','trash'=>$GLOBALS['userPath'].'trash/','tmp'=>$GLOBALS['userPath'].'tmp/','trashdb'=>$GLOBALS['userPath'].'trash.db','serverCage'=>true);
+	$GLOBALS['api']['fs'] = array('root'=>$GLOBALS['userPath'].'drive/','trash'=>$GLOBALS['userPath'].'trash/','tmp'=>$GLOBALS['userPath'].'tmp/','trashdb'=>$GLOBALS['userPath'].'trash.db',
+		'file.mime'=>'../db/magic.mgc',
+		'serverCage'=>true);
 
 	if(isset($_POST['command'])){
 		$command = $_POST['command'];unset($_POST['command']);
@@ -21,9 +23,20 @@ if(!isset($GLOBALS['userPath'])){exit;}
 			case 'native':include_once('fs/inc.fs.native.php');return call_user_func_array('fs_native_'.$funcName,$functionArgs);
 			case 'gdrive':include_once('fs/inc.fs.gdrive.php');return call_user_func_array('fs_gdrive_'.$funcName,$functionArgs);
 			case 'ziparc':include_once('fs/inc.fs.zip.php');return call_user_func_array('fs_zip_'.$funcName,$functionArgs);
+			default:return array('errorDescription'=>'NO_SUPPORT_YET','file'=>__FILE__,'line'=>__LINE__);
 		}
 	}
-	
+
+	function fs_rename($fileOB,$name){
+		if(!isset($fileOB['fileRoute'])){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		return fs_protocol($fileOB['fileRoute'],__FUNCTION__,func_get_args());
+	}
+	function fs_move($fileOBs,$fileRoute){
+		if(!is_string($fileRoute) && !isset($fileRoute['fileRoute'])){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		if(is_array($fileRoute)){$fileRoute = $fileRoute['fileRoute'].$fileRoute['fileName'];}
+		if(isset($fileOBs['fileRoute'])){$fileOBs = array($fileOBs);}
+		return fs_protocol($fileRoute,__FUNCTION__,array($fileOBs,$fileRoute));
+	}
 
 	function fs_helper_parsePath($path){
 		if(strpos($path,'native:drive:') === 0){$path = substr($path,13);}
@@ -49,6 +62,7 @@ if(!isset($GLOBALS['userPath'])){exit;}
 
 	function fs_file_getInfo($fileName,$filePath,$fileRoute,$finfo = false){
 		$fileData = stat($filePath.$fileName);
+//FIXME: sacar fileRoute automaticamente con fs_native_route_get
 		if(is_dir($filePath.$fileName)){return array('fileName'=>$fileName,'fileRoute'=>$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);}
 		list($fileMimeType) = explode('; ',finfo_file($finfo,$filePath.$fileName));
 		if($fileMimeType == 'application/zip'){$fileRoute = 'ziparc'.substr($fileRoute,6);}
@@ -87,7 +101,7 @@ if(!isset($GLOBALS['userPath'])){exit;}
 
 		$files = array();
 		if($handle = opendir($filePath)){
-			$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
+			$finfo = finfo_open(FILEINFO_MIME,$GLOBALS['api']['fs']['file.mime']);
 			while(false !== ($fileName = readdir($handle))){if($fileName[0] == '.'){continue;}
 				//echo $file.print_r(stat($driveDir.$fileName)).'\n';
 				$files[] = fs_file_getInfo($fileName,$filePath,$fileRoute,$finfo);
@@ -104,57 +118,6 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		return array('folder'=>$folder,'files'=>$files);
 	}
 
-	function fs_file_move($files,$target){
-		/* $files could be json_encoded */
-		if(is_string($files)){$files = json_decode($files,1);if($files === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}}
-		if($target[0] == '{'){$target = json_decode($target,1);if($target === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}$target = $target['fileRoute'].$target['fileName'].'/';}
-//FIXME: if(!count($files))
-//$target.='Music/';
-
-		$destRoute = $target;
-		$protocol = substr($destRoute,0,6);
-		switch($protocol){
-			//case 'gdrive':include_once('fs/inc.fs.gdrive.php');return fs_gdrive_list($fileRoute);
-		}
-
-		$destPath = fs_helper_parsePath($destRoute);if($destPath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		/* INI-Recursos nativos */
-		if(!is_dir($destPath)){
-			switch(true){
-				case (strpos($destPath,'.zip/')):include_once('fs/inc.fs.zip.php');return fs_zip_move($files,$destPath);
-			}
-			return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);
-		}
-		/* END-Recursos nativos */
-		$destRoute = ($GLOBALS['api']['fs']['serverCage']) ? 'native:drive:'.substr($destPath,strlen(realpath($GLOBALS['api']['fs']['root']))) : $destPath;
-
-		$fileRoutes = array();foreach($files as $file){$fileRoutes[$file['fileRoute']][] = $file;}
-		$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
-		$return = array('add'=>array(),'remove'=>array());
-		foreach($fileRoutes as $fileRoute=>$files){
-			if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
-else{continue;}
-			$filePath = fs_helper_parsePath($fileRoute);
-			if($filePath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-			if(!is_dir($filePath)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
-			foreach($files as $file){
-				$sourceFile = $filePath.$file['fileName'];
-				$targetFile = $destPath.$file['fileName'];
-				/* If the source and target are the same we cant copy the file */
-				if($sourceFile == $targetFile){continue;}
-				if(file_exists($targetFile)){/* FIXME */continue;}
-				$return['remove'][$file['fileRoute']][] = $file['fileName'];
-				//FIXME: hacer el copy con fread y fwrite y llevar el progreso
-				$r = @rename($sourceFile,$targetFile);
-				if(!$r){return array('errorDescription'=>'UNKNOWN_ERROR_WHILE_MOVING'.' '.$sourceFile.' to '.$targetFile,'file'=>__FILE__,'line'=>__LINE__);}
-				$return['add'][$destRoute][] = fs_file_getInfo($file['fileName'],$destPath,$destRoute,$finfo);
-			}
-		}
-		finfo_close($finfo);
-
-		return $return;
-	}
-
 	function fs_file_copy($files,$target){
 		/* $files could be json_encoded */
 		if(is_string($files)){$files = json_decode($files,1);if($files === NULL){return array('errorDescription'=>'JSON_ERROR','file'=>__FILE__,'line'=>__LINE__);}}
@@ -169,7 +132,7 @@ else{continue;}
 		$destRoute = ($GLOBALS['api']['fs']['serverCage']) ? 'native:drive:'.substr($destPath,strlen(realpath($GLOBALS['api']['fs']['root']))) : $destPath;
 
 		$fileRoutes = array();foreach($files as $file){$fileRoutes[$file['fileRoute']][] = $file;}
-		$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
+		$finfo = finfo_open(FILEINFO_MIME,$GLOBALS['api']['fs']['file.mime']);
 		$return = array('add'=>array());
 		foreach($fileRoutes as $fileRoute=>$files){
 			if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
@@ -202,7 +165,7 @@ else{continue;}
 		$targetName = false;if(!$target){$targetName = uniqid().'.'.$algorithm;}
 
 		$fileRoutes = array();foreach($files as $file){$fileRoutes[$file['fileRoute']][] = $file;}
-		$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
+		$finfo = finfo_open(FILEINFO_MIME,$GLOBALS['api']['fs']['file.mime']);
 		$zip = new ZipArchive;
 		foreach($fileRoutes as $fileRoute=>$files){
 			if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
@@ -226,10 +189,6 @@ else{continue;}
 		return $return;
 	}
 
-	function fs_rename($fileOB,$name){
-		if(!isset($fileOB['fileRoute'])){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		return fs_protocol($fileOB['fileRoute'],__FUNCTION__,func_get_args());
-	}
 	function fs_trash($fileOBs = array()){
 		$filesByProtocol = array();
 		foreach($fileOBs as $fileOB){$protocol = substr($fileOB['fileRoute'],0,6);$filesByProtocol[$protocol][] = $fileOB;}
@@ -248,7 +207,7 @@ else{continue;}
 
 		$return = array('remove'=>array());
 		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['fs']['trashdb']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
-		$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
+		$finfo = finfo_open(FILEINFO_MIME,$GLOBALS['api']['fs']['file.mime']);
 		foreach($fileRoutes as $fileRoute=>$files){
 			if(strpos($fileRoute,'native:drive:') === 0){$fileRoute = substr($fileRoute,13);}
 			$filePath = fs_helper_parsePath($fileRoute);
@@ -290,7 +249,7 @@ else{continue;}
 		$targetFile = $fileRoute.$fileName;
 		if(!file_exists($targetFile)){return array('errorDescription'=>'FILE_NOT_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
 
-		$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');list($fileMimeType) = explode('; ',finfo_file($finfo,$targetFile));finfo_close($finfo);
+		$finfo = finfo_open(FILEINFO_MIME,$GLOBALS['api']['fs']['file.mime']);list($fileMimeType) = explode('; ',finfo_file($finfo,$targetFile));finfo_close($finfo);
 		header('Content-type: '.$fileMimeType);
 		readfile($targetFile);exit;
 	}
@@ -387,7 +346,7 @@ return false;
 		else{
 			$fileIsDir = 0;
 			/* MimeType */
-			$finfo = finfo_open(FILEINFO_MIME,'magic.mgc');
+			$finfo = finfo_open(FILEINFO_MIME,$GLOBALS['api']['fs']['file.mime']);
 			$fileMime = finfo_file($finfo,$driveDir.$fileName);
 			finfo_close($finfo);
 		}
@@ -440,7 +399,7 @@ return false;
 
 		$files = $folders = array();
 		if($handle = opendir($filePath)){
-			$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
+			$finfo = finfo_open(FILEINFO_MIME,$GLOBALS['api']['fs']['file.mime']);
 			while(false !== ($file = readdir($handle))){if($file[0] == '.'){continue;}
 				$fileData = stat($filePath.$file);
 				if(is_dir($filePath.$file)){$folders[] = array('fileName'=>$file,'fileRoute'=>'native:trash:'.$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);continue;}
