@@ -8,6 +8,7 @@ function window_create(id,style,holder){return _wodern.window_create(id,style,ho
 function window_container(w){return $C('DIV',{className:'wodThemeContainer contractable'},w);}
 function window_container_init(w){
 	var menuItems = w.$L('wodMenuItem');
+//FIXME: deprecated
 	if(menuItems.length){$each(menuItems,function(k,menuItem){menuItem.onclick = function(){_desktop.menu_show(menuItem);}});}
 }
 
@@ -80,25 +81,6 @@ var color = s.backgroundColor;
 			w.ondragstart = false;
 		}
 
-function themeTab_createBar(id,style,holder,tabs){
-	style.className = 'wodTabCanvas' + (style.className ? ' '+style.className : '');
-	style.id = 'wodTabCanvas_'+id;
-	var w = $C("DIV",style,holder);
-	if(!tabs){return w;}
-	$A(tabs).each(function(elem,num){
-		var t = $C("LI",{className:"wodTab" + (num==0 ? "Selected" : ""),onmousedown:function(e){e.preventDefault();},onclick:function(){themeTab_selectOne(this);}},w);
-		var t = $C("DIV",{className:"wodTabLeft"},t);
-		var t = $C("DIV",{className:"wodTabRight"},t);
-		var t = $C("DIV",{className:"wodTabCenter",innerHTML:elem.name},t);
-	});
-	return w;
-}
-function themeTab_selectOne(el){
-	var tabs = $fix(el.parentNode).$T("LI");
-	$A(tabs).each(function(elem){elem.className = elem.className.replace(/wodTabSelected/,"wodTab");});
-	el.className = el.className.replace(/wodTab/,"wodTabSelected");
-}
-
 function menu_switch(el){
 	if(el.className.match(/visible$/)){el.className = el.className.replace(/visible$/,'');return;}
 	$A(el.parentNode.childNodes).each(function(node){if(!node.className){return};node.className = node.className.replace(/visible$/,'');});
@@ -170,7 +152,6 @@ var _desktop = {
 		}
 
 		_desktop.signals.resize_end();
-		var a = $_('lainPlacesMenu_itemList',{'onDropElement':_desktop.menu_places_mouseDown});
 		lWindows = $_('lainWindows');
 	},
 	fileSelection_add: function(el){_desktop.vars.file_selection.push(el);},
@@ -290,27 +271,8 @@ var _desktop = {
 		if(!(appName = VAR_MIMES[iProp.fileMime])){return false;}
 		launchApp(appName,iconElem);
 	},
-	desktop_drivePARSENAME: function(driveFile){
-		var protocol = driveFile.substring(0,6);
-		var nameEncoded = driveFile.substring(7,driveFile.length-3);
-		var nameDecoded = base64.decode(nameEncoded);
-		var protocolName = protocol.replace('ubuone','UbuntuOne').replace('reveal','Reveal');
-		return {'protocol':protocol,'protocolName':protocolName,'nameEncoded':nameEncoded,'nameDecoded':nameDecoded};
-	},
-	desktop_driveADD: function(driveFile){
-		var d = _desktop.desktop_drivePARSENAME(driveFile);
-		LAIN_drives.push(driveFile);
-		_desktop.menu_places_placeADD(d.protocolName+' - '+d.nameDecoded,d.protocol+':'+d.nameEncoded+':/','drive_'+d.protocolName.toLowerCase());
-	},
-	desktop_driveREMOVE: function(driveFile){
-		var n = $A(LAIN_drives).find(driveFile);
-		if(n < 0){return;}
-		LAIN_drives.splice(n,1);
-
-		var d = _desktop.desktop_drivePARSENAME(driveFile);
-		_desktop.menu_place_placeREMOVEDRIVE(d.protocol+':'+d.nameEncoded);
-	},
 	window_contract: function(elem){
+//FIXME: deprecated
 		$each(elem.windowBorder.childNodes,function(k,v){
 			if(v.nodeType != 1 || !v.className.match(/contractable/)){return;}
 			v.$B({'.position':'absolute','.height':0,'.overflow':'hidden'});
@@ -339,8 +301,6 @@ var _desktop = {
 			li.parentNode.removeChild(li);
 		}.bind(this));
 	},
-	//FIXME: deprecated
-	icon_getProperties: function(elem){return jsonDecode(elem.firstChild.innerHTML);},
 	fs_copy: function(icon){
 //FIXME: comprobar si en destino existen ficheros con el mismo nombre
 		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});var target = _icon.getProperties(icon);
@@ -387,29 +347,8 @@ return _fs.trash();
 			prec.innerHTML = _littleDrag.vars.clickDelay+" ms";
 		},initialPercentage);
 	},
-	menu_places_placeADD: function(placeName,placePath,placeIcon){
-		var baseDrive = '';if(placePath[0] !== '/'){var s = placePath.substring(0,7);if(s == 'ubuone:'){var i = placePath.indexOf('/');if(i > -1){baseDrive = placePath.substring(0,i-1);}}}
-		//FIXME: quiza si el baseDrive tiene protocol sobreescribir el icono
-		if(!placeIcon){placeIcon = 'folder';}
-		var h = $_('lainPlacesMenu_itemList');
-		var li = $C('LI',{className:'icon_'+placeIcon+' '+baseDrive,innerHTML:placeName,onclick:function(){launchApp('lainExplorer',placePath);}});
-		//FIXME: efectos de transición
-		h.insertBefore(li,h.lastChild.previousSibling);
-	},
-	menu_place_placeREMOVEDRIVE: function(baseDrive){
-		var h = $_('lainPlacesMenu_itemList');
-		var p = new RegExp(baseDrive+'$');
-		//FIXME: efectos de transición
-		$A(h.childNodes).each(function(li){if(li.className && li.className.match(p)){li.parentNode.removeChild(li);};});
-	},
-	menu_places_mouseDown: function(el){
-		var origPath = el.parentNode.innerPath.replace(/[\/]*$/,'')+'/';
-		var elemName = el.$T('DIV')[1].innerHTML;
-		var elemMime = el.className.match(/icon32_([a-z\/]*)/)[1];
-		if(elemMime != 'folder'){return;}
-		_desktop.menu_places_placeADD(elemName,origPath+elemName+'/');
-	},
 	menu_show: function(elem){
+//FIXME: todos los menus de programas usan esta funcionalidad, hay que pasarlos a wodMenu
 		if(elem.className == 'selected'){elem.className = '';return;}
 		$A(elem.parentNode.childNodes).each(function(el){el.className = '';});
 		elem.className = 'selected';
@@ -598,16 +537,6 @@ if(isEmpty(iconName)){iconName = 'New Folder';}
 var _iface = {
 	vars: {},
 	init: function(){},
-	desktop_setBackground: function(iconElem,callback){
-		var iProp = _icon.getProperties(iconElem);
-		var iPropOrigEncoded = jsonEncode(iProp);
-		var params = {'command':'setBackground','file':iPropOrigEncoded};
-		ajaxPetition('r/PHP/API_desktop.php',$toUrl(params),function(ajax){
-			var r = jsonDecode(ajax.responseText);
-			if(parseInt(r.errorCode)>0){alert(print_r(r));return;}
-			if(callback){callback(r.data);}
-		});
-	},
 	reveal_folder_create: function(fileName,fileRoute,callback){
 		var params = {'command':'folder_create','fileName':base64.encode(fileName),'fileRoute':base64.encode(fileRoute)};
 		ajaxPetition('r/PHP/api.fs.php',$toUrl(params),function(ajax){var r = jsonDecode(ajax.responseText);
