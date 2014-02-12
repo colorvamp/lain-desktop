@@ -12,133 +12,99 @@ VAR_apps.lainExplorer = {
 
 },
 	client: function(params){
-		var wContainer = window_container();
+		var wNum = VAR_apps.lainExplorer.vars.wCounter++;
+		var wodern = _wodern.window_create('lainExplorer'+wNum,{},VAR_apps.lainExplorer.vars.wHolder);
+		wodern.set.title('Lain File Explorer');
+		var wContainer = wodern.windowContainer;
 		var iconCanvas = new widget('_wodIconCanvas');
 
-		/* INI-MENU */
+
 		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},wContainer);
-		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'File'},wodMenuHolder));
-		$C('LI',{innerHTML:'Create new folder',onclick:function(){iconCanvas.folder.create();}},ul);
-		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'Edit'},wodMenuHolder));
-		$C('LI',{innerHTML:'<i class="icon-paste"></i> Paste',onclick:function(){VAR_apps.lainExplorer.menu_edit_paste();}},ul);
-		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'View'},wodMenuHolder));
-		$C('LI',{innerHTML:'Side Panel',onclick:function(){alert(1);}},ul);
-		/* END-MENU */
+		var wodMenu = new widget('widgets.wodMenu',{'title':'File'});
+		wodMenu.item.add('<i class="icon-folder-open"></i> Create new folder',function(){iconCanvas.folder.create();});
+		wodMenu.item.add('<i class="icon-remove"></i> Exit',function(){wodern.close();});
+		wodMenuHolder.appendChild(wodMenu);
+		var wodMenu = new widget('widgets.wodMenu',{'title':'Edit'});
+		wodMenu.item.add('<i class="icon-cut"></i> Cut',function(){/*FIXME*/});
+		wodMenu.item.add('<i class="icon-copy"></i> Copy',function(){/*FIXME*/});
+		wodMenu.item.add('<i class="icon-paste"></i> Paste',function(){/*FIXME*/});
+		wodMenu.item.add('-');
+		wodMenu.item.add('Select all',function(){/*FIXME*/});
+		wodMenu.item.add('Unselect all',function(){/*FIXME*/});
+		wodMenuHolder.appendChild(wodMenu);
+		var wodMenu = new widget('widgets.wodMenu',{'title':'View'});
+		wodMenuHolder.appendChild(wodMenu);
+
 
 		var cont = $C('DIV',{className:'wodVContainer'},wContainer);
+		/* INI-left-panel */
 		var panelLeft = $C('DIV',{className:'wodHContainer','.width':'140px'},cont);
-		var s = this.sidePanel_create();
-		panelLeft.appendChild(s);
+		var storagePlaces = document.querySelector('.lainStorage > .places');
+		if(storagePlaces){
+			storagePlaces = $json.decode(storagePlaces.innerHTML);
+			var wodList = new widget('widgets.wodList',{'title':'<i class="icon-folder-close"></i> Places'});
+			$E.class.add(wodList,'grey');
+			panelLeft.appendChild(wodList);
+			$each(storagePlaces,function(k,v){
+				var wodItem = wodList.item.add('<span class="icon16 icon_'+v.placeType+'"></span>'+v.placeName,function(e){launchApp('lainExplorer',v.placeRoute);});
+				if(v.placeStatus && v.placeStatus == 'disabled'){wodItem.disable();}
+			});
+		}
+		/* END-left-panel */
 
 		var panelRight = $C('DIV',{className:'wodHContainer','.width':'calc(100% - 140px)'},cont);
-
-
-		var buttonHolder = $C("DIV",{className:"wodButtonMenu"},panelRight);
-		var bt_uponelevel = $C('DIV',{innerHTML:'<i class="icon-arrow-up"></i>'},buttonHolder);
-		$C('DIV',{innerHTML:'native:drive:'},buttonHolder);
+//FIXME:
+		var btnGroup = $C('DIV',{className:'btn-group wodButtonMenu'},panelRight);
+		var btn = $C('DIV',{className:'btn',innerHTML:'<i class="icon-arrow-up"></i>'},btnGroup);
+		btn.addEventListener('mouse.down.left',function(){wodern.api.navigation.up();});
+		$C('INPUT',{type:'text'},btnGroup);
 
 		panelRight.appendChild(iconCanvas);
+
+//FIXME: dar soporte a estas cosas correctamente
 		this.vars.cList.push(iconCanvas);
+		VAR_apps.lainExplorer.vars.wList.push(wodern);
 
-		var wNum = VAR_apps.lainExplorer.vars.wCounter++;
-		var w = window_create('lainExplorer'+wNum,{wodTitle:'Lain File Explorer','wContainer':wContainer,
-			beforeRemove:function(){VAR_apps.lainExplorer.wList_removeElem(w);},
-			onDropElement:function(elem){VAR_apps.lainExplorer.onDropElement(elem,this);},
-			getIconCanvas: function(){return iconCanvas;},
-			getFileRoute: function(){return w.getAttribute('data-fileRoute');},
-			setFileRoute: function(fileRoute){if(fileRoute[fileRoute.length-1] != '/'){fileRoute = fileRoute+'/';}return w.setAttribute('data-fileRoute',fileRoute);},
-			getIconParams: function(p){var p = w.getAttribute('data-iconParams');return jsonDecode(p);},
-			setIconParams: function(p){if(p.fileRoute){this.setFileRoute(p.fileRoute);}return w.setAttribute('data-iconParams',jsonEncode(p));}
-		},VAR_apps.lainExplorer.vars.wHolder);
-
-		this.list(iconCanvas,params);
-		VAR_apps.lainExplorer.vars.wList.push(w);
-
-		bt_uponelevel.onclick = function(){this.list_upOneLevel(iconCanvas);}.bind(this);
-	},
-	list: function(iconCanvas,path){
-//FIXME: mal entera
-		var title = false;
-		if(typeof path == 'string'){
-			//FIXME: parsepath
-			var path = (path ? path : '/');
-			var reveal = path.match(/^(reveal|ubuone)/);
-			if(path != '/' && path[path.length-1] != '/'){path += '/';};
-			//if(!reveal && path != '/' && path[0] != '/'){path = '/'+path;}
-			title = path;
-		}else{
-			if(path.fileRoute != '/' && path.fileRoute[path.fileRoute.length-1] != '/'){path.fileRoute += '/';};
-			title = path.fileRoute+path.fileName;
-			path = path.fileRoute+((path.fileAlias) ? path.fileAlias : path.fileName);
-		}
-
-//FIXME: hacer un método parse
-if(path[path.length-1] != '/'){path = path+'/';}
-
-		var w = iconCanvas.$P({'className':'wodern'});
-
-		ajaxPetition('api/fs','subcommand=folder.list&fileRoute='+base64.encode(path),function(ajax){
-			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
-			iconCanvas.setIconParams(r.folder);
-			iconCanvas.icon.add(r.files);
+		extend(wodern.api,{
+			'get': {
+				'route': function(){var iProp = iconCanvas.getIconParams();return iProp.fileRoute+iProp.fileName+'/';}
+			},
+			'navigation': {
+				'location': function(location){return VAR_apps.lainExplorer.navigation.location(wodern,location);},
+				'up': function(){return VAR_apps.lainExplorer.navigation.up(wodern);}
+			}
 		});
+
+		if($is.string(params)){wodern.api.navigation.location(params);}
+		else{wodern.api.navigation.location(params.fileRoute+params.fileName+'/');}
+		wodern.show();
 	},
-	list_upOneLevel: function(iconCanvas){
-//FIXME: no basarse en esto
-		if(iconCanvas.innerPath == ''){return;}
-		var baseName = iconCanvas.innerPath.replace(/\/[^\/]*\/$/,'/');
-		if(baseName == '/'){baseName = '';}
-		this.list(iconCanvas,baseName);
-	},
-	sidePanel_create: function(){
-		var sidePanel = $C('UL',{className:'lainExplorer_sidePanel'});
-//FIXME: terminar
-$A($_('lainPlacesMenu_itemList').childNodes).each(function(el){
-	if(el.nodeType != 1){return;};
-	if(el.className.match(/dropLeyend/)){return;}
-	var li = el.cloneNode(true);
-	sidePanel.appendChild(li);
-});
-		return sidePanel;
+	navigation: {
+		location: function(wodern,location){
+			var iconCanvas = wodern.querySelector('.wodIconCanvas');if(!iconCanvas){return false;}
+			var params = {'subcommand':'folder.list','fileRoute':base64.encode(location)};
+			$ajax('api/fs',params,{
+				'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}
+					iconCanvas.empty();
+					iconCanvas.setIconParams(r.folder);
+					iconCanvas.icon.add(r.files);
+				}
+			});
+		},
+		up: function(wodern){
+			var route = wodern.api.get.route();
+			var driveType = route.substr(0,route.indexOf(':'));
+			route = route.substr(route.indexOf(':')+1);
+			var driveHash = route.substr(0,route.indexOf(':'));
+			route = route.substr(route.indexOf(':')+1);
+			route = route.replace(/\/[^\/]*\/$/,'/');
+			route = driveType+':'+driveHash+':'+route;
+			return VAR_apps.lainExplorer.navigation.location(wodern,route);
+		}
 	},
 	menu_edit_paste: function(){
 //FIXME: fake select
 return;
 		_desktop.fs_paste();
-	},
-	dragIconStart: function(e){
-		var elem = e.target;while(elem.parentNode && !elem.className.match(/dragable/)){elem = elem.parentNode;}
-		elem = $fix(elem,{'.opacity':.5,onmouseup:function(){this.$B({'.opacity':1});_littleDrag.vars.applyLimits = true;}});
-
-		_littleDrag.vars.applyLimits = false;
-		_littleDrag.onMouseDown(e);
-	},
-	onDropElement: function(iconElem,w){
-		var iconCanvas = w.iconCanvas;
-		if(!iconElem.$B){el = $fix(el);}
-		/* Si el elemento pertenece a la misma ventana, no hacemos nada */
-		if(iconElem.isChildNodeOf(iconCanvas)){return;}
-return false;
-		var destPath = iconCanvas.innerPath.replace(/[\/]*$/,'')+'/';
-//FIXME:hack
-if(destPath[0] == '/'){destPath = 'native:drive:'+destPath;}
-		var origPath = iconElem.parentNode.innerPath.replace(/[\/]*$/,'')+'/';
-		/* if the paths are the same, no op is needed */
-		if(destPath == origPath){return;}
-
-		var iProp = _desktop.icon_getProperties(iconElem);
-		var elemName = iProp.fileName;
-
-		//FIXME: quiza hacerlo por api del sistema
-		//alert("from " + origPath + " to " + destPath);
-		var files = [];
-		files.push(iProp);
-		//FIXME: solo enviar fileName y fileRoute por cada file
-		ajaxPetition(this.vars.apiURL,'subcommand=file_move&files='+base64.encode(jsonEncode(files))+'&destRoute='+base64.encode(destPath),function(ajax){
-			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
-//FIXME: cambiar el sistema
-//alert(print_r(r));
-			//_desktop.ico//n_move(iconElem,iconCanvas);
-		}.bind(this));
 	}
 };

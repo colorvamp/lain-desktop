@@ -4,22 +4,7 @@
 
 	<div id='lainDesktop' class="lainDesktop">
 		<b class="lainLeyend">LAIN Project ~12.10 "REBIRTH" by sombra2eternity <span onclick="test(event);">test</span></b>
-		<div id='lainMenu' class="lainMenu">
-			<div id='lainAppsMenu' onclick='menu_switch(this);'>
-				<h1><i class="icon-cogs"></i> Applications</h1>
-				<ul>{%HTML_apps%}</ul>
-			</div>
-			<div id='lainPlacesMenu' onclick='menu_switch(this);'>
-				<h1><i class="icon-folder-close"></i> Places</h1>
-				<ul id='lainPlacesMenu_itemList'>
-					<li class='icon_desktop' onclick='launchApp("lainExplorer","native:drive:/");'>Desktop</li>
-					<li class='icon_desktop' onclick='launchApp("lainExplorer","native:trash:/");'>Trash</li>
-					<li class='icon_desktop' onclick='launchApp("lainExplorer","gdrive:52d8759872254:/");'>gtest</li>
-					<?php //echo desktop_placesToCanvas(); ?>
-					<li class='dropLeyend'><i class="icon-link"></i> Drop folders here</li>
-				</ul>
-			</div>
-		</div>
+		<div id='lainMenu' class="lainMenu"></div>
 		<div id="mouseTrayIcon"><img onclick="_desktop.mouse_controlDialog();" src='r/images/t.gif'/></div>
 		<div id='lainFlowIcon'></div>
 		<ul id='systemTray'>
@@ -30,6 +15,7 @@
 		<ul id="lainIcons" class="wodIconCanvas"></ul>
 		<ul id='lainWindows'></ul>
 		<div class="lainStorage">
+			<div class="apps">{%JSON.apps%}</div>
 			<div class="places">{%JSON.places%}</div>
 		</div>
 <div id='log' style='position:absolute;top:0;right:0;background:white;z-index:1000;'></div>

@@ -4,7 +4,10 @@ var VAR_MIMES = {'folder':'lainExplorer','application/zip':'lainExplorer','image
 function test(){
 _desktop.signals.file_update('aa');
 }
-function window_create(id,style,holder){return _wodern.window_create(id,style,holder);}
+function window_create(id,style,holder){var w = _wodern.window_create(id,style,holder);
+$E.class.remove(w,'hidden');
+return w;
+}
 function window_container(w){return $C('DIV',{className:'wodThemeContainer contractable'},w);}
 function window_container_init(w){
 	var menuItems = w.$L('wodMenuItem');
@@ -135,6 +138,19 @@ var _desktop = {
 		});
 
 		var lainMenuHolder = document.querySelector('.lainDesktop > .lainMenu');
+		/* INI-Menu Apps */
+		var storageApps = document.querySelector('.lainStorage > .apps');
+		if(storageApps){
+			storageApps = $json.decode(storageApps.innerHTML);
+			var wodMenu = new widget('widgets.wodMenu',{'title':'<i class="icon-cogs"></i> Applications'});
+			lainMenuHolder.appendChild(wodMenu);
+			$each(storageApps,function(k,v){
+				var wodItem = wodMenu.item.add('<span class="icon16 icon_page_gear"></span>'+v.appName,function(e){launchApp(v.appCode);});
+				if(v.appStatus && v.appStatus == 'disabled'){wodItem.disable();}
+			});
+		}
+		/* END-Menu Apps */
+		/* INI-Menu Places */
 		var storagePlaces = document.querySelector('.lainStorage > .places');
 		if(storagePlaces){
 			storagePlaces = $json.decode(storagePlaces.innerHTML);
@@ -150,6 +166,7 @@ var _desktop = {
 				if(iProp.fileMime == 'folder'){var wodItem = wodMenu.item.add('<span class="icon16 icon_'+iProp.fileMime+'"></span>'+iProp.fileName,function(e){launchApp('lainExplorer',iProp.fileRoute+iProp.fileName);});}
 			});
 		}
+		/* END-Menu Places */
 
 		_desktop.signals.resize_end();
 		lWindows = $_('lainWindows');

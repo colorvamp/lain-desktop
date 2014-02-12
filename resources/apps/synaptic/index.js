@@ -41,9 +41,11 @@ VAR_apps.synaptic = {
 		$C('DIV',{innerHTML:'Search'},h);
 		var i = $C('INPUT',{},$C('DIV',{className:'inputText'},h));
 
-		var btHolder = $C('UL',{className:'buttonHolder'},h);
-		gnomeButton_create('Cancel',function(){info_destroy(h);},btHolder);
-		gnomeButton_create('OK',function(){ok();},btHolder);
+		var btnGroup = $C('UL',{className:'btn-group'},h);
+		var btn = $C('DIV',{className:'btn',innerHTML:'Cancel'},btnGroup);
+		btn.addEventListener('mouse.down.left',function(e){info_destroy(h);});
+		var btn = $C('DIV',{className:'btn',innerHTML:'OK'},btnGroup);
+		btn.addEventListener('mouse.down.left',function(e){ok();});
 
 		function ok(){
 			ajaxPetition('api/apt','subcommand=packageSearch&searchString='+base64.encode(i.value),function(ajax){

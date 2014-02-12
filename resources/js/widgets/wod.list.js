@@ -1,6 +1,6 @@
 widgets.wodList = {
-	init: function(){
-		var wodList = $C('UL',{className:'wodList variable',
+	init: function(params){
+		var wodList = $C('DIV',{className:'wodList variable',
 			'vars': {'contextmenu':false},
 			'set': {
 				'contextmenu': function(){var args = Array.prototype.slice.call(arguments);args.unshift(wodList);return widgets.wodList.set.contextmenu.apply({},args);},
@@ -18,7 +18,8 @@ widgets.wodList = {
 	},
 	item: {
 		add: function(wodList,item){
-			var wodItem = $C('LI',{className:'wodItem'},wodList);
+			var wodItem = new widget('widgets.wodItem');
+			if($is.string(item)){item = $C('SPAN',{innerHTML:item});}
 			wodItem.appendChild(item);
 			wodList.appendChild(wodItem);
 			//FIXME: hacerlo con globales para evitar multiples declaraciones

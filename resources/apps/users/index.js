@@ -48,8 +48,9 @@ VAR_apps.users = {
 		$C('SPAN',{innerHTML:'Repeat Password'},l);
 		$C('INPUT',{'name':'userPassR','placeholder':'Repeat Password'},$C('DIV',{},l));
 
-		var btHolder = $C('UL',{className:'buttonHolder'},form);
-		gnomeButton_create('Create',function(){$ok(form);},btHolder);
+		var btnGroup = $C('UL',{className:'btn-group right'},form);
+		var btn = $C('DIV',{className:'btn',innerHTML:'Create'},btnGroup);
+		btn.addEventListener('mouse.down.left',function(e){$ok(form);});
 
 		var $ok = function(form){
 			var params = extend($parseForm(form),{'subcommand':'create'});

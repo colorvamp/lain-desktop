@@ -7,14 +7,14 @@ VAR_apps.eyeOfLain = {
 	wList_removeElem: function(el){this.vars.wList.each(function(w,n){if(w == el){this.vars.wList.splice(n,1);}}.bind(this));},
 	wList_append: function(w){VAR_apps.eyeOfLain.vars.wList.push(w);},
 	onDropElement: function(iconElem,w){
-		var iProp = _desktop.icon_getProperties(iconElem);
+		var iProp = _icon.getProperties(iconElem);
 //alert(print_r(iProp));
 //FIXME: comprobar el mime
 		this.viewer_registerNodes(iconElem,w);
 		this.viewer_loadElement(iProp,w);
 	},
 	client_createViewer: function(iconElem){
-		var iProp = _desktop.icon_getProperties(iconElem);
+		var iProp = _icon.getProperties(iconElem);
 		var holder = VAR_apps.eyeOfLain.vars.wHolder;
 
 		var wContainer = window_container();
@@ -56,7 +56,7 @@ VAR_apps.eyeOfLain = {
 	image_flipVertical: function(img){if(!img){return;}var canvas = $C('CANVAS',{'width':img.width,'height':img.height});var ctx = _lc.getContext(canvas).$drawImage(img,0,0,img.width,img.height).$scale(1,-1).$drawImage(canvas,0,-img.height,img.width,img.height);img.src = canvas.toDataURL('image/png');},
 	viewer_registerNodes: function(elem,w){
 		w.storage_imageElements = [];var fileMimes = $A(['image/png','image/jpeg']);
-		$A(elem.parentNode.childNodes).each(function(el){var iProp = _desktop.icon_getProperties(el);if(fileMimes.find(iProp.fileMime) < 0){return;}w.storage_imageElements.push(iProp);});
+		$A(elem.parentNode.childNodes).each(function(el){var iProp = _icon.getProperties(el);if(fileMimes.find(iProp.fileMime) < 0){return;}w.storage_imageElements.push(iProp);});
 	},
 	viewer_registerCurrent: function(iProp,w){w.storage_imageCurrent = iProp;},
 	viewer_loadElement: function(iProp,w){
