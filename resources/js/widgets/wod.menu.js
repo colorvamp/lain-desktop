@@ -34,8 +34,10 @@ widgets.wodMenu = {
 			wodItem.appendChild(item);
 			if(callback && $is.string(callback)){callback = $F.find(callback);}
 			if(callback){
-				if($E.class.exists(wodMenu,'disabled')){return false;}
-				wodItem.addEventListener('mouse.down.left',callback);
+				wodItem.addEventListener('mouse.down.left',function(e){
+					if($E.class.exists(wodItem,'disabled')){return false;}
+					return callback(e);
+				});
 			}
 			h.appendChild(wodItem);
 			return wodItem;

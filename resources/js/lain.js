@@ -162,6 +162,11 @@ var _desktop = {
 				var wodItem = wodMenu.item.add('<span class="icon16 icon_'+v.placeType+'"></span>'+v.placeName,function(e){launchApp('lainExplorer',v.placeRoute);});
 				if(v.placeStatus && v.placeStatus == 'disabled'){wodItem.disable();}
 			});
+			wodMenu.addEventListener('file.drop',function(e){
+				var icon = e.detail;
+				var iProp = _icon.getProperties(icon);
+				if(iProp.fileMime == 'folder'){var wodItem = wodMenu.item.add('<span class="icon16 icon_'+iProp.fileMime+'"></span>'+iProp.fileName,function(e){launchApp('lainExplorer',iProp.fileRoute+iProp.fileName);});}
+			});
 		}
 
 		_desktop.signals.resize_end();
