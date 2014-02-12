@@ -57,7 +57,7 @@ VAR_apps.lainExplorer = {
 		var btnGroup = $C('DIV',{className:'btn-group wodButtonMenu'},panelRight);
 		var btn = $C('DIV',{className:'btn',innerHTML:'<i class="icon-arrow-up"></i>'},btnGroup);
 		btn.addEventListener('mouse.down.left',function(){wodern.api.navigation.up();});
-		$C('INPUT',{type:'text'},btnGroup);
+		$C('INPUT',{type:'text',className:'navigation'},btnGroup);
 
 		panelRight.appendChild(iconCanvas);
 
@@ -82,6 +82,7 @@ VAR_apps.lainExplorer = {
 	navigation: {
 		location: function(wodern,location){
 			var iconCanvas = wodern.querySelector('.wodIconCanvas');if(!iconCanvas){return false;}
+			var navigation = wodern.querySelector('input.navigation');if(navigation){navigation.value = location;}
 			var params = {'subcommand':'folder.list','fileRoute':base64.encode(location)};
 			$ajax('api/fs',params,{
 				'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}
