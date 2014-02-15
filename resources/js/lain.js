@@ -288,20 +288,6 @@ var _desktop = {
 		if(!(appName = VAR_MIMES[iProp.fileMime])){return false;}
 		launchApp(appName,iconElem);
 	},
-	window_contract: function(elem){
-//FIXME: deprecated
-		$each(elem.windowBorder.childNodes,function(k,v){
-			if(v.nodeType != 1 || !v.className.match(/contractable/)){return;}
-			v.$B({'.position':'absolute','.height':0,'.overflow':'hidden'});
-		});
-	},
-	window_expand: function(elem){
-		$each(elem.windowBorder.childNodes,function(k,v){
-			if(v.nodeType != 1 || !v.className.match(/contractable/)){return;}
-			v.$B({'.position':'relative','.height':'','.overflow':''});
-		});
-		setTimeout(function(){_wodern.position_set(elem);},500);
-	},
 	icons_organize: function(){
 		var h = $_('lainIcons',{innerPath:'/'});
 		//FIXME: hace 2 peticiones, no se x que
@@ -454,6 +440,9 @@ var _icon = {
 		};
 		if(s){signals = extend(signals,s);}
 		var li = $C('LI',extend({className:'wodIcon icon32_'+iProp.fileMime+' dragable'},signals),h);
+		li.$B({
+			'open': function(){_icon.open(li);}
+		});
 
 		/* iconCanvas is allowed to navigate (not open in new window) */
 //FIXME: esto no va aquí, pero bueno
@@ -465,7 +454,8 @@ var _icon = {
 		return li;
 	},
 	open: function(icon){
-		
+		//FIXME: si es una carpeta y estamos en un canvas solo navegar
+		_desktop.desktop_launch(icon);
 	},
 	destroy: function(icon){
 		icon.parentNode.removeChild(icon);
@@ -478,6 +468,7 @@ var _icon = {
 		_desktop.fileSelection_save();
 		var iProp = _icon.getProperties(icon);
 		icon.lastChild.innerHTML = iProp.fileName;
+		var event = new CustomEvent('icon.select',{'detail':{'target':icon},'bubbles':true,'cancelable':true});icon.dispatchEvent(event);
 	},
 	unselect: function(icon){
 		if(!$E.classHas(icon,'selected')){return false;}
@@ -488,6 +479,7 @@ var _icon = {
 		var iProp = _icon.getProperties(icon);
 		var shortedText = (iProp.fileName.length > 13) ? iProp.fileName.substr(0,10)+'...' : iProp.fileName;
 		icon.lastChild.innerHTML = shortedText;
+		var event = new CustomEvent('icon.unselect',{'detail':{'target':icon},'bubbles':true,'cancelable':true});icon.dispatchEvent(event);
 	},
 	rename: function(icon){
 		_icon.unselect(icon);
@@ -504,8 +496,8 @@ var _icon = {
 				case 13:return _icon.renameend(icon);break;
 			}
 		};
-		icon.parentNode.addEventListener('mousedownleft',icon.rename_mousedown);
-		icon.parentNode.addEventListener('mousedownright',icon.rename_mousedown);
+		icon.parentNode.addEventListener('mouse.down.left',icon.rename_mousedown);
+		icon.parentNode.addEventListener('mouse.down.right',icon.rename_mousedown);
 		t.addEventListener('keydown',icon.rename_keydown);
 	},
 	renameend: function(icon){
@@ -514,37 +506,28 @@ var _icon = {
 if(isEmpty(iconName)){iconName = 'New Folder';}
 		var iProp = _icon.getProperties(icon);
 		_fs.rename(icon,iconName);
-		icon.parentNode.removeEventListener('mousedownleft',icon.rename_mousedown);
-		icon.parentNode.removeEventListener('mousedownright',icon.rename_mousedown);
+		icon.parentNode.removeEventListener('mouse.down.left',icon.rename_mousedown);
+		icon.parentNode.removeEventListener('mouse.down.right',icon.rename_mousedown);
 		_icon.destroy(icon);
 		return false;
 	},
 	contextmenu: function(e,elem){
-//FIXME: deprecated
-//FIXME: la distancia desde target
-		var ops = [	{'text':'<i class="icon-ok"></i> Open','op':'onopen'},
-				{'text':'-'},
-				{'text':'<i class="icon-copy"></i> Copy','op':'oncopy'},
-				{'text':'<i class="icon-cut"></i> Cut','op':'oncut'}
-			   ];
-		if(_icon.isFolder(elem) && _desktop.fileSelection_get().length < 2){
-			ops.push({'text':'-'});
-			ops.push({'text':'<i class="icon-paste"></i> Paste','op':'onpaste'});
-		}
-		ops.push({'text':'-'});
-		ops.push({'text':'<i class="icon-trash"></i> Trash','op':'fs_trash'});
-		ops.push({'text':'-'});
-		ops.push({'text':'<i class="icon-plus-sign-alt"></i> Compress','op':'_fs.compress'});
+		var menu = [
+			{'text':'<i class="icon-ok"></i> Open','callback':function(e,params){params.target.open();}},
+			{'text':'-'},
+			//FIXME: falta eventos
+			{'text':'<i class="icon-cut"></i> Cut','callback':function(e,params){}},
+			{'text':'<i class="icon-copy"></i> Copy','callback':function(e,params){}},
+			/*{'text':'<i class="icon-paste"></i> Paste','callback':function(e,params){}},*/
+			{'text':'-'},
+			{'text':'<i class="icon-trash"></i> Trash','callback':function(e,params){_fs.trash();}},
+			{'text':'-'},
+			{'text':'<i class="icon-plus-sign-alt"></i> Compress','callback':function(e,params){_fs.compress();}}
+		];
 
-		var ctx = new widget('_wodContextMenu',{'target':elem});
-		$each(ops,function(k,v){
-			if(v.text == '-'){ctx.addSeparator();return;}
-			ctx.addItem(v.text,function(e,tr){
-				if(v.op.substr(0,1) == '_'){var f = $findFunc(v.op);return f(elem);}
-				if(_desktop[v.op]){return _desktop[v.op](elem);}
-				var f = $findFunc(v.op,elem);return f(elem);
-			});
-		});
+		wodContextMenu = new widget('widgets.wodContextMenu',{'event':e,'target':elem});
+		wodContextMenu.set.params({'target':elem});
+		wodContextMenu.items.load(menu);
 	},
 	getProperties: function(elem){if(elem.fileRoute){return elem;}return jsonDecode(elem.querySelector('i').innerHTML);},
 	setProperties: function(elem,iProp){var iPropEncoded = jsonEncode(iProp);elem.querySelector('i').innerHTML = iPropEncoded;return iPropEncoded;},

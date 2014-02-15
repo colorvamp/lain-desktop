@@ -17,29 +17,44 @@ var _widgets = {
 	}
 }
 
-
+/* INI-wodItem */
 widgets.wodItem = {
 	init: function(params){
 		if(!params){params = {};}
 		var wodItem = $C('DIV',{className:'wodItem',
 			'vars': {'text':false},
+			'signals': {},
 			'set': {
-				'text': function(){var args = Array.prototype.slice.call(arguments);args.unshift(wodItem);return wodItem.wodMenu.set.text.apply({},args);}
+				'text': function(){var args = Array.prototype.slice.call(arguments);args.unshift(wodItem);return widgets.wodItem.set.text.apply({},args);},
+				'callback': function(){var args = Array.prototype.slice.call(arguments);args.unshift(wodItem);return widgets.wodItem.set.callback.apply({},args);}
 			},
 			'disable': function(){var args = Array.prototype.slice.call(arguments);args.unshift(wodItem);return widgets.wodItem.disable.apply({},args);}
 		});
 		if(params.text){wodItem.set.text(params.text);}
-		/*wodMenu.addEventListener('mouse.down.left',function(e){
-			if($E.class.exists(wodMenu,'open')){return $E.class.remove(wodMenu,'open');}
-			return $E.class.add(wodMenu,'open');
-		});*/
+		if(params.class && !$is.empty(params.class)){wodItem.className += ' '+params.class;}
+		if(params.callback){if(!params.params){params.params = [];}wodItem.set.callback(params.callback,params.params);}
 		return wodItem;
 	},
 	set:{
-		text: function(wodItem,name){wodItem.vars.text = name;wodItem.innerHTML = name;return wodItem;}
+		text: function(wodItem,item){
+			if($is.string(item) && item == '-'){$E.class.add(wodItem,'separator');return wodItem;}
+			if(!$is.string(item)){wodItem.appendChild(item);return wodItem;}
+			wodItem.vars.text = item;wodItem.innerHTML = item;return wodItem;
+		},
+		callback: function(wodItem,callback,params){
+			if(!params.params){params.params = [];}
+			if(wodItem.signals['mouse.down.left']){wodItem.removeEventListener('mouse.down.left',wodItem.signals['mouse.down.left']);wodItem.signals['mouse.down.left'] = false;}
+			wodItem.signals['mouse.down.left'] = function(e){
+				if($is.string(callback)){var func = $F.find(callback);if(!func){return false;}return func(e,params);}
+				//FIXME: if $is.function
+				return callback(e,params);
+			};
+			wodItem.addEventListener('mouse.down.left',wodItem.signals['mouse.down.left']);
+		}
 	},
 	disable: function(wodItem){$E.class.add(wodItem,'disabled');return wodItem;}
 }
+/* END-wodItem */
 
 
 var _wodHContainer = {
@@ -63,7 +78,6 @@ var _wodIconCanvas = {
 			'folder': {
 				'create': function(){return _wodIconCanvas.folder.create(wodIconCanvas);}
 			},
-			'onicondrop': function(e){return false;},
 			'oncontextmenu': function(e){return _wodIconCanvas.oncontextmenu(e,this);},
 			'getFileRoute': function(){return this.getAttribute('data-fileRoute');},
 			'setFileRoute': function(fileRoute){if(fileRoute[fileRoute.length-1] != '/'){fileRoute = fileRoute+'/';}return this.setAttribute('data-fileRoute',fileRoute);},
@@ -75,9 +89,6 @@ var _wodIconCanvas = {
 				'filedrop': function(e){return _wodIconCanvas.signals.filedrop(wodIconCanvas,e);}
 			}
 		});
-		if(params){
-			if(params.onicondrop){wodIconCanvas.onicondrop = params.onicondrop;}
-		}
 		addEventListener('file.add',wodIconCanvas.signals.fileadd);
 		addEventListener('file.remove',wodIconCanvas.signals.fileremove);
 		wodIconCanvas.addEventListener('file.drop',wodIconCanvas.signals.filedrop);
@@ -313,6 +324,7 @@ var _wodTable = {
 };
 
 var _wodContextMenu = {
+//FIXME: deprecated
 	init: function(params){
 		/* params = {'target':HTMLElement} */
 		var wodContextMenu = $C('UL',{className:'contextMenu',

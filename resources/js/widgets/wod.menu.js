@@ -27,7 +27,7 @@ widgets.wodMenu = {
 		}
 	},
 	item: {
-		add: function(wodMenu,item,callback){
+		add: function(wodMenu,item,callback,params){
 			var h = wodMenu.querySelector('.menu');if(!h){return false;}
 			var wodItem = new widget('widgets.wodItem');
 			if($is.string(item)){item = $C('SPAN',{innerHTML:item});}

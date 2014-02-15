@@ -29,9 +29,19 @@ var w = wodern;
 		w.windowBorder = $C('DIV',{className:'wodThemeBorder'},w);
 		$C('DIV',{className:'wodThemeResize',onmousedown:_wodern.resize_mousedown,'w':w},w.windowBorder);
 		w.titleContainer = $C('DIV',{className:'wodThemeTitle'},w.windowBorder);
-w.titleContainer.onmousedown = _littleDrag.onMouseDown;
+		w.titleContainer.addEventListener('mouse.down.left',function(e){
+			var ev = {'which':1,'clientX':e.detail.clientX,'clientY':e.detail.clientY,'target':e.detail.target,'preventDefault':false};
+			_littleDrag.onMouseDown(ev);
+			$E.class.add(wodern,'moving');
+		});
+		w.titleContainer.addEventListener('mouse.up.left',function(e){$E.class.remove(wodern,'moving');});
+
 		$C('H1',{className:'wodTitle'},w.titleContainer);
-		$C('IMG',{className:'wodThemeTitleButton wodButtonClose',src:'r/images/t.gif',onmousedown:function(e){e.stopPropagation();},onclick:function(){_wodern.window_destroy(w);}},w.titleContainer);
+		var b = $C('DIV',{className:'wodThemeTitleButton wodButtonClose'},w.titleContainer);
+		b.addEventListener('mouse.down.left',function(e){e.preventDefault();e.stopPropagation();});
+		b.addEventListener('mouse.up.left',function(e){wodern.close();});
+
+
 		if(wContainer){w.windowBorder.appendChild(wContainer);window_container_init(wContainer);}
 		w.windowContainer = (wContainer) ? wContainer : window_container(w.windowBorder);
 		$C('DIV',{className:'btn-group'},w.windowBorder);
