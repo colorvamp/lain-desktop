@@ -7,6 +7,7 @@ VAR_apps.users = {
 	client: function(){
 		var wContainer = window_container();
 		/* INI-MENU */
+//FIXME: 
 		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},wContainer);
 		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'File'},wodMenuHolder));
 		$C('LI',{innerHTML:'<i class="icon-plus"></i> Add a new user',onclick:function(){VAR_apps.users.client_users_add(cont);}},ul);
@@ -67,13 +68,18 @@ VAR_apps.users = {
 		cont.appendChild(table);
 		table.columns.add({'columnName':'Mail'},{'columnName':'Name'},{'columnName':'Registered'});
 		table.rows.oncontextmenu = function(e,tr){
-			var ctx = new widget('_wodContextMenu',{'target':tr});
-			ctx.addItem('<i class="icon-copy"></i> Copy',function(){alert(1);});
-			ctx.addSeparator();
-			ctx.addItem('<i class="icon-trash"></i> Remove user',function(e,tr){
-				var o = tr.getValue();if(!(length in o)){return false;}var mail = o[1];
-				VAR_apps.users.action_user_removeByMail(mail,function(mails){VAR_apps.users.client_user_remove_callback(cont,mails);});
-			});
+			var menu = [
+				{'text':'<i class="icon-copy"></i> Copy','callback':function(e,params){alert(1);}},
+				{'text':'-'},
+				{'text':'<i class="icon-trash"></i> Remove user','callback':function(e,params){
+					var o = tr.getValue();if(!(length in o)){return false;}var mail = o[1];
+					VAR_apps.users.action_user_removeByMail(mail,function(mails){VAR_apps.users.client_user_remove_callback(cont,mails);});
+				}}
+			];
+
+			wodContextMenu = new widget('widgets.wodContextMenu',{'event':e});
+			wodContextMenu.set.params({'target':tr});
+			wodContextMenu.items.load(menu);
 		};
 
 		ajaxPetition('api/users','subcommand=get',function(ajax){

@@ -19,6 +19,7 @@ widgets.wodContextMenu = {
 		});
 		/* Positioning the menu */
 		if(params.event && params.event.detail.clientX && params.event.detail.clientY){wodContextMenu.$B({'.top':params.event.detail.clientY+'px','.left':params.event.detail.clientX+'px'});}
+		if(params.event && params.event.clientX && params.event.clientY){wodContextMenu.$B({'.top':params.event.clientY+'px','.left':params.event.clientX+'px'});}
 		if(params.top){wodContextMenu.style.top = parseInt(params.top)+'px';}
 		if(params.left){wodContextMenu.style.left = parseInt(params.left)+'px';}
 		if(params.target){

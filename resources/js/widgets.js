@@ -78,7 +78,6 @@ var _wodIconCanvas = {
 			'folder': {
 				'create': function(){return _wodIconCanvas.folder.create(wodIconCanvas);}
 			},
-			'oncontextmenu': function(e){return _wodIconCanvas.oncontextmenu(e,this);},
 			'getFileRoute': function(){return this.getAttribute('data-fileRoute');},
 			'setFileRoute': function(fileRoute){if(fileRoute[fileRoute.length-1] != '/'){fileRoute = fileRoute+'/';}return this.setAttribute('data-fileRoute',fileRoute);},
 			'getIconParams': function(){var p = this.getAttribute('data-iconParams');return jsonDecode(p);},
@@ -92,6 +91,7 @@ var _wodIconCanvas = {
 		addEventListener('file.add',wodIconCanvas.signals.fileadd);
 		addEventListener('file.remove',wodIconCanvas.signals.fileremove);
 		wodIconCanvas.addEventListener('file.drop',wodIconCanvas.signals.filedrop);
+		wodIconCanvas.addEventListener('mouse.down.right',_wodIconCanvas.signals.mouseDownRight);
 		return wodIconCanvas;
 	},
 	icon: {
@@ -107,6 +107,21 @@ var _wodIconCanvas = {
 		}
 	},
 	signals: {
+		mouseDownRight: function(e){
+			var wodIconCanvas = this;
+			//if(!wodIconCanvas.vars.contextmenu || !$is.array(wodIconCanvas.vars.contextmenu) || !wodIconCanvas.vars.contextmenu.length){return false;}
+			//FIXME:
+			_wodIconCanvas.vars.contextmenu = [
+				{'text':'<i class="icon-paste"></i> Create new folder','callback':function(e,params){wodIconCanvas.folder.create();}},
+				{'text':'-'},
+				{'text':'<i class="icon-cut"></i> Paste','callback':function(e,params){/*FIXME:*/}}
+			];
+			var x = e.detail.clientX;var y = e.detail.clientY;
+			var candidate = document.elementFromPoint(x,y);
+			wodContextMenu = new widget('widgets.wodContextMenu',{'event':e});
+			wodContextMenu.set.params({'target':candidate});
+			wodContextMenu.items.load(_wodIconCanvas.vars.contextmenu);
+		},
 		fileadd: function(wodIconCanvas,e){
 			var files = e.detail;
 			var iProp = wodIconCanvas.getIconParams();
@@ -124,23 +139,6 @@ var _wodIconCanvas = {
 //FIXME: ya no se llama asi
 			_desktop.fs_move(iProp);
 		}
-	},
-	oncontextmenu: function(e,elem){
-//FIXME: deprecated
-		ops = [];
-		ops.push({'text':'<i class="icon-paste"></i> Create new folder','op':'folder.create'});
-		ops.push({'text':'<i class="icon-paste"></i> Paste','op':'fs_paste'});
-
-		var ctx = new widget('_wodContextMenu',{'target':elem});
-		$each(ops,function(k,v){
-			if(v.text == '-'){ctx.addSeparator();return;}
-			ctx.addItem(v.text,function(e,tr){
-				if(v.op.substr(0,1) == '_'){var f = $findFunc(v.op);return f(elem);}
-				if(_desktop[v.op]){return _desktop[v.op](elem);}
-				var f = $findFunc(v.op,elem);return f(elem);
-			});
-		});
-		return false;
 	}
 };
 
@@ -321,30 +319,4 @@ var _wodTable = {
 		}
 		wodTable.reflow();
 	}
-};
-
-var _wodContextMenu = {
-//FIXME: deprecated
-	init: function(params){
-		/* params = {'target':HTMLElement} */
-		var wodContextMenu = $C('UL',{className:'contextMenu',
-			'target':false,
-			'addItem': function(text,callback,disabled){return _wodContextMenu.item_add(wodContextMenu,text,callback,disabled);},
-			'addSeparator': function(text){return _wodContextMenu.separator_add(wodContextMenu);}
-		},$_('lainFlowIcon'));
-		if(params.target){
-			var pos = $getOffsetPosition(params.target);
-			wodContextMenu.$B({'target':params.target,'.top':pos.top+'px','.left':(pos.left+85)+'px'});
-		}
-		_desktop.contextMenu_close();
-		_desktop.vars.currentContextMenu = wodContextMenu;
-		_desktop.vars.currentContextMenuClick = true;
-		return wodContextMenu;
-	},
-	item_add: function(wodContextMenu,text,callback,disabled){
-		var li = $C('LI',{className:(disabled) ? 'disabled' : '',innerHTML:text,
-			onmouseup:function(e){if(disabled || !callback){return;};callback(e,wodContextMenu.target);_desktop.contextMenu_close();}
-		},wodContextMenu);
-	},
-	separator_add: function(wodContextMenu){$C('LI',{className:'separator'},wodContextMenu);}
 };

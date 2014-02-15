@@ -89,7 +89,7 @@ ul#lainWindows > li > div{position:absolute;}
 div.lainStorage{display:none;}
 
 
-ul#systemTray{position:absolute;top:0;right:0px;font-size:11px;padding-right:10px;line-height:20px;color:white;}
+ul#systemTray{position:absolute;top:0;right:0px;font-size:11px;padding-right:10px;line-height:20px;color:white;z-index:6;}
 ul#systemTray > li{float:right;position:relative;background-position:center;background-repeat:no-repeat;font-size:inherit;}
 ul#systemTray > li + li{margin-right:5px;}
 ul#systemTray > li > div.perm{white-space:nowrap;font-size:inherit;cursor:pointer;}
