@@ -13,6 +13,19 @@
 	function fs_native_route_get($path){
 		return ($GLOBALS['api']['fs']['serverCage']) ? 'native:drive:'.substr($path,strlen(realpath($GLOBALS['api']['fs']['root']))) : $path;
 	}
+	function fs_native_fileOB_get($path,$finfo = false){
+//FIXME: file_exists
+//FIXME: is_dir
+		$stat = stat($path);
+		$info = pathinfo($path);
+		$fileRoute = fs_native_route_get($info['dirname'].'/');
+		list($fileMimeType) = explode('; ',finfo_file($finfo,$path));
+		if($fileMimeType == 'directory'){$fileMimeType = 'folder';}
+		return array('fileName'=>$info['basename'],'fileRoute'=>$fileRoute,'fileMime'=>$fileMimeType,'fileSize'=>$stat['size'],'fileDateM'=>$stat['mtime']);
+	}
+
+
+
 
 	function fs_native_move($fileOBs,$fileRoute){
 		$destPath = fs_native_route_validate($fileRoute);
@@ -44,16 +57,43 @@ $return['add'][$fileBaseRoute][] = fs_file_getInfo($fileOB['fileName'],$destPath
 					$oldmask = umask(0);
 					foreach($fileOBs as $fileOB){
 						$fileSource = $fileOB['fileRoute'].$fileOB['fileName'];
-						$fileTarget = $destPath.$fileOB['fileName'];if(file_exists($fileTarget)){continue;}
+$fileTarget = $destPath.$fileOB['fileName'];
+//if(file_exists($fileTarget)){continue;}
 						$zipRouteOB = fs_zip_parseRoute($fileSource);
 						if(is_array($zipRouteOB['fileRoute'])){return array('errorDescription'=>'NO_SUPPORT_FOR_RECURSIVE_ZIP'.' '.$fileSource.' to '.$fileTarget,'file'=>__FILE__,'line'=>__LINE__);}
 						$zip = new ZipArchive();if($zip->open($zipRouteOB['filePath']) !== true){continue;}
-						if( ($fr = $zip->getStream($zipRouteOB['fileRoute'])) === false){continue;}
-						$fw = fopen($fileTarget,'w');
-						while(!feof($fr)){fwrite($fw,fread($fr,8192));}
-						fclose($fw);fclose($fr);
+						/* INI-single file */
+						if( ($fr = $zip->getStream($zipRouteOB['fileRoute'])) !== false){
+							$fw = fopen($fileTarget,'w');
+							while(!feof($fr)){fwrite($fw,fread($fr,8192));}
+							fclose($fw);fclose($fr);
+							$zip->close();
+							$fileOU = fs_native_fileOB_get($fileTarget,$finfo);
+							$return['add'][$fileOU['fileRoute']][] = $fileOU;
+							continue;
+						}
+						/* END-single file */
+						/* INI-folder */
+						$fileTargetFolder = $fileTarget;
+						$indexes = fs_zip_getIndexesByRelativeRoute($zip,$zipRouteOB['fileRoute']);
+						if(!$indexes){$zip->close();continue 2;}
+						foreach($indexes as $index){
+							$zipRelativeRoute = $zipRelativeRouteCopy = $zip->getNameIndex($index);
+							if(substr($zipRelativeRoute,0,1) == '/'){$zipRelativeRoute = substr($zipRelativeRoute,1);}
+							$fileTargetFolder = $destPath.dirname($zipRelativeRoute);if(!file_exists($fileTargetFolder)){@mkdir($fileTargetFolder,0777,1);}
+							$fileTarget = $destPath.$zipRelativeRoute;
+							if( ($fr = $zip->getStream($zipRelativeRouteCopy)) !== false){
+								$fw = fopen($fileTarget,'w');
+								while(!feof($fr)){fwrite($fw,fread($fr,8192));}
+								fclose($fw);fclose($fr);
+								$fileOU = fs_native_fileOB_get($fileTarget,$finfo);
+								$return['add'][$fileOU['fileRoute']][] = $fileOU;
+							}
+						}
 						$zip->close();
-$return['add'][$fileBaseRoute][] = fs_file_getInfo($fileOB['fileName'],$destPath,$fileBaseRoute,$finfo);
+						$fileOU = fs_native_fileOB_get($fileTargetFolder,$finfo);
+						$return['add'][$fileOU['fileRoute']][] = $fileOU;
+						/* END-folder */
 					}
 					umask($oldmask);
 					break;

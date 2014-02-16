@@ -9,6 +9,7 @@
 		//$r = fs_rename(array('fileName'=>'','fileMime'=>'folder','fileRoute'=>'native:drive:/'),'nueva');print_r($r);exit;
 		//$r = fs_move(array('fileName'=>'as','fileMime'=>'folder','fileRoute'=>'native:drive:/'),'native:drive:/a/');print_r($r);exit;
 		//$r = fs_move(json_decode('[{"fileName":"08_10_07_darker_wood_1920x1200.jpg","fileRoute":"ziparc:drive:/52cdd120a91ca.zip/","fileMime":"image/jpeg","fileSize":901598,"fileDateM":1318198554}]',1),json_decode('{"fileName":"asd","fileRoute":"native:drive:/","fileMime":"folder","fileDateM":1392418100}',1));print_r($r);exit;
+		//$r = fs_move(json_decode('[{"fileName":"Music","fileRoute":"ziparc:drive:/52cdd120a91ca.zip/","fileMime":"folder"}]',1),json_decode('{"fileName":"asd","fileRoute":"native:drive:/","fileMime":"folder","fileDateM":1392418100}',1));print_r($r);exit;
 
 		$apps = desktop_app_getWhere('(appStatus = 1)');
 		//FIXME:

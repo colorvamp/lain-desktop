@@ -27,8 +27,38 @@
 		$ret['fileRoute'] = fs_zip_parseRoute($fileRoute);
 		return $ret;
 	}
+	function fs_zip_getTree_index($zip,$relativeRoute = false){
+		$fileTree = array();
+		for($i = 0;$i < $zip->numFiles;$i++){
+			$zipFileRoute = $zip->getNameIndex($i);
+			if(substr($zipFileRoute,0,1) == '/'){$zipFileRoute = substr($zipFileRoute,1);}
+			$zipFilePathInfo = pathinfo($zipFileRoute);
+
+			$b = &$fileTree;
+			if($zipFilePathInfo['dirname'] != '.'){
+				$zipFileRouteArray = explode('/',$zipFilePathInfo['dirname']);
+				if($zipFileRouteArray){while($d = array_shift($zipFileRouteArray)){if(!isset($b[$d])){$b[$d] = array();}$b = &$b[$d];}}
+			}
+
+			$b[$zipFilePathInfo['basename']] = $i;
+		}
+		return $fileTree;
+	}
+	function fs_zip_getIndexesByRelativeRoute($zip,$relativeRoute = false){
+		if(substr($relativeRoute,-1) != '/'){$relativeRoute .= '/';}
+		$indexes = array();
+		for($i = 0;$i < $zip->numFiles;$i++){
+			$zipFileRoute = $zip->getNameIndex($i);
+			if(substr($zipFileRoute,0,1) == '/'){$zipFileRoute = substr($zipFileRoute,1);}
+			if(strpos($zipFileRoute,$relativeRoute) === 0){$indexes[] = $i;}
+		}
+		return $indexes;
+	}
+
+
 
 	function fs_zip_list($fileRoute = ''){
+//FIXME: usar fs_zip_parseRoute
 		$m = preg_split('/\.zip\//',$fileRoute);if(!$m){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 		$filePath = array_shift($m).'.zip';if(!file_exists($filePath)){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 		$fileRouteCompare = $filePath.'/'.implode($m);
@@ -62,6 +92,7 @@
 	}
 
 	function fs_zip_move($fileOBs,$fileRoute){
+//FIXME: usar fs_zip_parseRoute
 		$m = preg_split('/\.zip\//',$fileRoute);if(!$m){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 		$zipPath = array_shift($m).'.zip';if(!file_exists($zipPath)){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
 		$zipRelativeRoute = '/'.implode($m);if(substr($zipRelativeRoute,-1) != '/'){$zipRelativeRoute .= '/';}/* La ruta relativa dentro del zip */
