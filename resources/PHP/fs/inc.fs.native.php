@@ -20,7 +20,7 @@
 		$fileBaseRoute = fs_native_route_get($destPath);
 
 		$fileOBs_byRoute = array();foreach($fileOBs as $fileOB){$fileOBs_byRoute[$fileOB['fileRoute']][] = $fileOB;}
-		$finfo = finfo_open(FILEINFO_MIME,$GLOBALS['api']['fs']['file.mime']);
+$finfo = finfo_open(FILEINFO_MIME,$GLOBALS['api']['fs']['file.mime']);
 		$return = array('add'=>array(),'remove'=>array());
 		foreach($fileOBs_byRoute as $fileRoute=>$fileOBs){
 			$protocol = substr($fileRoute,0,6);$s = strpos($fileRoute,':',7);
@@ -36,6 +36,24 @@
 						if(!$r){return array('errorDescription'=>'UNKNOWN_ERROR_WHILE_MOVING'.' '.$fileSource.' to '.$fileTarget,'file'=>__FILE__,'line'=>__LINE__);}
 $return['add'][$fileBaseRoute][] = fs_file_getInfo($fileOB['fileName'],$destPath,$fileBaseRoute,$finfo);
 						$return['remove'][$fileOB['fileRoute']][] = $fileOB['fileName'];
+					}
+					umask($oldmask);
+					break;
+				case 'ziparc':
+					include_once('fs/inc.fs.zip.php');
+					$oldmask = umask(0);
+					foreach($fileOBs as $fileOB){
+						$fileSource = $fileOB['fileRoute'].$fileOB['fileName'];
+						$fileTarget = $destPath.$fileOB['fileName'];if(file_exists($fileTarget)){continue;}
+						$zipRouteOB = fs_zip_parseRoute($fileSource);
+						if(is_array($zipRouteOB['fileRoute'])){return array('errorDescription'=>'NO_SUPPORT_FOR_RECURSIVE_ZIP'.' '.$fileSource.' to '.$fileTarget,'file'=>__FILE__,'line'=>__LINE__);}
+						$zip = new ZipArchive();if($zip->open($zipRouteOB['filePath']) !== true){continue;}
+						if( ($fr = $zip->getStream($zipRouteOB['fileRoute'])) === false){continue;}
+						$fw = fopen($fileTarget,'w');
+						while(!feof($fr)){fwrite($fw,fread($fr,8192));}
+						fclose($fw);fclose($fr);
+						$zip->close();
+$return['add'][$fileBaseRoute][] = fs_file_getInfo($fileOB['fileName'],$destPath,$fileBaseRoute,$finfo);
 					}
 					umask($oldmask);
 					break;

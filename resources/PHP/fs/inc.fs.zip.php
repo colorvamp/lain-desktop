@@ -18,6 +18,15 @@
 		if($zipFileRoute[0] == '/'){$zipFileRoute = substr($zipFileRoute,1);}
 		return $zipFileRoute;
 	}
+	function fs_zip_parseRoute($fileRoute){
+		if(strpos($fileRoute,'ziparc:drive:') === 0){$fileRoute = realpath($GLOBALS['api']['fs']['root']).substr($fileRoute,strlen('ziparc:drive:'));}
+		$m = preg_split('/\.zip\//',$fileRoute);if(count($m) < 2){return $fileRoute;}
+		$ret = array();
+		$ret['filePath'] = array_shift($m).'.zip';
+		$fileRoute = implode($m);
+		$ret['fileRoute'] = fs_zip_parseRoute($fileRoute);
+		return $ret;
+	}
 
 	function fs_zip_list($fileRoute = ''){
 		$m = preg_split('/\.zip\//',$fileRoute);if(!$m){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
@@ -25,6 +34,7 @@
 		$fileRouteCompare = $filePath.'/'.implode($m);
 		$fileRouteBase = ($GLOBALS['api']['fs']['serverCage']) ? 'ziparc:drive:'.substr($fileRouteCompare,strlen(realpath($GLOBALS['api']['fs']['root']))) : $fileRouteCompare;
 
+//FIXME: a globals
 		$finfo = finfo_open(FILEINFO_MIME,'../db/magic.mgc');
 		$folder = fs_native_getInfo($filePath,$finfo);
 		$files = $folderHash = array();
