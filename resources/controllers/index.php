@@ -33,6 +33,9 @@
 		);}
 		$TEMPLATE['JSON.apps'] = json_encode($apps);
 		$TEMPLATE['JSON.places'] = json_encode($places);
+		$userValidFields = array_flip(array('id','userMail','userName'));
+		$user = $GLOBALS['user'];foreach($user as $k=>$v){if(!isset($userValidFields[$k])){unset($user[$k]);}}
+		$TEMPLATE['JSON.user'] = json_encode($user);
 
 		$HTML_apps = '';foreach($apps as $app){$HTML_apps .= J.'<li onclick="launchApp(\''.$app['appCode'].'\');">'.$app['appName'].'</li>'.N;}
 		$TEMPLATE['HTML_apps'] = $HTML_apps;

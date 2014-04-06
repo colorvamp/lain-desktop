@@ -74,7 +74,6 @@ _desktop.signals = {
 	resize_end: function(e){
 		window.resizeTimer = false;
 		extend(_desktop.vars,{'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight});
-		_desktop.icons_organize();
 _desktop.background_init();
 	},
 	file_update: function(files){

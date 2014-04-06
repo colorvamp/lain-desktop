@@ -6,7 +6,7 @@ VAR_apps.fileRoller = {
 	},
 	client: function(params){
 		var wContainer = window_container();
-		var iconCanvas = new widget('_wodIconCanvas');
+		var iconCanvas = new widget('widgets.wodIconCanvas');
 
 		/* INI-MENU */
 		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},wContainer);

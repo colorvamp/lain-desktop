@@ -16,7 +16,7 @@ VAR_apps.lainExplorer = {
 		var wodern = _wodern.window_create('lainExplorer'+wNum,{},VAR_apps.lainExplorer.vars.wHolder);
 		wodern.set.title('Lain File Explorer');
 		var wContainer = wodern.windowContainer;
-		var iconCanvas = new widget('_wodIconCanvas');
+		var iconCanvas = new widget('widgets.wodIconCanvas');
 
 
 		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},wContainer);

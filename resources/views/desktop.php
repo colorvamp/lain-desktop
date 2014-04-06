@@ -7,14 +7,14 @@
 		<div id='lainMenu' class="lainMenu"></div>
 		<div id="mouseTrayIcon"><img onclick="_desktop.mouse_controlDialog();" src='r/images/t.gif'/></div>
 		<div id='lainFlowIcon'></div>
-		<ul id='systemTray'>
-			<li><div class="perm"><a href="{%baseURL%}logout"><i class="icon-user"></i> {%user_userName%}</a></div></li>
-			<li id="tray_desktop_progress"><div class="perm"><i class="icon-user"></i></div></li>
-			<li id="tray_desktop_tasks"><div class="perm"><i class="icon-reorder"></i></div></li>
-		</ul>
+		<div class="lainTray">
+			<div id="tray_desktop_progress"><div class="perm"><i class="icon-user"></i></div></div>
+			<div id="tray_desktop_tasks"><div class="perm"><i class="icon-reorder"></i></div></div>
+		</div>
 		<ul id="lainIcons" class="wodIconCanvas"></ul>
 		<ul id='lainWindows'></ul>
 		<div class="lainStorage">
+			<div class="user">{%JSON.user%}</div>
 			<div class="apps">{%JSON.apps%}</div>
 			<div class="places">{%JSON.places%}</div>
 		</div>

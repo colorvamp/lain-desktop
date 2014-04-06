@@ -31,6 +31,7 @@ widgets.wodItem = {
 			'disable': function(){var args = Array.prototype.slice.call(arguments);args.unshift(wodItem);return widgets.wodItem.disable.apply({},args);}
 		});
 		if(params.text){wodItem.set.text(params.text);}
+		if(params.title){wodItem.set.text(params.title);}
 		if(params.class && !$is.empty(params.class)){wodItem.className += ' '+params.class;}
 		if(params.callback){if(!params.params){params.params = [];}wodItem.set.callback(params.callback,params.params);}
 		return wodItem;
@@ -66,81 +67,6 @@ var _wodHContainer = {
 		return wodHContainer;
 	}
 }
-
-var _wodIconCanvas = {
-	vars: {},
-	init: function(params){
-		var wodIconCanvas = $C('UL',{className:'wodIconCanvas',
-			'icon': {
-				'add': function(icons/* array of objects */){return _wodIconCanvas.icon.add(wodIconCanvas,icons);},
-				'remove': function(icons/* array of names*/){return _wodIconCanvas.icon.remove(wodIconCanvas,icons);}
-			},
-			'folder': {
-				'create': function(){return _wodIconCanvas.folder.create(wodIconCanvas);}
-			},
-			'getFileRoute': function(){return this.getAttribute('data-fileRoute');},
-			'setFileRoute': function(fileRoute){if(fileRoute[fileRoute.length-1] != '/'){fileRoute = fileRoute+'/';}return this.setAttribute('data-fileRoute',fileRoute);},
-			'getIconParams': function(){var p = this.getAttribute('data-iconParams');return jsonDecode(p);},
-			'setIconParams': function(p){if(p.fileRoute){this.setFileRoute(p.fileRoute);}return this.setAttribute('data-iconParams',jsonEncode(p));},
-			'signals':{
-				'fileadd': function(e){return _wodIconCanvas.signals.fileadd(wodIconCanvas,e);},
-				'fileremove': function(e){return _wodIconCanvas.signals.fileremove(wodIconCanvas,e);},
-				'filedrop': function(e){return _wodIconCanvas.signals.filedrop(wodIconCanvas,e);}
-			}
-		});
-		addEventListener('file.add',wodIconCanvas.signals.fileadd);
-		addEventListener('file.remove',wodIconCanvas.signals.fileremove);
-		wodIconCanvas.addEventListener('file.drop',wodIconCanvas.signals.filedrop);
-		wodIconCanvas.addEventListener('mouse.down.right',_wodIconCanvas.signals.mouseDownRight);
-		return wodIconCanvas;
-	},
-	icon: {
-		add: function(wodIconCanvas,icons/* array of objects */){$each(icons,function(k,v){_icon.create(v,wodIconCanvas);});},
-		remove: function(wodIconCanvas,iconsNames){$each(wodIconCanvas.childNodes,function(k,v){var iProp = _icon.getProperties(v);if(iconsNames.indexOf(iProp.fileName) > -1){_icon.destroy(v);}});}
-	},
-	folder: {
-		create: function(wodIconCanvas){
-			var iProp = wodIconCanvas.getIconParams();
-			iProp = {'fileName':'','fileMime':'folder','fileRoute':iProp.fileRoute+iProp.fileName+'/'};
-			var icon = _icon.create(iProp,wodIconCanvas);
-			_icon.rename(icon);
-		}
-	},
-	signals: {
-		mouseDownRight: function(e){
-			var wodIconCanvas = this;
-			//if(!wodIconCanvas.vars.contextmenu || !$is.array(wodIconCanvas.vars.contextmenu) || !wodIconCanvas.vars.contextmenu.length){return false;}
-			//FIXME:
-			_wodIconCanvas.vars.contextmenu = [
-				{'text':'<i class="icon-paste"></i> Create new folder','callback':function(e,params){wodIconCanvas.folder.create();}},
-				{'text':'-'},
-				{'text':'<i class="icon-cut"></i> Paste','callback':function(e,params){/*FIXME:*/}}
-			];
-			var x = e.detail.clientX;var y = e.detail.clientY;
-			var candidate = document.elementFromPoint(x,y);
-			wodContextMenu = new widget('widgets.wodContextMenu',{'event':e});
-			wodContextMenu.set.params({'target':candidate});
-			wodContextMenu.items.load(_wodIconCanvas.vars.contextmenu);
-		},
-		fileadd: function(wodIconCanvas,e){
-			var files = e.detail;
-			var iProp = wodIconCanvas.getIconParams();
-			var path = iProp.fileRoute+iProp.fileName+((iProp.fileName.length) ? '/' : '');
-			if(files[path]){wodIconCanvas.icon.add(files[path]);}
-		},
-		fileremove: function(wodIconCanvas,e){
-			var files = e.detail;
-			var iProp = wodIconCanvas.getIconParams();
-			var path = iProp.fileRoute+iProp.fileName+((iProp.fileName.length) ? '/' : '');
-			if(files[path]){wodIconCanvas.icon.remove(files[path]);}
-		},
-		filedrop: function(wodIconCanvas,e){
-			var iProp = wodIconCanvas.getIconParams();
-//FIXME: ya no se llama asi
-			_desktop.fs_move(iProp);
-		}
-	}
-};
 
 var _wodTable = {
 	vars: {},

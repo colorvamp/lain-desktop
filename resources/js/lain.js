@@ -1,5 +1,5 @@
-var lWindows = false;
 var VAR_MIMES = {'folder':'lainExplorer','application/zip':'lainExplorer','image/jpeg':'eyeOfLain','image/png':'eyeOfLain','application/ogg':'melodiamePlayer','application/ogv':'lainPlayer'};
+var VAR_apps = {'lain':{}};
 
 function test(){
 _desktop.signals.file_update('aa');
@@ -84,13 +84,6 @@ var color = s.backgroundColor;
 			w.ondragstart = false;
 		}
 
-function menu_switch(el){
-	if(el.className.match(/visible$/)){el.className = el.className.replace(/visible$/,'');return;}
-	$A(el.parentNode.childNodes).each(function(node){if(!node.className){return};node.className = node.className.replace(/visible$/,'');});
-	el.className += 'visible';
-}
-
-var VAR_apps = {};
 function launchApp(appName,params){
 	var pool = 'r/apps/';
 	var holder = launchApp_createHolder(appName);
@@ -100,6 +93,7 @@ function launchApp(appName,params){
 }
 function launchApp_createHolder(appName){
 	var h = false;var holderName = 'holder_'+appName;
+	lWindows = $_('lainWindows');
 	$each(lWindows.childNodes,function(el){if(el.id == holderName){h = el;}});
 	if(h){return h;};return $C('LI',{id:holderName},lWindows);
 }
@@ -128,7 +122,7 @@ var _desktop = {
 		window.addEventListener('contextmenu',function(e){e.preventDefault();e.stopPropagation();return false;},true);
 		window.addEventListener('resize',_desktop.signals.resize,true);
 
-		var iconCanvas = new widget('_wodIconCanvas');
+		var iconCanvas = new widget('widgets.wodIconCanvas');
 		$_('lainDesktop').appendChild(iconCanvas);
 //FIXME: esto va a _fs
 		ajaxPetition('api/fs','subcommand=folder.list&fileRoute='+base64.encode('native:drive:/'),function(ajax){
@@ -167,9 +161,20 @@ var _desktop = {
 			});
 		}
 		/* END-Menu Places */
+		/* INI-SystemTray*/
+		var userData = document.querySelector('.lainStorage > .user');
+		if(userData){
+			var user = $json.decode(userData.innerHTML);
+			var wodMenu = new widget('widgets.wodMenu',{'title':user.userName});
+			wodMenu.item.add('<i class="icon-cog"></i> Config',function(){launchApp('lain.config');});
+			wodMenu.item.add('<i class="icon-desktop"></i> Block screen',function(){});
+			wodMenu.item.add('<i class="icon-info-sign"></i> About',function(){launchApp('lain.about');});
+			wodMenu.item.add('<i class="icon-off"></i> Exit',function(){window.location.href += 'logout';});
+			_desktop.tray.create(wodMenu);
+		}
+		/* END-SystemTray*/
 
 		_desktop.signals.resize_end();
-		lWindows = $_('lainWindows');
 	},
 	fileSelection_add: function(el){_desktop.vars.file_selection.push(el);},
 	fileSelection_remove: function(el){var index = _desktop.vars.file_selection.indexOf(el);if(index > -1){_desktop.vars.file_selection.splice(index,1);}},
@@ -241,32 +246,6 @@ var _desktop = {
 	},
 	contextMenu_close: function(e){var ul = _desktop.vars.currentContextMenu;if(!ul){return false;}ul.parentNode.removeChild(ul);_desktop.vars.currentContextMenu = false;if(e){e.stopPropagation();}},
 
-	desktop_selection_start: function(e){
-		var s = {'startX':e.clientX,'startY':e.clientY,'h':$_('lainFlowIcon')};
-		var elem = $C('DIV',{'id':'selectionSquare','.left':s.startX+'px','.top':s.startY+'px'},s.h);
-		elem = extend(elem,s);
-		elem.mouseMoveHandler = function(e){return _desktop.desktop_selection_move(e,elem);}
-		elem.mouseUpHandler = function(e){return _desktop.desktop_selection_end(e,elem);}
-		document.addEventListener('mousemove',elem.mouseMoveHandler,true);
-		document.addEventListener('mouseup',elem.mouseUpHandler,true);
-	},
-	desktop_selection_move: function(e,elem){
-		var eL = e.clientX - elem.startX;var eT = e.clientY - elem.startY;
-		if(eL < 0){elem.style.left = (elem.startX+(e.clientX-elem.startX))+'px';elem.style.width = (eL*-1)+'px';}
-		else{elem.style.left = elem.startX+'px';elem.style.width = eL+'px';}
-		if(eT < 0){elem.style.top = (elem.startY+(e.clientY-elem.startY))+'px';elem.style.height = (eT*-1)+'px';}
-		else{elem.style.top = elem.startY+'px';elem.style.height = eT+'px';}
-	},
-	desktop_selection_end: function(e,elem){
-		document.removeEventListener('mousemove',elem.mouseMoveHandler,true);
-		document.removeEventListener('mouseup',elem.mouseUpHandler,true);
-		/* If the control key is pressed we should check multi selection */
-		if(!e.ctrlKey){
-			this.vars.fileSelection.each(function(el){el.onUnSelect();});
-			this.vars.fileSelection.empty();
-		}
-		elem.parentNode.removeChild(elem);
-	},
 	desktop_properties: function(elem){
 		var iProp = _icon.getProperties(elem);
 
@@ -287,22 +266,6 @@ var _desktop = {
 		if(iProp.fileMime == 'application/ogg' && iProp.fileName.match(/ogv$/)){iProp.fileMime = 'application/ogv';}
 		if(!(appName = VAR_MIMES[iProp.fileMime])){return false;}
 		launchApp(appName,iconElem);
-	},
-	icons_organize: function(){
-		var h = $_('lainIcons',{innerPath:'/'});
-		//FIXME: hace 2 peticiones, no se x que
-		if(!h){return false;}
-		var offsetLeft = 10;
-		var offsetTop = 30;
-		$A(h.childNodes).each(function(li){
-			if(li.tagName != 'LI'){li.parentNode.removeChild(li);return;}
-			var iProp = _icon.getProperties(li);
-			var iconElem = _icon.create(iProp,h);
-			iconElem.$B({'.left':offsetLeft+'px','.top':offsetTop+'px'});
-			offsetTop += 64;
-			if(offsetTop+64>_desktop.vars.bodyHeight){offsetTop=30;offsetLeft+=85;}
-			li.parentNode.removeChild(li);
-		}.bind(this));
 	},
 	fs_copy: function(icon){
 //FIXME: comprobar si en destino existen ficheros con el mismo nombre
@@ -356,8 +319,6 @@ return _fs.trash();
 		$A(elem.parentNode.childNodes).each(function(el){el.className = '';});
 		elem.className = 'selected';
 	},
-	systemTray_create: function(i){var systemTray = $_('systemTray');if(!systemTray){return false;}$C('LI',{id:i.id+'_trayIcon',className:i.className,onmousedown:function(e){},onclick:function(e){_desktop.systemTray_switch(this,e,i.onclick);}},systemTray);return true;},
-	systemTray_switch: function(li,e,callback){if(li.firstChild && li.firstChild.className == 'wodInfo'){info_destroy(li.firstChild,e);return;}callback(e);},
 	background_init: function(avoidCache){
 		if(avoidCache){_desktop.vars.cacheSeed = Math.random()*1000;}
 		var url = 'api/desktop/background_get?rnd='+_desktop.vars.cacheSeed;
@@ -435,8 +396,7 @@ var _icon = {
 				if(this.getAttribute('data-status') == 'rename'){return false;}
 				if(e.which == 1){return _littleDrag.onMouseDown(e);}
 				if(e.which == 3){return this.oncontextmenu(e,el);}
-			},
-			oncontextmenu: function(e,el){_icon.contextmenu(e,el);}
+			}
 		};
 		if(s){signals = extend(signals,s);}
 		var li = $C('LI',extend({className:'wodIcon icon32_'+iProp.fileMime+' dragable'},signals),h);
@@ -511,27 +471,18 @@ if(isEmpty(iconName)){iconName = 'New Folder';}
 		_icon.destroy(icon);
 		return false;
 	},
-	contextmenu: function(e,elem){
-		var menu = [
-			{'text':'<i class="icon-ok"></i> Open','callback':function(e,params){params.target.open();}},
-			{'text':'-'},
-			//FIXME: falta eventos
-			{'text':'<i class="icon-cut"></i> Cut','callback':function(e,params){}},
-			{'text':'<i class="icon-copy"></i> Copy','callback':function(e,params){}},
-			/*{'text':'<i class="icon-paste"></i> Paste','callback':function(e,params){}},*/
-			{'text':'-'},
-			{'text':'<i class="icon-trash"></i> Trash','callback':function(e,params){_fs.trash();}},
-			{'text':'-'},
-			{'text':'<i class="icon-plus-sign-alt"></i> Compress','callback':function(e,params){_fs.compress();}}
-		];
-
-		wodContextMenu = new widget('widgets.wodContextMenu',{'event':e,'target':elem});
-		wodContextMenu.set.params({'target':elem});
-		wodContextMenu.items.load(menu);
-	},
 	getProperties: function(elem){if(elem.fileRoute){return elem;}return jsonDecode(elem.querySelector('i').innerHTML);},
 	setProperties: function(elem,iProp){var iPropEncoded = jsonEncode(iProp);elem.querySelector('i').innerHTML = iPropEncoded;return iPropEncoded;},
-	isFolder: function(icon){var p = _icon.getProperties(icon);return p.fileMime == 'folder';}
+	isFolder: function(icon){var p = _icon.getProperties(icon);return p.fileMime == 'folder';},
+	isInsideSelection: function(icon,selection){
+		var pos = $getOffsetPosition(icon);
+		var isPointInside = function(point,bounds){return (point.x > bounds.x && point.x < (bounds.x + bounds.w) && point.y > bounds.y && point.y < (bounds.y + bounds.h));};
+//FIXME: faltan las cruces, cuando la seleccion pasa por encima sin tocar ninguno de los puntos
+		var points = {'p1':{'x':pos.left,'y':pos.top},'p2':{'x':pos.left+pos.width,'y':pos.top},'p3':{'x':pos.left,'y':pos.top+pos.height},'p4':{'x':pos.left+pos.width,'y':pos.top+pos.height}};
+		var bounds = {'x':selection.offsetLeft,'y':selection.offsetTop,'w':selection.offsetWidth,'h':selection.offsetHeight};
+		if(isPointInside(points.p1,bounds) || isPointInside(points.p2,bounds) || isPointInside(points.p3,bounds) || isPointInside(points.p4,bounds)){return true;}
+		return false;
+	}
 };
 
 var _iface = {

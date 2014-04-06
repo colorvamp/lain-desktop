@@ -14,7 +14,12 @@ widgets.wodMenu = {
 		if(params.title){wodMenu.set.title(params.title);}
 		wodMenu.addEventListener('mouse.down.left',function(e){
 			if($E.class.exists(wodMenu,'open')){return $E.class.remove(wodMenu,'open');}
-			return $E.class.add(wodMenu,'open');
+			$E.class.add(wodMenu,'open');
+			var menu = wodMenu.querySelector('.menu');
+			if(!menu){return wodMenu;}
+			var pos = $getOffsetPosition(menu);
+			if(window.innerWidth < pos.left+pos.width){menu.style.left = (window.innerWidth - (pos.left+pos.width))+'px';}
+			return wodMenu;
 		});
 		return wodMenu;
 	},

@@ -52,7 +52,7 @@
 			remove: function(elem,className){var c = elem.className;var p = new RegExp('(^| )'+className+'( |$)');c = c.replace(p,' ').replace(/  /g,' ');elem.className = c;}
 		},
 		parent: {
-			find: function(elem,p){/* p = {tagName:false,className:false} */if(p.tagName){p.tagName = p.tagName.toUpperCase();}if(p.className){p.className = new RegExp(p.className);}while(elem.parentNode && ((p.tagName && elem.tagName!=p.tagName) || (p.className && !elem.className.match(p.className)))){elem = elem.parentNode;}if(!elem.parentNode){return false;}return $fix(elem);}
+			find: function(elem,p){/* p = {tagName:false,className:false} */if(p.tagName){p.tagName = p.tagName.toUpperCase();}if(p.className){p.className = new RegExp('( |^)'+p.className+'( |$)');}while(elem.parentNode && ((p.tagName && elem.tagName!=p.tagName) || (p.className && !elem.className.match(p.className)))){elem = elem.parentNode;}if(!elem.parentNode){return false;}return $fix(elem);}
 		}
 	}
 	/* extended $F-unctions functions */
@@ -99,6 +99,7 @@
 		array: function(o){return (Array.isArray(o) || $type(o.length) === 'number');},
 		string: function(o){return (typeof o == 'string' || o instanceof String);},
 		object: function(o){return (o.constructor.toString().indexOf('function Object()') == 0);},
+		element: function(o){return ('nodeType' in o && o.nodeType === 1 && 'cloneNode' in o);},
 		formData: function(o){return (o.constructor.toString().indexOf('function FormData()') == 0);}
 	};
 	var $json = {
