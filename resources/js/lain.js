@@ -391,7 +391,12 @@ var _icon = {
 			onpaste: function(e,el){if(!_icon.isFolder(this)){return false;}var f = 'fs_'+_desktop.vars.fileOperation;if(_desktop[f]){return _desktop[f](this);}},
 			ontrash: function(e,el){_icon.destroy(el);},
 			onselect: function(e,el){_icon.select(el,(e.which == 1)/* To switch selection */);},
-			onunselect: function(e,el){_icon.unselect(el);}
+			onunselect: function(e,el){_icon.unselect(el);},
+			onmousedown: function(e,el){
+				if(this.getAttribute('data-status') == 'rename'){return false;}
+				if(e.which == 1){return _littleDrag.onMouseDown(e);}
+				//if(e.which == 3){return this.oncontextmenu(e,el);}
+			}
 		};
 		if(s){signals = extend(signals,s);}
 		var li = $C('LI',extend({className:'wodIcon icon32_'+iProp.fileMime+' dragable'},signals),h);
