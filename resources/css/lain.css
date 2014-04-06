@@ -111,8 +111,9 @@ div.lainMenu{position:absolute;top:20px;left:15px;z-index:7;}
 div.lainMenu > div{position:relative;padding:2px 10px;background:white;border-radius:3px;cursor:pointer;display:inline-block;margin-right:10px;}
 
 
-.wodern{position:absolute;border:1px solid #cccbc9;border-top:1px solid #e1e1e3;background-color:#bdbdbd;border-radius:3px;box-shadow:0 2px 3px rgba(0,0,0,.7);transition:opacity 0.2s ease-in-out 0s;}
+.wodern{position:absolute;color:#444;border:1px solid #cccbc9;border-top:1px solid #e1e1e3;background-color:#bdbdbd;border-radius:3px;box-shadow:0 2px 3px rgba(0,0,0,.7);transition:opacity 0.2s ease-in-out 0s;}
 .wodern.moving .wodThemeContainer{display:none;}
+.wodern.focus{color:#111;}
 .wodThemeBorder{position:relative;padding:2px;height:100%;}
 .wodThemeBorder.withButtons{}
 .wodThemeBorder > .btn-group{width:100%;padding:10px 4px;text-align:right;}

@@ -12,7 +12,7 @@ function window_container(w){return $C('DIV',{className:'wodThemeContainer contr
 function window_container_init(w){
 	var menuItems = w.$L('wodMenuItem');
 //FIXME: deprecated
-	if(menuItems.length){$each(menuItems,function(k,menuItem){menuItem.onclick = function(){_desktop.menu_show(menuItem);}});}
+	//if(menuItems.length){$each(menuItems,function(k,menuItem){menuItem.onclick = function(){_desktop.menu_show(menuItem);}});}
 }
 
 function OnDragStart(event){
@@ -103,7 +103,7 @@ var _desktop = {
 	init: function(){
 		_desktop.vars = {'bodyWidth':window.innerWidth,'bodyHeight':window.innerHeight,
 			'clickDelay':400,
-			'yOffset':30,'window_top':false,'wHighestZ':0,
+			'yOffset':30,'wHighestZ':0,
 			'currentContextMenu':false,'currentContextMenuClick':false,
 			'fileOperation':false,'fileOrig':false,'fileDest':false,'fileSelection':[],
 			'file_selection':[],'file_selectionSaved':[],
@@ -124,7 +124,7 @@ var _desktop = {
 
 		var iconCanvas = new widget('widgets.wodIconCanvas');
 		$_('lainDesktop').appendChild(iconCanvas);
-//FIXME: esto va a _fs
+//FIXME: esto va a _fs, pero de momento valdrá
 		ajaxPetition('api/fs','subcommand=folder.list&fileRoute='+base64.encode('native:drive:/'),function(ajax){
 			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
 			iconCanvas.setIconParams(r.folder);
@@ -175,6 +175,12 @@ var _desktop = {
 		/* END-SystemTray*/
 
 		_desktop.signals.resize_end();
+	},
+	selection: {
+		set: function(selection){
+			_desktop.vars.file_selection = [];
+			$each(selection,function(k,v){_desktop.vars.file_selection.push(v);});
+		}
 	},
 	fileSelection_add: function(el){_desktop.vars.file_selection.push(el);},
 	fileSelection_remove: function(el){var index = _desktop.vars.file_selection.indexOf(el);if(index > -1){_desktop.vars.file_selection.splice(index,1);}},
@@ -235,7 +241,7 @@ var _desktop = {
 			//return;
 		}
 
-		var w = _desktop.vars.window_top;
+		var w = _wodern.focus.get();
 		if(!w || !w.input_shorcutKey){return;}
 		if(w.input_shorcutKey[inLen][values]){w.input_shorcutKey[inLen][values]();return;}
 	},
@@ -267,12 +273,6 @@ var _desktop = {
 		if(!(appName = VAR_MIMES[iProp.fileMime])){return false;}
 		launchApp(appName,iconElem);
 	},
-	fs_copy: function(icon){
-//FIXME: comprobar si en destino existen ficheros con el mismo nombre
-		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});var target = _icon.getProperties(icon);
-		ajaxPetition('api/fs','subcommand=file_copy&files='+base64.encode(jsonEncode(files))+'&target='+base64.encode(jsonEncode(target)),function(ajax){var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();});
-	},
-	fs_move: function(icon){_fs.move(icon);},
 	fs_paste: function(){
 //FIXME: hay que pasar el destino por parámetros
 return false;
@@ -282,22 +282,12 @@ return false;
 		if(selection.length != 1){return false;}
 		if(_desktop[f]){return _desktop[f](selection[0]);}
 	},
-	fs_trash: function(e){
-return _fs.trash();
-		var selection = _desktop.fileSelection_get();if(!selection.length){return false;}
-		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
-		ajaxPetition('api/fs','subcommand=file_trash&files='+base64.encode(jsonEncode(files)),function(ajax){
-			var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}
-			$each(selection,function(k,v){if(v.ontrash){v.ontrash(e,v);}});
-			_desktop.fileSelection_empty();
-			_desktop.signals.file_update(r);
-		});
-	},
 	time_stampToDate: function(t){
 		var date = new Date(t*1000);
 		return date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
 	},
 	mouse_controlDialog: function(){
+//FIXME: DEPRECATED
 		var i = $_("info_mouseControl");
 		if(i){info_destroy(i);return;}
 
@@ -347,11 +337,22 @@ var _fs = {
 	create: function(f){
 //alert(f);
 	},
-	move: function(icon){/* Icon es el destino, lo que deseamos mover lo cogemos de la selección */
-		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}
+	move: function(target,selection){/* tarjet param is the target (object)folder/zip/whatever */
+		if(!selection){var selection = _desktop.fileSelection_getSaved();}
+		if(!selection.length){return false;}
 		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
-		var target = _icon.getProperties(icon);
+		var target = _icon.getProperties(target);
 		var params = {'subcommand':'file.move','files':base64.encode(jsonEncode(files)),'target':base64.encode(jsonEncode(target))};
+		$ajax('api/fs',params,{
+			'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();}
+		});
+	},
+	copy: function(target,selection){/* tarjet param is the target (object)folder/zip/whatever */
+		if(!selection){var selection = _desktop.fileSelection_getSaved();}
+		if(!selection.length){return false;}
+		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
+		var target = _icon.getProperties(target);
+		var params = {'subcommand':'file.copy','files':base64.encode(jsonEncode(files)),'target':base64.encode(jsonEncode(target))};
 		$ajax('api/fs',params,{
 			'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();}
 		});
@@ -363,17 +364,24 @@ var _fs = {
 			'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();}
 		});
 	},
-	trash: function(){
-		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}
+	trash: function(selection){
+		if(!selection){var selection = _desktop.fileSelection_getSaved();}
+		if(!selection.length){return false;}
 		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
 		var params = {'subcommand':'file.trash','files':base64.encode(jsonEncode(files))};
 		$ajax('api/fs',params,{
 			'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();}
 		});
 	},
-	compress: function(){
-		var selection = _desktop.fileSelection_getSaved();if(!selection.length){return false;}var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
-		ajaxPetition('api/fs','subcommand=file.compress&files='+base64.encode(jsonEncode(files)),function(ajax){var r = jsonDecode(ajax.responseText);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();});
+	compress: function(selection){
+//FIXME: debería haber un target tb
+		if(!selection){var selection = _desktop.fileSelection_getSaved();}
+		if(!selection.length){return false;}
+		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
+		var params = {'subcommand':'file.compress','files':base64.encode(jsonEncode(files))};
+		$ajax('api/fs',params,{
+			'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();}
+		});
 	}
 };
 
@@ -393,9 +401,9 @@ var _icon = {
 			onselect: function(e,el){_icon.select(el,(e.which == 1)/* To switch selection */);},
 			onunselect: function(e,el){_icon.unselect(el);},
 			onmousedown: function(e,el){
+//FIXME: esto ya no se hace así
 				if(this.getAttribute('data-status') == 'rename'){return false;}
 				if(e.which == 1){return _littleDrag.onMouseDown(e);}
-				//if(e.which == 3){return this.oncontextmenu(e,el);}
 			}
 		};
 		if(s){signals = extend(signals,s);}

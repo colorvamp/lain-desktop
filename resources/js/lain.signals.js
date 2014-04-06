@@ -62,7 +62,7 @@ _desktop.signals = {
 		/* ENTER */if(e.keyCode == 13){
 			$each(selection,function(k,elem){elem.launch();});
 		}
-		/* DEL   */if(e.keyCode == 46){if(selection.length > 0){return _desktop.fs_trash(selection);}}
+		/* DEL   */if(e.keyCode == 46){if(selection.length > 0){return _fs.trash(selection);}}
 		/* F2    */if(e.keyCode == 113){if(selection.length == 1){return selection[0].onrename();}}
 		//alert(e.keyCode);
 	},

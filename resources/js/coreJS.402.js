@@ -100,6 +100,7 @@
 		string: function(o){return (typeof o == 'string' || o instanceof String);},
 		object: function(o){return (o.constructor.toString().indexOf('function Object()') == 0);},
 		element: function(o){return ('nodeType' in o && o.nodeType === 1 && 'cloneNode' in o);},
+		function: function(o){return (o.constructor.toString().indexOf('function Function()') == 0);},
 		formData: function(o){return (o.constructor.toString().indexOf('function FormData()') == 0);}
 	};
 	var $json = {

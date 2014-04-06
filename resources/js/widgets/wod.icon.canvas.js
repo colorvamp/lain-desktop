@@ -1,7 +1,7 @@
 widgets.wodIconCanvas = {
 	vars: {},
 	init: function(params){
-		var wodIconCanvas = $C('UL',{className:'wodIconCanvas',
+		var wodIconCanvas = $C('UL',{className:'wodIconCanvas focusable',
 			'icon': {
 				'add': function(icons/* array of objects */){return widgets.wodIconCanvas.icon.add(wodIconCanvas,icons);},
 				'remove': function(icons/* array of names*/){return widgets.wodIconCanvas.icon.remove(wodIconCanvas,icons);},
@@ -17,6 +17,7 @@ widgets.wodIconCanvas = {
 			'getIconParams': function(){var p = this.getAttribute('data-iconParams');return jsonDecode(p);},
 			'setIconParams': function(p){if(p.fileRoute){this.setFileRoute(p.fileRoute);}return this.setAttribute('data-iconParams',jsonEncode(p));},
 			'signals':{
+				'focus': function(e){return widgets.wodIconCanvas.signals.focus(wodIconCanvas,e);},
 				'fileadd': function(e){return widgets.wodIconCanvas.signals.fileadd(wodIconCanvas,e);},
 				'fileremove': function(e){return widgets.wodIconCanvas.signals.fileremove(wodIconCanvas,e);},
 				'filedrop': function(e){return widgets.wodIconCanvas.signals.filedrop(wodIconCanvas,e);},
@@ -63,6 +64,7 @@ widgets.wodIconCanvas = {
 
 					switch(true){
 						case (selection.length == 1):
+							//FIXME: si es una carpeta?
 							widgets.wodIconCanvas.vars.contextmenu = [
 								{'text':'<i class="icon-ok"></i> Open','callback':function(e,params){params.target.open();}},
 								{'text':'-'},
@@ -95,7 +97,7 @@ widgets.wodIconCanvas = {
 					}
 
 					wodContextMenu = new widget('widgets.wodContextMenu',{'event':e,'target':(isIcon) ? isIcon : false});
-					wodContextMenu.set.params({'target':candidate});
+					wodContextMenu.set.params({'target':(isIcon) ? isIcon : candidate});
 					wodContextMenu.items.load(widgets.wodIconCanvas.vars.contextmenu);
 				}
 			},
@@ -156,6 +158,11 @@ widgets.wodIconCanvas = {
 				}
 			}
 		},
+		focus: function(wodIconCanvas,e){
+			/* Restore the file selection to the global scope */
+			var selection = wodIconCanvas.icon.get.selected();
+			_desktop.selection.set(selection);
+		},
 		fileadd: function(wodIconCanvas,e){
 			var files = e.detail;
 			var iProp = wodIconCanvas.getIconParams();
@@ -171,7 +178,7 @@ widgets.wodIconCanvas = {
 		filedrop: function(wodIconCanvas,e){
 			var iProp = wodIconCanvas.getIconParams();
 //FIXME: ya no se llama asi
-			_desktop.fs_move(iProp);
+			_fs.move(iProp);
 		}
 	}
 };
