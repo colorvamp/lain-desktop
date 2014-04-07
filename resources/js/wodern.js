@@ -74,6 +74,7 @@ var w = wodern;
 		return w;
 	},
 	window_destroy: function(el,ev){
+//FIXME: al cerrar una ventana, otra debe recoger el focus
 //FIXME: usar API
 		while(el.parentNode && !el.className.match(/^wodern( |$)/)){el = el.parentNode;}if(!el.parentNode){return;}
 		if(el.beforeRemove){el.beforeRemove();};var afterRemove = function(){};if(el.afterRemove){afterRemove=el.afterRemove;}

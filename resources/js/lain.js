@@ -182,7 +182,6 @@ var _desktop = {
 			$each(selection,function(k,v){_desktop.vars.file_selection.push(v);});
 		}
 	},
-	fileSelection_add: function(el){_desktop.vars.file_selection.push(el);},
 	fileSelection_remove: function(el){var index = _desktop.vars.file_selection.indexOf(el);if(index > -1){_desktop.vars.file_selection.splice(index,1);}},
 	fileSelection_get: function(){return _desktop.vars.file_selection;},
 	fileSelection_empty: function(e){while(v = _desktop.vars.file_selection.shift()){v.onunselect(e,v);}_desktop.vars.file_selection = [];},
@@ -432,8 +431,6 @@ var _icon = {
 		swch = typeof swch !== 'undefined' ? swch : 1;
 		if($E.classHas(icon,'selected')){if(swch){return _icon.unselect(icon);}return false;}
 		$E.classAdd(icon,'selected');
-		_desktop.fileSelection_add(icon);
-		_desktop.fileSelection_save();
 		var iProp = _icon.getProperties(icon);
 		icon.lastChild.innerHTML = iProp.fileName;
 		var event = new CustomEvent('icon.select',{'detail':{'target':icon},'bubbles':true,'cancelable':true});icon.dispatchEvent(event);

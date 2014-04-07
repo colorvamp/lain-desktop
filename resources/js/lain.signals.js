@@ -7,15 +7,8 @@ _desktop.signals = {
 		var key_control = (_desktop.vars.input_presedKeys.indexOf(17) > -1);
 		/* If the control key is pressed we should check multi selection, if after 
 		 * climb 5 parent elements we dont find an iconCanvas, we are not in a icon pool */
-		if(e.which == 1 && !key_control && $E.classParentHas(e.target,'wodIconCanvas',5)){_desktop.fileSelection_empty(e);}
-		/* With the secondary button, we need to break a selection when the click 
-		 * is not over almost one element in the current selection */
-		if(e.which == 3){
-			/* If the item is an icon and is one of the current selection too we must show the menu */
-			if (  !((icon = $E.classParentHas(e.target,'wodIcon',5)) && _desktop.fileSelection_selected(icon))  ){
-				_desktop.fileSelection_empty(e);
-			}
-		}
+//FIXME: creo que ya no es necesario
+	//if(e.which == 1 && !key_control && $E.classParentHas(e.target,'wodIconCanvas',5)){_desktop.fileSelection_empty(e);}
 
 		var el = e.target;do{if(el.onselect){el.onselect(e,el);break;}if(!el.parentNode){break;}el = el.parentNode;}while(el.parentNode);
 		if(e.which == 1){return _desktop.signals.mouse_down_left(e);}
@@ -35,12 +28,10 @@ _desktop.signals = {
 	},
 	mouse_down_left: function(e){
 		var event = new CustomEvent('mouse.down.left',{'detail':{'clientX':e.clientX,'clientY':e.clientY,'target':e.target},'bubbles':true,'cancelable':true});e.target.dispatchEvent(event);
-		var event = new CustomEvent('mousedownleft',{'detail':{},'bubbles':true,'cancelable':true});e.target.dispatchEvent(event);
 		return false;
 	},
 	mouse_down_right: function(e){
 		var event = new CustomEvent('mouse.down.right',{'detail':{'clientX':e.clientX,'clientY':e.clientY,'target':e.target},'bubbles':true,'cancelable':true});e.target.dispatchEvent(event);
-		var event = new CustomEvent('mousedownright',{'detail':{},'bubbles':true,'cancelable':true});e.target.dispatchEvent(event);
 		/* The context menu on desktop expands on mousedown, no needed for complete click,
 		 * Search for contectMenu */
 		var el = e.target;do{if(el.oncontextmenu){el.oncontextmenu(e,el);break;}el = el.parentNode;}while(el.parentNode);

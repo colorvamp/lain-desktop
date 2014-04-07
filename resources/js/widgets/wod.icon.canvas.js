@@ -45,15 +45,23 @@ widgets.wodIconCanvas = {
 			_icon.rename(icon);
 		}
 	},
+	selection: {
+		empty: function(wodIconCanvas,e){
+			var icons = wodIconCanvas.icon.get.selected();
+			$each(icons,function(k,v){_icon.unselect(v);});
+		}
+	},
 	signals: {
 		mouse: {
 			down: {
 				left: function(wodIconCanvas,e){
 					/* Selection start */
 					var x = e.detail.clientX;var y = e.detail.clientY;
+					//FIXME:tecla control o shift
+					widgets.wodIconCanvas.selection.empty(wodIconCanvas,e);
 					var candidate = document.elementFromPoint(x,y);
 					var isIcon = $E.parent.find(candidate,{'className':'wodIcon'});
-					if(isIcon){return false;}
+					if(isIcon){_icon.select(isIcon);return false;}
 					widgets.wodIconCanvas.signals.mouse.selection.start(wodIconCanvas,e);
 				},
 				right: function(wodIconCanvas,e){
