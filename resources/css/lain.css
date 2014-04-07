@@ -152,6 +152,7 @@ li.wodIcon img{width:32px;height:32px;margin:auto;}
 li.wodIcon.selected{z-index:10;}
 li.wodIcon.selected > div.icon32_imgHolder{}
 li.wodIcon.selected > div.icon32_textHolder{background:#3169b6;color:white;border-radius:3px;}
+li.wodIcon.blur{opacity:.5;}
 img.icon32_generic{background:URL(../images/iconSet/text-x-generic.png) no-repeat;}
 img.icon32_folder{background:URL(../images/iconSet/folder.png) no-repeat;}
 img.icon32_application\/ogg{background:URL(../images/iconSet/audio-x-vorbis+ogg.png) no-repeat;}
@@ -182,7 +183,7 @@ table.dataTable tbody > tr td:first-child{}
 .wodContainer hr{height:1px;border:0;background:-moz-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:-webkit-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:-o-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:-ms-linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);background:linear-gradient(left,#fff 0px,#c4c4c4 40%,#c4c4c4 60%,#fff);}
 
 .wodIconCanvas{padding:5px;height:100%;overflow-y:auto;background:white;}
-.wodIconCanvas > li{position:relative;}
+.wodIconCanvas > .wodIcon{position:relative;margin:4px;}
 .wodButtonMenu + .wodIconCanvas{height:calc(100% - 28px);}
 
 .wodForm{padding:25px 30px;}

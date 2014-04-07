@@ -180,6 +180,16 @@ var _desktop = {
 		set: function(selection){
 			_desktop.vars.file_selection = [];
 			$each(selection,function(k,v){_desktop.vars.file_selection.push(v);});
+		},
+		icon: {
+			stash: {
+				set: function(selection){
+					if(!selection){selection = _desktop.vars.file_selection.slice(0);}
+					_desktop.vars.file_selectionSaved = selection;
+				},
+				get: function(){return _desktop.vars.file_selectionSaved;},
+				clear: function(){_desktop.vars.file_selectionSaved = [];}
+			}
 		}
 	},
 	fileSelection_remove: function(el){var index = _desktop.vars.file_selection.indexOf(el);if(index > -1){_desktop.vars.file_selection.splice(index,1);}},
@@ -340,7 +350,7 @@ var _fs = {
 		if(!selection){var selection = _desktop.fileSelection_getSaved();}
 		if(!selection.length){return false;}
 		var files = [];$each(selection,function(k,v){files.push(_icon.getProperties(v));});
-		var target = _icon.getProperties(target);
+		if($is.element(target)){target = _icon.getProperties(target);}
 		var params = {'subcommand':'file.move','files':base64.encode(jsonEncode(files)),'target':base64.encode(jsonEncode(target))};
 		$ajax('api/fs',params,{
 			'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}_desktop.signals.file_update(r);_desktop.fileSelection_emptySaved();}
@@ -439,12 +449,21 @@ var _icon = {
 		if(!$E.classHas(icon,'selected')){return false;}
 		icon.setAttribute('data-status','unselect');
 		$E.classRemove(icon,'selected');
-		_desktop.fileSelection_remove(icon);
-		_desktop.fileSelection_save();
 		var iProp = _icon.getProperties(icon);
 		var shortedText = (iProp.fileName.length > 13) ? iProp.fileName.substr(0,10)+'...' : iProp.fileName;
 		icon.lastChild.innerHTML = shortedText;
 		var event = new CustomEvent('icon.unselect',{'detail':{'target':icon},'bubbles':true,'cancelable':true});icon.dispatchEvent(event);
+	},
+	blur: function(icon,swch){
+		swch = typeof swch !== 'undefined' ? swch : 1;
+		if($E.classHas(icon,'blur')){if(swch){return _icon.unblur(icon);}return false;}
+		$E.classAdd(icon,'blur');
+		var event = new CustomEvent('icon.blur',{'detail':{'target':icon},'bubbles':true,'cancelable':true});icon.dispatchEvent(event);
+	},
+	unblur: function(icon){
+		if(!$E.classHas(icon,'blur')){return false;}
+		$E.classRemove(icon,'blur');
+		var event = new CustomEvent('icon.unblur',{'detail':{'target':icon},'bubbles':true,'cancelable':true});icon.dispatchEvent(event);
 	},
 	rename: function(icon){
 		_icon.unselect(icon);
@@ -476,8 +495,10 @@ if(isEmpty(iconName)){iconName = 'New Folder';}
 		_icon.destroy(icon);
 		return false;
 	},
-	getProperties: function(elem){if(elem.fileRoute){return elem;}return jsonDecode(elem.querySelector('i').innerHTML);},
-	setProperties: function(elem,iProp){var iPropEncoded = jsonEncode(iProp);elem.querySelector('i').innerHTML = iPropEncoded;return iPropEncoded;},
+	getProperties: function(elem){if(elem.fileRoute){return elem;}return $json.decode(elem.querySelector('i').innerHTML);},
+	setProperties: function(elem,iProp){var iPropEncoded = $json.encode(iProp);elem.querySelector('i').innerHTML = iPropEncoded;return iPropEncoded;},
+	getPath: function(elem){var iProp = _icon.getProperties(elem);return iProp.fileRoute+iProp.fileName+((iProp.fileMime == 'folder') ? '/' : '');},
+	getFileName: function(elem){var iProp = _icon.getProperties(elem);return iProp.fileName;},
 	isFolder: function(icon){var p = _icon.getProperties(icon);return p.fileMime == 'folder';},
 	isInsideSelection: function(icon,selection){
 		var pos = $getOffsetPosition(icon);
