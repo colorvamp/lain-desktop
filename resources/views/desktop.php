@@ -5,7 +5,6 @@
 	<div id='lainDesktop' class="lainDesktop">
 		<b class="lainLeyend">LAIN Project ~12.10 "REBIRTH" by sombra2eternity <span onclick="test(event);">test</span></b>
 		<div id='lainMenu' class="lainMenu"></div>
-		<div id="mouseTrayIcon"><img onclick="_desktop.mouse_controlDialog();" src='r/images/t.gif'/></div>
 		<div id='lainFlowIcon'></div>
 		<div class="lainTray">
 			<div id="tray_desktop_progress"><div class="perm"><i class="icon-user"></i></div></div>

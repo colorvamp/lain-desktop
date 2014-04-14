@@ -175,6 +175,7 @@ table.dataTable tbody > tr td:first-child{}
 .wodItem .bold{font-weight:bold;}
 .wodItem.disabled{background:none;color:#959595;}
 .wodItem.separator{background-color:#bbb;height:1px;font-size:0;overflow:hidden;padding:0 !important;}
+.wodItem.selected{}
 
 .wodContainer{height:100%;overflow-y:auto;background-color:#aaa;background:linear-gradient(to bottom,#ebebeb 0px,#fff 80px);}
 .wodMenuHolder + .wodContainer{height:-webkit-calc(100% - 20px);height:calc(100% - 20px);}
@@ -215,12 +216,17 @@ background:white URL(../images/inputBg.png) repeat-x;}
 
 .wodList{height:100%;background:white;color:#4c4c4c;cursor:default;}
 .wodList.grey{background:transparent;}
-.wodList > .wodItem{padding:4px 3px;color:#222;}
+.wodList > .wodItem{padding:6px;color:#222;}
 .wodList > .wodItem:nth-child(even){background:#f7f7f7;}
 .wodList.grey > .wodItem{background:transparent;}
 .wodList > .wodItem.selected{color:white;background:linear-gradient(to bottom,#e1632f,#e1632f 1px,#f58151 1px,#e96d3a);}
+.wodList > .wodItem.selected .btn{border:1px solid rgba(0,0,0,.6);border-top:1px solid rgba(0,0,0,.4);border-bottom:1px solid rgba(0,0,0,.7);}
+.wodList > .wodItem.selected .btn + .btn{border-left:0;}
 .wodList > .wodItem.disabled .icon16{opacity:.3;}
 .wodList > .wodItem .icon16{margin:0 4px;}
+
+.wodSection{height:100%;color:#4c4c4c;cursor:default;}
+.wodSection > .wodItem{padding:6px;color:#222;}
 
 .wodMenu{cursor:default;position:relative;display:inline-block;padding:0 4px;}
 .wodMenu > .menu{display:none;position:absolute;left:0;top:22px;background:white;border-radius:3px;padding:5px 0;box-shadow:0 1px 2px rgba(0,0,0,1);}
@@ -228,6 +234,16 @@ background:white URL(../images/inputBg.png) repeat-x;}
 .wodMenu .wodItem:hover{color:white;background:linear-gradient(to bottom,#e1632f,#e1632f 1px,#f58151 1px,#e96d3a);}
 .wodMenu .wodItem .icon16{margin-right:6px;}
 .wodMenu.open > .menu{display:block;z-index:10;}
+
+.wodSlider{margin:10px 4px;}
+.wodSlider > .slider{min-height:8px;border:1px solid #939393;border-top:1px solid #7c7c7c;border-bottom:1px solid #e1e1e1;border-radius:3px;background:linear-gradient(to bottom,#aaaaaa,#aaaaaa 1px,#c0c0c0 1px,#d0d0d0);box-shadow: inset 0px -1px 0 rgba(0,0,0,.2);}
+.wodSlider > .slider > .bar{position:relative;width:50%;min-height:5px;border-radius:3px;background:linear-gradient(to bottom,#f0f0f0,#f0f0f0 1px,#e4e4e4 1px,#fefefe);}
+.wodSlider > .slider > .bar > .point{position:absolute;top:-2px;right:-5px;width:10px;height:10px;background:linear-gradient(to bottom,#f0f0f0,#f0f0f0 1px,#e4e4e4 1px,#fefefe);border:1px solid #555;border-radius:5px;box-shadow:0 0 1px rgba(0,0,0,.4);}
+.wodSlider > .steps{margin:10px 1px 0 1px;height:6px;border:1px solid #7c7c7c;border-bottom:0;}
+.wodSlider > .steps:empty{display:none;}
+.wodSlider > .steps > .step{display:inline-block;vertical-align:top;height:6px;border-left:1px solid #7c7c7c;}
+.wodSlider > .steps > .step:first-child{border-left:0;}
+
 
 .wodContextMenu{color:black;position:absolute;z-index:200;background:white;border-radius:3px;padding:5px 0;box-shadow:0 1px 2px rgba(0,0,0,1);}
 .wodContextMenu .wodItem{padding:3px 10px;white-space:nowrap;line-height:16px;}
@@ -267,8 +283,6 @@ ul.systemForm > li{}
 ul.systemForm > li > span:first-child{position:absolute;}
 ul.systemForm > li > div{margin-left:50%;}
 
-	div#mouseTrayIcon{position:absolute;right:180px;top:1px;width:20px;height:20px;}
-	div#mouseTrayIcon img{background:URL(../images/devices/mouse.png) no-repeat;width:20px;height:20px;}
 
 .wodHContainer{width:140px;top:0;overflow-x:hidden;}
 

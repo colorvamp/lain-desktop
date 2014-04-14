@@ -262,6 +262,7 @@ var _desktop = {
 	contextMenu_close: function(e){var ul = _desktop.vars.currentContextMenu;if(!ul){return false;}ul.parentNode.removeChild(ul);_desktop.vars.currentContextMenu = false;if(e){e.stopPropagation();}},
 
 	desktop_properties: function(elem){
+//FIXME: DEPRECATED
 		var iProp = _icon.getProperties(elem);
 
 		var h = elem.lastChild;

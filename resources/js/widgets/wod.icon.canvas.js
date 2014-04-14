@@ -82,6 +82,9 @@ widgets.wodIconCanvas = {
 			var files = {};files[path] = [];
 			$each(selection,function(k,v){var n = _icon.getFileName(v);files[path].push(n);});
 			var event = new CustomEvent('file.cut',{'detail':files});dispatchEvent(event);
+		},
+		trash: function(wodIconCanvas){
+			//TODO
 		}
 	},
 	signals: {

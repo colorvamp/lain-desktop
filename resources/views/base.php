@@ -10,8 +10,10 @@
 	<script type="text/javascript" src="{%baseURL%}r/js/widgets/wod.icon.canvas.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/widgets/wod.context.menu.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/widgets/wod.list.js"></script>
+	<script type="text/javascript" src="{%baseURL%}r/js/widgets/wod.section.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/widgets/wod.iframe.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/widgets/wod.menu.js"></script>
+	<script type="text/javascript" src="{%baseURL%}r/js/widgets/wod.slider.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/lainCanvas.next.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/lain.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/lain.signals.js"></script>
