@@ -282,7 +282,7 @@
 		if($shouldClose){$r = sqlite3_close($params['db'],true);if(!$r){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}}
 		return true;
 	}
-	function report_data_save($name = '',$data = '',$params = array()){
+	function users_data_save($name = '',$data = '',$params = array()){
 		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
 		$row = array('_name_'=>$name,'data'=>$data);
 		$params = array_merge(array('db'=>false,'db.file'=>false),$params);
@@ -294,7 +294,7 @@
 		if(isset($r['errorDescription'])){return $r;}
 		return true;
         }
-        function report_data_load($whereClause = '',$params = array()){
+        function users_data_load($whereClause = '',$params = array()){
 		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
 		$params = array_merge(array('indexBy'=>'name','db'=>false,'db.file'=>false),$params);
 		if(!$params['db'] && !$params['db.file']){

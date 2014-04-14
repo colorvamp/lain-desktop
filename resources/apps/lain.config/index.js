@@ -22,7 +22,7 @@ VAR_apps.lain.config = {
 			var params = {'subcommand':'data.set','name':'mouse.speed','value':data};
 			$ajax('api/desktop',params,{
 				'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}
-alert(1);
+//alert(1);
 }
 			});
 		});

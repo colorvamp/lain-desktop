@@ -107,7 +107,7 @@ $r = fs_file_compress(base64_decode($_POST['files']));echo json_encode($r);break
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
 			case 'data.set':
 //FIXME: a fuego
-				$r = report_data_save('mouse.speed',1250,array('db.user'=>$GLOBALS['user']['id']));
+				$r = users_data_save('mouse.speed',1250,array('db.user'=>$GLOBALS['user']['id']));
 print_r($r);
 				exit;
 		}}
