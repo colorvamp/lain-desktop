@@ -17,6 +17,15 @@ VAR_apps.lain.config = {
 			var indicator = wodSection.querySelector('.mouse-click-delay');
 			indicator.innerHTML = parseInt(e.detail.percentage*18)+200;
 		});
+		wodSlider.addEventListener('slider.end',function(e){
+			var data = parseInt(e.detail.percentage*18)+200;
+			var params = {'subcommand':'data.set','name':'mouse.speed','value':data};
+			$ajax('api/desktop',params,{
+				'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}
+alert(1);
+}
+			});
+		});
 		d.appendChild(wodSlider);
 
 		var btnHolder = $C('DIV',{className:'btn-group'},d);

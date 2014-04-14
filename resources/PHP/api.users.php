@@ -3,10 +3,14 @@
 		'userName'=>'TEXT NOT NULL','userRegistered'=>'TEXT NOT NULL','userIP'=>'TEXT','userLastLogin'=>'TEXT',
 		'userBirthday'=>'TEXT','userGender'=>'TEXT','userNick'=>'TEXT UNIQUE','userWeb'=>'TEXT','userBio'=>'TEXT','userPhrase'=>'TEXT','userModes'=>'TEXT',
 		'userStatus'=>'TEXT','userTags'=>'TEXT','userCode'=>'TEXT');
+	$GLOBALS['tables']['user.data'] = array('_name_'=>'TEXT NOT NULL','data'=>'TEXT NOT NULL');
+	if(!isset($GLOBALS['api']['users'])){$GLOBALS['api']['users'] = array();}
 	$GLOBALS['api']['users'] = array(
 		'dir.users'=>'../db/api.users/',
 		'db'=>'../db/api.users.db','table'=>'systemUsers',
-		'reg.mail.clear'=>'/[^a-z0-9\._\+\-\@]*/');
+		'table.data'=>'user.data',
+		'reg.mail.clear'=>'/[^a-z0-9\._\+\-\@]*/'
+	);
 	if(file_exists('../../db')){$p = dirname(__FILE__).'/';$GLOBALS['api']['users'] = array_merge($GLOBALS['api']['users'],array('dir.users'=>$p.'../../db/api.users/','db'=>$p.'../../db/api.users.db'));}
 	include_once('inc.sqlite3.php');
 
@@ -101,6 +105,30 @@
 		if($shouldClose){$r = sqlite3_exec('COMMIT;',$db);$GLOBALS['DB_LAST_QUERY_ERRNO'] = $db->lastErrorCode();$GLOBALS['DB_LAST_QUERY_ERROR'] = $db->lastErrorMsg();if(!$r){sqlite3_close($db);return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}sqlite3_close($db);}
 		if(isset($GLOBALS['user']) && $GLOBALS['user']['userMail'] == $userMail){$GLOBALS['user'] = $_SESSION['user'] = $user;}
 		return $user;
+	}
+	function users_update2($data = array(),$db = false){
+		if(isset($data['id'])){$data['_id_'] = $data['id'];unset($data['id']);}
+		if(isset($data['userBirth_day']) && isset($data['userBirth_month']) && isset($data['userBirth_year'])){$data['userBirth'] = $data['userBirth_year'].'-'.$data['userBirth_month'].'-'.$data['userBirth_day'];unset($data['userBirth_year'],$data['userBirth_month'],$data['userBirth_day']);}
+		include_once('inc.strings.php');
+		foreach($data as $k=>$v){if(!isset($GLOBALS['tables']['systemUsers'][$k])){unset($data[$k]);continue;}$data[$k] = strings_UTF8Encode($v);}
+
+		/* INI-VALIDATION */
+		if(isset($data['userName'])){$data['userName'] = preg_replace('/[^a-zA-ZáéíóúÁÉÍÓÚ, ]*/','',strings_UTF8Encode($data['userName']));}
+		if(isset($data['userPass'])){$data['userPass'] = sha1($data['userPass']);}
+		if(isset($data['userBirth'])){$data['userBirth'] = preg_replace('/[^0-9\-]*/','',$data['userBirth']);}
+		if(isset($data['userBirth']) && (!preg_match('/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/',$data['userBirth']) || strtotime($data['userBirth']) < 1)){return array('errorDescription'=>'USERBIRTH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
+		if(isset($data['userLat']) || isset($data['userLng'])){$data['userLocationUpdated'] = time();}
+		if(isset($data['userNick'])){$data['userNick'] = preg_replace('/[^a-zA-Z0-9_\.]*/','',$data['userNick']);$data['userNick'] = strtolower($data['userNick']);if(strlen($data['userNick']) < 4){return array('errorDescription'=>'NICK_TOO_SHORT','file'=>__FILE__,'line'=>__LINE__);}}
+		/* END-VALIDATION */
+
+		$shouldClose = false;if(!$db){$db = sqlite3_open($GLOBALS['api']['users']['db']);sqlite3_exec('BEGIN',$db);$shouldClose = true;}
+		$r = sqlite3_insertIntoTable($GLOBALS['api']['users']['table'],$data,$db);
+		if(isset($r['errorDescription'])){if($shouldClose){sqlite3_close($db);}return array('errorDescription'=>$r['errorDescription'],'file'=>__FILE__,'line'=>__LINE__);}
+		if(!$r['OK']){if($shouldClose){sqlite3_close($db);}return array('errorCode'=>$r['errno'],'errorDescription'=>$r['error'],'file'=>__FILE__,'line'=>__LINE__);}
+		$userOB = users_getSingle('(id = '.$r['id'].')',array('db'=>$db));
+		if($shouldClose){$r = sqlite3_close($db,true);if(!$r){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}}
+		if(isset($GLOBALS['user']) && $GLOBALS['user']['id'] == $userOB['id']){$GLOBALS['user'] = $_SESSION['user'] = $userOB;}
+		return $userOB;
 	}
 	function users_getSingle($whereClause = false,$params = array()){if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['users']['db'];}if(!isset($params['indexBy'])){$params['indexBy'] = 'userMail';}return sqlite3_getSingle($GLOBALS['api']['users']['table'],$whereClause,$params);}
 	function users_getWhere($whereClause = false,$params = array()){if(!isset($params['db.file'])){$params['db.file'] = $GLOBALS['api']['users']['db'];}if(!isset($params['indexBy'])){$params['indexBy'] = 'userMail';}return sqlite3_getWhere($GLOBALS['api']['users']['table'],$whereClause,$params);}
@@ -236,6 +264,48 @@
 		if($shouldCreate && !file_exists($userPath)){$oldmask = umask(0);$r = @mkdir($userPath,0777,1);umask($oldmask);}
 		return $userPath;
 	}
+	function users_get_database($userID = false,$name = false){
+		return users_getPath($userID,'',true).($name ? $name : 'user.db');
+	}
+
+	/* INI-userData */
+	function users_data_save_array($data = array(),$params = array()){
+		if(!$data){return true;}
+		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
+		$params = array_merge(array('db'=>false,'db.file'=>false),$params);
+		if(!$params['db'] && !$params['db.file']){
+			if(!isset($params['db.user'])){return false;}
+			$params['db.file'] = users_get_database($params['db.user']);
+		}
+		$shouldClose = false;if(!$params['db'] && $params['db.file']){$params['db'] = sqlite3_open($params['db.file']);$r = sqlite3_exec('BEGIN;',$params['db']);$shouldClose = true;}
+		foreach($data as $k=>$v){$r = report_data_save($k,$v,$params);}
+		if($shouldClose){$r = sqlite3_close($params['db'],true);if(!$r){return array('errorCode'=>$GLOBALS['DB_LAST_QUERY_ERRNO'],'errorDescription'=>$GLOBALS['DB_LAST_QUERY_ERROR'],'file'=>__FILE__,'line'=>__LINE__);}}
+		return true;
+	}
+	function report_data_save($name = '',$data = '',$params = array()){
+		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
+		$row = array('_name_'=>$name,'data'=>$data);
+		$params = array_merge(array('db'=>false,'db.file'=>false),$params);
+		if(!$params['db'] && !$params['db.file']){
+			if(!isset($params['db.user'])){return false;}
+			$params['db.file'] = users_get_database($params['db.user']);
+		}
+		$r = sqlite3_insertIntoTable2($GLOBALS['api']['users']['table.data'],$row,$params);
+		if(isset($r['errorDescription'])){return $r;}
+		return true;
+        }
+        function report_data_load($whereClause = '',$params = array()){
+		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
+		$params = array_merge(array('indexBy'=>'name','db'=>false,'db.file'=>false),$params);
+		if(!$params['db'] && !$params['db.file']){
+			if(!isset($params['db.user'])){return false;}
+			$params['db.file'] = users_get_database($params['db.user']);
+		}
+		$data = sqlite3_getWhere($GLOBALS['api']['users']['table.data'],$whereClause,$params);
+		foreach($data as $k=>$v){$data[$k] = $v['data'];}
+		return $data;
+        }
+	/* END-userData */
 
 	function users_updateSchema($db = false){
 		include_once('inc.sqlite3.php');

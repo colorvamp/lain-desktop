@@ -2,7 +2,7 @@ widgets.wodSlider = {
 	init: function(params){
 		if(!params){params = {};}
 		var wodSlider = $C('DIV',{className:'wodSlider',
-			'vars': {'steps':false}
+			'vars': {'mode':false,'steps':false}
 		});
 		var con = $C('DIV',{className:'slider'},wodSlider);
 		var bar = $C('DIV',{className:'bar'},con);
@@ -17,6 +17,7 @@ widgets.wodSlider = {
 			}
 		}
 		point.addEventListener('mouse.down.left',function(e){widgets.wodSlider.signals.mouse.down.left(wodSlider,e);});
+		if(!params.mode){wodSlider.vars.mode = 'free';}
 //FIXME: necesita un reflow
 		return wodSlider;
 	},
@@ -50,6 +51,15 @@ widgets.wodSlider = {
 					var point = wodSlider.querySelector('.point');
 					removeEventListener('mousemove',point.signals.mousemove,true);
 					removeEventListener('mouse.up.left',point.signals.mousemove,true);
+
+//FIXME: usar api para obtener porcentaje
+					var x = e.detail.clientX;var y = e.detail.clientY;
+					var eL = x - point.elemX;
+					eL = (eL/point.elemW)*100;
+					if(eL < 0){eL = 0;}
+					if(eL > 100){eL = 100;}
+					var event = new CustomEvent('slider.end',{'detail':{'target':wodSlider,'percentage':eL},'bubbles':true,'cancelable':true});
+					wodSlider.dispatchEvent(event);
 				}
 			}
 		}
