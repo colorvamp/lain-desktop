@@ -1,5 +1,5 @@
 var _littleDrag = {
-	vars:{captured:{},clickDelay:200,applyLimits:true},
+	vars:{captured:{},applyLimits:true},
 	init: function(){},
 	onMouseDown: function(e){
 		if(e.which != 1){return;}
@@ -12,7 +12,7 @@ var _littleDrag = {
 		elem.startY = e.clientY - elem.offsetTop;
 
 		if(elem.className.match(/wodIcon/)){
-			if(elem.firstClick && (new Date().getTime() - elem.firstClick)<this.vars.clickDelay && elem.launch){elem.firstClick=false;return elem.launch();}
+			if(elem.firstClick && (new Date().getTime() - elem.firstClick) < _wodern.vars.mouse.click.delay && elem.launch){elem.firstClick=false;return elem.launch();}
 			elem.firstClick = new Date().getTime();
 			var innerElem = elem;var elem = innerElem.cloneNode(1);var elemPos = $getOffsetPosition(innerElem);
 			$fix(elem,{'.display':'none','.opacity':0,'isInvisible':true,'innerElem':innerElem,'startX':(e.clientX-elemPos.left),'startY':(e.clientY-elemPos.top),'eventX':e.clientX,'eventY':e.clientY,'.left':elemPos.left+'px','.top':elemPos.top+'px'});
@@ -47,7 +47,7 @@ if(elem.className.match(/wodTheme/)){eyLimit = -3;}
 		if(elem.className.match(/wodIcon/)){do{
 			var fake = elem;elem = elem.innerElem;
 			fake.parentNode.removeChild(fake);
-			if((new Date().getTime() - elem.firstClick) < this.vars.clickDelay){break;}
+			if((new Date().getTime() - elem.firstClick) < _wodern.vars.mouse.click.delay){break;}
 			var x = e.clientX;var y = e.clientY;
 			var candidate = document.elementFromPoint(x,y);if(!candidate){break;}
 //FIXME: en vez de elem deberíamos enviar la selección

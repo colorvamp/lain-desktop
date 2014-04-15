@@ -97,6 +97,13 @@ function launchApp_createHolder(appName){
 	$each(lWindows.childNodes,function(el){if(el.id == holderName){h = el;}});
 	if(h){return h;};return $C('LI',{id:holderName},lWindows);
 }
+function $isset ( strVariableName ) { 
+//FIXME: enviar la funcion a coreJS
+    if(typeof strVariableName != "undefined"){return true;}
+	return false;
+    
+
+ }
 
 var _desktop = {
 	vars: {},
@@ -173,6 +180,16 @@ var _desktop = {
 			_desktop.tray.create(wodMenu);
 		}
 		/* END-SystemTray*/
+		/* INI-Config */
+		var configData = document.querySelector('.lainStorage > .config');
+		if(configData){
+			var config = $json.decode(configData.innerHTML);
+			if($isset(config['public.mouse.click.delay'])){
+				_wodern.vars.mouse.click.delay = parseInt(config['public.mouse.click.delay']);
+				if(_wodern.vars.mouse.click.delay < 200){_wodern.vars.mouse.click.delay = 200;}
+			}
+		}
+		/* END-Config */
 
 		_desktop.signals.resize_end();
 	},
@@ -283,35 +300,9 @@ var _desktop = {
 		if(!(appName = VAR_MIMES[iProp.fileMime])){return false;}
 		launchApp(appName,iconElem);
 	},
-	fs_paste: function(){
-//FIXME: hay que pasar el destino por parámetros
-return false;
-		if(isEmpty(_desktop.vars.fileOperation)){return false;}
-		var f = 'fs_'+_desktop.vars.fileOperation;
-		var selection = _desktop.fileSelection_get();
-		if(selection.length != 1){return false;}
-		if(_desktop[f]){return _desktop[f](selection[0]);}
-	},
 	time_stampToDate: function(t){
 		var date = new Date(t*1000);
 		return date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
-	},
-	mouse_controlDialog: function(){
-//FIXME: DEPRECATED
-		var i = $_("info_mouseControl");
-		if(i){info_destroy(i);return;}
-
-		info_create("mouseControl",{".left":"-100px",".width":"200px"},$_("mouseTrayIcon"),102);
-		var h = $_("info_mouseControl_container");
-		$C("H4",{innerHTML:"Preferencias del ratón"},h);
-		$C("DIV",{".padding":"5px 0",innerHTML:"Tiempo de reacción en la pulsación doble. Aumente este tiempo si realiza pulsaciones rápidas."},h)
-		var prec = $C("SPAN",{innerHTML:_littleDrag.vars.clickDelay+" ms"},$C("DIV",{innerHTML:"Tiempo Actual: "},h));
-
-		var initialPercentage = (_littleDrag.vars.clickDelay/1000) * 100;
-		_littleSlider.create("mouseControl",$C("DIV",{},h),function(percentage){
-			_littleDrag.vars.clickDelay = $round(percentage*1000);
-			prec.innerHTML = _littleDrag.vars.clickDelay+" ms";
-		},initialPercentage);
 	},
 	menu_show: function(elem){
 //FIXME: todos los menus de programas usan esta funcionalidad, hay que pasarlos a wodMenu

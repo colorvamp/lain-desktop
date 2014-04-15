@@ -274,6 +274,7 @@
 		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
 		$params = array_merge(array('db'=>false,'db.file'=>false),$params);
 		if(!$params['db'] && !$params['db.file']){
+			if(!isset($params['db.user']) && isset($GLOBALS['user'])){$params['db.user'] = $GLOBALS['user']['id'];}
 			if(!isset($params['db.user'])){return false;}
 			$params['db.file'] = users_get_database($params['db.user']);
 		}
@@ -287,6 +288,7 @@
 		$row = array('_name_'=>$name,'data'=>$data);
 		$params = array_merge(array('db'=>false,'db.file'=>false),$params);
 		if(!$params['db'] && !$params['db.file']){
+			if(!isset($params['db.user']) && isset($GLOBALS['user'])){$params['db.user'] = $GLOBALS['user']['id'];}
 			if(!isset($params['db.user'])){return false;}
 			$params['db.file'] = users_get_database($params['db.user']);
 		}
@@ -298,6 +300,7 @@
 		if(!function_exists('sqlite3_open')){include_once('inc.sqlite3.php');}
 		$params = array_merge(array('indexBy'=>'name','db'=>false,'db.file'=>false),$params);
 		if(!$params['db'] && !$params['db.file']){
+			if(!isset($params['db.user']) && isset($GLOBALS['user'])){$params['db.user'] = $GLOBALS['user']['id'];}
 			if(!isset($params['db.user'])){return false;}
 			$params['db.file'] = users_get_database($params['db.user']);
 		}

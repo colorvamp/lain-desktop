@@ -14,6 +14,7 @@
 		<ul id='lainWindows'></ul>
 		<div class="lainStorage">
 			<div class="user">{%JSON.user%}</div>
+			<div class="config">{%JSON.config%}</div>
 			<div class="apps">{%JSON.apps%}</div>
 			<div class="places">{%JSON.places%}</div>
 		</div>

@@ -11,19 +11,17 @@ VAR_apps.lain.config = {
 
 		var wodSection = new widget('widgets.wodSection');
 		wContainer.appendChild(wodSection);
-		var d = $C('DIV',{innerHTML:'<div class="bold">Mouse</div><p>Click delay [<span class="mouse-click-delay"></span>]ms</p>'});
-		var wodSlider = new widget('widgets.wodSlider',{'steps':5});
+		var d = $C('DIV',{innerHTML:'<div class="bold">Mouse</div><p>Click delay [<span class="mouse-click-delay">'+_wodern.vars.mouse.click.delay+'</span>]ms</p>'});
+		var wodSlider = new widget('widgets.wodSlider',{'steps':5,'min':200,'max':2000,'value':_wodern.vars.mouse.click.delay});
 		wodSlider.addEventListener('slider.update',function(e){
 			var indicator = wodSection.querySelector('.mouse-click-delay');
 			indicator.innerHTML = parseInt(e.detail.percentage*18)+200;
 		});
 		wodSlider.addEventListener('slider.end',function(e){
 			var data = parseInt(e.detail.percentage*18)+200;
-			var params = {'subcommand':'data.set','name':'mouse.speed','value':data};
+			var params = {'subcommand':'data.set','name':'mouse.click.delay','value':data};
 			$ajax('api/desktop',params,{
-				'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}
-//alert(1);
-}
+				'onEnd': function(text){var r = jsonDecode(text);if(r.errorDescription){alert(print_r(r));return;}}
 			});
 		});
 		d.appendChild(wodSlider);

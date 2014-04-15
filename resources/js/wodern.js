@@ -1,5 +1,11 @@
 var _wodern = {
-	vars:{'focus':false},
+	vars:{	'focus':false,
+		'mouse': {
+			'click': {
+				'delay': 400
+			}
+		}
+	},
 	focus: {
 		set: function(w){
 			if(_wodern.vars.focus){$E.class.remove(_wodern.vars.focus,'focus');}

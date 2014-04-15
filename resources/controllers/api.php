@@ -106,9 +106,11 @@ $r = fs_file_compress(base64_decode($_POST['files']));echo json_encode($r);break
 
 		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
 			case 'data.set':
-//FIXME: a fuego
-				$r = users_data_save('mouse.speed',1250,array('db.user'=>$GLOBALS['user']['id']));
-print_r($r);
+				$_valid = array('mouse.click.delay'=>'/[^0-9]*/');
+				if(!isset($_POST['name']) || !isset($_valid[$_POST['name']])){break;}
+				$_POST['value'] = preg_replace($_valid[$_POST['name']],'',$_POST['value']);
+				$r = users_data_save('public.'.$_POST['name'],$_POST['value'],array('db.user'=>$GLOBALS['user']['id']));
+				echo json_encode(array('errorCode'=>'0'));
 				exit;
 		}}
 	}

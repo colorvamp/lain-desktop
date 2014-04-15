@@ -2,11 +2,20 @@ widgets.wodSlider = {
 	init: function(params){
 		if(!params){params = {};}
 		var wodSlider = $C('DIV',{className:'wodSlider',
-			'vars': {'mode':false,'steps':false}
+			'vars': {'mode':false,'steps':false,'percentage':false,'min':false,'max':false}
 		});
 		var con = $C('DIV',{className:'slider'},wodSlider);
 		var bar = $C('DIV',{className:'bar'},con);
 		var point = $C('DIV',{className:'point'},bar);
+//FIXME: reordenar min y max si fuera necesario
+		if(params.min){wodSlider.vars.min = params.min;}
+		if(params.max){wodSlider.vars.max = params.max;}
+		if(params.value && wodSlider.vars.min && wodSlider.vars.max){
+			var sample = wodSlider.vars.max-wodSlider.vars.min;
+			var current = params.value-wodSlider.vars.min;
+			var perc = current/(sample/100);
+			widgets.wodSlider.set.percentage(wodSlider,perc);
+		}
 		if(params.steps && (wodSlider.vars.steps = parseInt(params.steps))){
 			var steps = $C('DIV',{className:'steps'},wodSlider);
 			var i = params.steps-1;
@@ -20,6 +29,15 @@ widgets.wodSlider = {
 		if(!params.mode){wodSlider.vars.mode = 'free';}
 //FIXME: necesita un reflow
 		return wodSlider;
+	},
+	set: {
+		percentage: function(wodSlider,perc,point){
+			if(!point && !(point = wodSlider.querySelector('.point'))){return false;}
+			point.parentNode.style.width = perc+'%';
+			wodSlider.vars.percentage = perc;
+			var event = new CustomEvent('slider.update',{'detail':{'target':wodSlider,'percentage':perc},'bubbles':true,'cancelable':true});
+			wodSlider.dispatchEvent(event);
+		}
 	},
 	signals: {
 		mouse: {
@@ -43,9 +61,7 @@ widgets.wodSlider = {
 					eL = (eL/point.elemW)*100;
 					if(eL < 0){eL = 0;}
 					if(eL > 100){eL = 100;}
-					point.parentNode.style.width = eL+'%';
-					var event = new CustomEvent('slider.update',{'detail':{'target':wodSlider,'percentage':eL},'bubbles':true,'cancelable':true});
-					wodSlider.dispatchEvent(event);
+					widgets.wodSlider.set.percentage(wodSlider,eL,point);
 				},
 				end: function(wodSlider,e){
 					var point = wodSlider.querySelector('.point');
@@ -58,6 +74,7 @@ widgets.wodSlider = {
 					eL = (eL/point.elemW)*100;
 					if(eL < 0){eL = 0;}
 					if(eL > 100){eL = 100;}
+					widgets.wodSlider.set.percentage(wodSlider,eL,point);
 					var event = new CustomEvent('slider.end',{'detail':{'target':wodSlider,'percentage':eL},'bubbles':true,'cancelable':true});
 					wodSlider.dispatchEvent(event);
 				}

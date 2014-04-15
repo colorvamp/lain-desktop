@@ -105,7 +105,5 @@ VAR_apps.lainExplorer = {
 	},
 	menu_edit_paste: function(){
 //FIXME: fake select
-return;
-		_desktop.fs_paste();
 	}
 };
