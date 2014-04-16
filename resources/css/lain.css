@@ -84,6 +84,7 @@ body > img.logo{position:absolute;z-index:10;bottom:20px;right:20px;}
 div#null{position:absolute;height:0px;width:0px;overflow:hidden;}
 
 ul#lainWindows{position:absolute;top:0;height:0;width:0;z-index:6;}
+ul#lainWindows.fullscreen{height:100%;width:100%;padding-top:50px;}
 ul#lainWindows > li{position:absolute;height:0;width:0;}
 ul#lainWindows > li > div{position:absolute;}
 div.lainStorage{display:none;}

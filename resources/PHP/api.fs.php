@@ -378,13 +378,13 @@ return false;
 		$fileHash = ($p !== false) ? substr($fileRoute,0,$p) : $fileRoute;
 		if(empty($fileHash) || $fileHash == '/'){
 			$fileRows = fs_trash_getWhere(1);
-			$files = $folders = array();
+			$files = array();
 			foreach($fileRows as $fileRow){
 				//FIXME: fileDateM
 				$files[] = array('fileName'=>$fileRow['fileName'],'fileAlias'=>$fileRow['fileHash'],'fileRoute'=>'native:trash:/','fileMime'=>$fileRow['fileMime'],'fileSize'=>$fileRow['fileSize'],'fileDateM'=>'');
 			}
-			sort($files);sort($folders);
-			return array('folders'=>$folders,'files'=>$files);
+			$folder = array('fileName'=>'trash','fileRoute'=>'native:trash:/','fileMime'=>'folder');
+			return array('folder'=>$folder,'files'=>$files);
 		}
 
 
@@ -402,16 +402,16 @@ return false;
 			$finfo = finfo_open(FILEINFO_MIME,$GLOBALS['api']['fs']['file.mime']);
 			while(false !== ($file = readdir($handle))){if($file[0] == '.'){continue;}
 				$fileData = stat($filePath.$file);
-				if(is_dir($filePath.$file)){$folders[] = array('fileName'=>$file,'fileRoute'=>'native:trash:'.$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);continue;}
+				if(is_dir($filePath.$file)){$files[] = array('fileName'=>$file,'fileRoute'=>'native:trash:'.$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);continue;}
 				list($fileMimeType) = explode('; ',finfo_file($finfo,$filePath.$file));
-				$files[] = array('fileName'=>$file,'fileRoute'=>$fileRoute,'fileMime'=>$fileMimeType,'fileSize'=>$fileData['size'],'fileDateM'=>$fileData['mtime']);
+				$files[] = array('fileName'=>$file,'fileRoute'=>'native:trash:'.$fileRoute,'fileMime'=>$fileMimeType,'fileSize'=>$fileData['size'],'fileDateM'=>$fileData['mtime']);
 			}
 			finfo_close($finfo);
 			closedir($handle);
 		}
 
-		sort($files);sort($folders);
-		return array('folders'=>$folders,'files'=>$files);
+		$folder = array('fileName'=>'trash','fileRoute'=>'native:trash:/','fileMime'=>'folder');
+		return array('folder'=>$folder,'files'=>$files);
 	}
 
 	function fs_trash_getSingle($whereClause = false,$params = array()){

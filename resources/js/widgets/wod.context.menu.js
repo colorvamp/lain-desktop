@@ -27,6 +27,8 @@ widgets.wodContextMenu = {
 			wodContextMenu.style.top = pos.top+'px';
 			wodContextMenu.style.left = pos.left+params.target.offsetWidth+4+'px';
 		}
+		/* Eventos */
+		wodContextMenu.addEventListener('mouse.down.left',function(e){e.stopPropagation();e.preventDefault();});
 
 		//FIXME: bueno, no se si esto es asi
 		_desktop.contextMenu_close();

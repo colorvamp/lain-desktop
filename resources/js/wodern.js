@@ -63,6 +63,17 @@ var w = wodern;
 			$E.class.add(wodern,'moving');
 		});
 		w.titleContainer.addEventListener('mouse.up.left',function(e){$E.class.remove(wodern,'moving');});
+		w.titleContainer.addEventListener('mouse.down.right',function(e){
+			var contextmenu = [
+				{'text':'<i class="icon-move"></i> Move','callback':function(e,params){}},
+				{'text':'-'},
+				{'text':'<i class="icon-remove"></i> Close','callback':function(e,params){return _wodern.window.destroy(w);}}
+			];
+
+			var wodContextMenu = new widget('widgets.wodContextMenu',{'event':e});
+			wodContextMenu.set.params({'target':w.titleContainer});
+			wodContextMenu.items.load(contextmenu);
+		});
 
 		$C('H1',{className:'wodTitle'},w.titleContainer);
 		var b = $C('DIV',{className:'wodThemeTitleButton wodButtonClose'},w.titleContainer);
@@ -80,16 +91,19 @@ var w = wodern;
 		return w;
 	},
 	window_destroy: function(el,ev){
-//FIXME: al cerrar una ventana, otra debe recoger el focus
-//FIXME: usar API
-		while(el.parentNode && !el.className.match(/^wodern( |$)/)){el = el.parentNode;}if(!el.parentNode){return;}
-		if(el.beforeRemove){el.beforeRemove();};var afterRemove = function(){};if(el.afterRemove){afterRemove=el.afterRemove;}
-		el.parentNode.removeChild(el);if(ev){ev.stopPropagation();}afterRemove();
+		return _wodern.window.destroy(el,ev);
 	},
 	window_getZ: function(){return _desktop.vars.wHighestZ++;},
 //FIXME: usar API
 	window_findParent: function(el){while(el.parentNode && !el.className.match(/^wodern( |$)/)){el = el.parentNode;}if(!el.parentNode){return false;}return el;},
 	window: {
+		destroy: function(el,ev){
+			//FIXME: al cerrar una ventana, otra debe recoger el focus
+			//FIXME: usar API
+			while(el.parentNode && !el.className.match(/^wodern( |$)/)){el = el.parentNode;}if(!el.parentNode){return;}
+			if(el.beforeRemove){el.beforeRemove();};var afterRemove = function(){};if(el.afterRemove){afterRemove=el.afterRemove;}
+			el.parentNode.removeChild(el);if(ev){ev.stopPropagation();}afterRemove();
+		},
 		buttons: {
 			add: function(wodWindow,text,f,align){
 				var h = wodWindow.querySelector('.btn-group');if(!h){return false;}
