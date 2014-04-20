@@ -16,22 +16,24 @@ VAR_apps.eyeOfLain = {
 	client_createViewer: function(iconElem){
 		var iProp = _icon.getProperties(iconElem);
 		var holder = VAR_apps.eyeOfLain.vars.wHolder;
-
 		var wContainer = window_container();
-		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},wContainer);
-		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'File'},wodMenuHolder));
-//$C('LI',{innerHTML:'Save',onclick:function(){alert(1);}.bind(this)},ul);
-//$C('LI',{innerHTML:'Save as',onclick:function(){alert(2);}.bind(this)},ul);
-			$C('LI',{innerHTML:'<i class="icon-desktop"></i> Set as wallpaper',onclick:function(){_desktop.background_set(iconElem);}},ul);
-		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'Edit'},wodMenuHolder));
-//$C('LI',{innerHTML:'Undo',onclick:function(){alert(3);}.bind(this)},ul);
-//$C('LI',{innerHTML:'Redo',onclick:function(){alert(4);}.bind(this)},ul);
-			$C('LI',{className:'eicon icon_object_flip_horizontal',innerHTML:'Flip Horizontal',onclick:function(){this.image_flipHorizontal(imgSource);}.bind(this)},ul);
-			$C('LI',{className:'eicon icon_object_flip_vertical',innerHTML:'Flip Vertical',onclick:function(){this.image_flipVertical(imgSource);}.bind(this)},ul);
-		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'View'},wodMenuHolder));
-		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'Photo'},wodMenuHolder));
-		var ul = $C('UL',{},$C('LI',{className:'wodMenuItem',innerHTML:'Help'},wodMenuHolder));
 
+		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},wContainer);
+		var wodMenu = new widget('widgets.wodMenu',{'title':'File'});
+		wodMenu.item.add('<i class="icon-desktop"></i> Set as wallpaper',function(){_desktop.background_set(iconElem);});
+		wodMenuHolder.appendChild(wodMenu);
+		var wodMenu = new widget('widgets.wodMenu',{'title':'Edit'});
+		wodMenu.item.add('Flip Horizontal',function(){this.image_flipHorizontal(imgSource);}.bind(this));
+		wodMenu.item.add('Flip Vertical',function(){this.image_flipVertical(imgSource);}.bind(this));
+		wodMenuHolder.appendChild(wodMenu);
+		var wodMenu = new widget('widgets.wodMenu',{'title':'View'});
+		wodMenuHolder.appendChild(wodMenu);
+		var wodMenu = new widget('widgets.wodMenu',{'title':'Photo'});
+		wodMenuHolder.appendChild(wodMenu);
+		var wodMenu = new widget('widgets.wodMenu',{'title':'Help'});
+		wodMenuHolder.appendChild(wodMenu);
+
+		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},wContainer);
 
 		var wNum = VAR_apps.eyeOfLain.vars.wCounter;
 		var w = window_create('eyeOfLain'+wNum,{wodTitle:'Eye of Lain','wContainer':wContainer,

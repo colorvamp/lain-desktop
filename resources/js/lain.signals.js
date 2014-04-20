@@ -4,12 +4,6 @@ _desktop.signals = {
 		e.preventDefault();e.stopPropagation();
 		var el = e.target;do{if(el.onmousedown){var r = el.onmousedown(e,el);if(r === false){return false;}}if(!el.parentNode){break;}el = el.parentNode;}while(el.parentNode);
 
-		var key_control = (_desktop.vars.input_presedKeys.indexOf(17) > -1);
-		/* If the control key is pressed we should check multi selection, if after 
-		 * climb 5 parent elements we dont find an iconCanvas, we are not in a icon pool */
-//FIXME: creo que ya no es necesario
-	//if(e.which == 1 && !key_control && $E.classParentHas(e.target,'wodIconCanvas',5)){_desktop.fileSelection_empty(e);}
-
 		var el = e.target;do{if(el.onselect){el.onselect(e,el);break;}if(!el.parentNode){break;}el = el.parentNode;}while(el.parentNode);
 		if(e.which == 1){return _desktop.signals.mouse_down_left(e);}
 		if(e.which == 3){return _desktop.signals.mouse_down_right(e);}

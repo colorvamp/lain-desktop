@@ -1,16 +1,11 @@
 VAR_apps.lainExplorer = {
 	init: function(holder,params){
-		if(!VAR_apps.lainExplorer.vars){VAR_apps.lainExplorer.vars = {apiURL:'api/fs',wCounter:0,wHolder:holder,wList:[],cList:$A([])};}
+		if(!VAR_apps.lainExplorer.vars){VAR_apps.lainExplorer.vars = {wCounter:0,wHolder:holder,wList:[],cList:$A([])};}
 		if(params && params.tagName && params.tagName == 'LI'){var iProp = _icon.getProperties(params);return VAR_apps.lainExplorer.client(iProp);}
 		if(params && params.constructor == String){VAR_apps.lainExplorer.client(params);return;}
 	},
 	appKill: function(){this.vars.wList.each(function(w){_wodern.window_destroy(w);}.bind(this));},
 	windows_get: function(){return VAR_apps.lainExplorer.vars.wList;},
-	wList_removeElem: function(el){
-//FIXME: usar indexOf
-//this.vars.wList.each(function(w,n){if(w == el){this.vars.wList.splice(n,1);}}.bind(this));
-
-},
 	client: function(params){
 		var wNum = VAR_apps.lainExplorer.vars.wCounter++;
 		var wodern = _wodern.window_create('lainExplorer'+wNum,{},VAR_apps.lainExplorer.vars.wHolder);
@@ -42,7 +37,7 @@ VAR_apps.lainExplorer = {
 		var storagePlaces = document.querySelector('.lainStorage > .places');
 		if(storagePlaces){
 			storagePlaces = $json.decode(storagePlaces.innerHTML);
-			var wodList = new widget('widgets.wodList',{'title':'<i class="icon-folder-close"></i> Places'});
+			var wodList = new widget('widgets.wodList');
 			$E.class.add(wodList,'grey');
 			panelLeft.appendChild(wodList);
 			$each(storagePlaces,function(k,v){

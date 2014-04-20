@@ -92,13 +92,13 @@ $r = fs_file_compress(base64_decode($_POST['files']));echo json_encode($r);break
 	function api_desktop(){
 		include_once('api.desktop.php');
 		if(func_num_args()){$args = func_get_args();$subcommand = array_shift($args);switch($subcommand){
-			case 'background_set':
+			case 'background.set':
 				foreach($args as $k=>$arg){$args[$k] = base64_decode(str_replace(' ','+',$args[$k]));}
 				list($filePath) = $args;
 				$r = desktop_background_set($filePath);
 				echo json_encode($r);
 				exit;
-			case 'background_get':
+			case 'background.get':
 				//FIXME: los diferentes tamaños
 				$r = desktop_background_get();
 				exit;

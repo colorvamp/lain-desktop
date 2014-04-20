@@ -254,19 +254,9 @@ var _desktop = {
 		if(!(appName = VAR_MIMES[iProp.fileMime])){return false;}
 		launchApp(appName,iconElem);
 	},
-	time_stampToDate: function(t){
-		var date = new Date(t*1000);
-		return date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
-	},
-	menu_show: function(elem){
-//FIXME: todos los menus de programas usan esta funcionalidad, hay que pasarlos a wodMenu
-		if(elem.className == 'selected'){elem.className = '';return;}
-		$A(elem.parentNode.childNodes).each(function(el){el.className = '';});
-		elem.className = 'selected';
-	},
 	background_init: function(avoidCache){
 		if(avoidCache){_desktop.vars.cacheSeed = Math.random()*1000;}
-		var url = 'api/desktop/background_get?rnd='+_desktop.vars.cacheSeed;
+		var url = 'api/desktop/background.get?rnd='+_desktop.vars.cacheSeed;
 		var b = $_('lainBackground');
 //FIXME: hay samples de 200, USARLOS
 		_lc.imageResize(url,this.vars.bodyWidth,this.vars.bodyHeight,'min',function(img){
@@ -278,7 +268,11 @@ var _desktop = {
 	},
 	background_set: function(iconElem){
 		var iProp = _icon.getProperties(iconElem);
-		ajaxPetition('api/desktop/background_set/'+base64.encode(iProp.fileRoute+iProp.fileName),'',function(ajax){_desktop.background_init(1);});
+		ajaxPetition('api/desktop/background.set/'+base64.encode(iProp.fileRoute+iProp.fileName),'',function(ajax){_desktop.background_init(1);});
+	},
+	time_stampToDate: function(t){
+		var date = new Date(t*1000);
+		return date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
 	},
 	helper_bytesToSize: function(bytes){
 		var sizes = ['Bytes','KB','MB','GB','TB'];

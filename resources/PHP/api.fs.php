@@ -52,6 +52,7 @@ if(!isset($GLOBALS['userPath'])){echo 'error userPath '.__FILE__;exit;}
 	}
 
 	function fs_file_getInfo($fileName,$filePath,$fileRoute,$finfo = false){
+//FIXME: deprecated, usar fs_native_fileOB_get
 		$fileData = stat($filePath.$fileName);
 //FIXME: sacar fileRoute automaticamente con fs_native_route_get
 		if(is_dir($filePath.$fileName)){return array('fileName'=>$fileName,'fileRoute'=>$fileRoute,'fileMime'=>'folder','fileDateM'=>$fileData['mtime']);}
@@ -74,6 +75,7 @@ if(!isset($GLOBALS['userPath'])){echo 'error userPath '.__FILE__;exit;}
 	}
 
 	function fs_folder_list($fileRoute = ''){
+		include_once('fs/inc.fs.native.php');
 		$protocol = substr($fileRoute,0,6);
 		switch($protocol){
 			case 'gdrive':include_once('fs/inc.fs.gdrive.php');return fs_gdrive_list($fileRoute);
@@ -95,7 +97,7 @@ if(!isset($GLOBALS['userPath'])){echo 'error userPath '.__FILE__;exit;}
 			$finfo = finfo_open(FILEINFO_MIME,$GLOBALS['api']['fs']['file.mime']);
 			while(false !== ($fileName = readdir($handle))){if($fileName[0] == '.'){continue;}
 				//echo $file.print_r(stat($driveDir.$fileName)).'\n';
-				$files[] = fs_file_getInfo($fileName,$filePath,$fileRoute,$finfo);
+				$files[] = fs_native_fileOB_get($filePath.$fileName,$finfo);
 			}
 			closedir($handle);
 			finfo_close($finfo);

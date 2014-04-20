@@ -163,6 +163,7 @@ img.icon32_application\/ogg{background:URL(../images/iconSet/audio-x-vorbis+ogg.
 img.icon32_application\/zip{background:URL(../images/iconSet/application-x-zip.png) no-repeat;}
 img.icon32_image\/jpeg{background:URL(../images/iconSet/image-jpeg.png) no-repeat;}
 img.icon32_image\/png{background:URL(../images/iconSet/image-png.png) no-repeat;}
+img.icon32_application\/x-debian-package{background:URL(../images/iconSet/deb.png) no-repeat;}
 
 table.dataTable{width:100%;margin-bottom:5px;}
 table.dataTable thead tr{height:17px;background:URL(../images/wod/dataTable_thead.png) repeat-x;line-height:16px;}
@@ -224,7 +225,7 @@ background:white URL(../images/inputBg.png) repeat-x;}
 .wodList.grey{background:transparent;}
 .wodList > .wodItem{padding:6px;color:#222;}
 .wodList > .wodItem:nth-child(even){background:#f7f7f7;}
-.wodList.grey > .wodItem{background:transparent;}
+.wodList.grey > .wodItem{padding:4px 2px;width:100%;background:transparent;white-space:nowrap;}
 .wodList > .wodItem.selected{color:white;background:linear-gradient(to bottom,#e1632f,#e1632f 1px,#f58151 1px,#e96d3a);}
 .wodList > .wodItem.selected .btn{border:1px solid rgba(0,0,0,.6);border-top:1px solid rgba(0,0,0,.4);border-bottom:1px solid rgba(0,0,0,.7);}
 .wodList > .wodItem.selected .btn + .btn{border-left:0;}

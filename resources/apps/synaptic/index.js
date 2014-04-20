@@ -14,11 +14,14 @@ VAR_apps.synaptic = {
 
 		/* INI-MENU */
 		var wodMenuHolder = $C('UL',{className:'wodMenuHolder'},h);
-		var ul = $C('UL',{},$C('LI',{innerHTML:'File',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
-		$C('LI',{innerHTML:'<i class="icon-search"></i> Search',onclick:function(){VAR_apps.synaptic.client_search();}},ul);
-		$C('LI',{innerHTML:'<i class="icon-refresh"></i> Reload',onclick:function(){VAR_apps.synaptic.menu_reload();}},ul);
-		var ul = $C('UL',{},$C('LI',{innerHTML:'Edit',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
-		var ul = $C('UL',{},$C('LI',{innerHTML:'View',onclick:function(){_desktop.menu_show(this);}},wodMenuHolder));
+		var wodMenu = new widget('widgets.wodMenu',{'title':'File'});
+		wodMenu.item.add('<i class="icon-search"></i> Search',function(){VAR_apps.synaptic.client_search();});
+		wodMenu.item.add('<i class="icon-refresh"></i> Reload',function(){VAR_apps.synaptic.menu_reload();});
+		wodMenuHolder.appendChild(wodMenu);
+		var wodMenu = new widget('widgets.wodMenu',{'title':'Edit'});
+		wodMenuHolder.appendChild(wodMenu);
+		var wodMenu = new widget('widgets.wodMenu',{'title':'View'});
+		wodMenuHolder.appendChild(wodMenu);
 		/* END-MENU */
 
 		var list = $C('DIV',{'className':'lainList'},h);

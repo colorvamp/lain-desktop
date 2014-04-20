@@ -19,8 +19,12 @@
 		$stat = stat($path);
 		$info = pathinfo($path);
 		$fileRoute = fs_native_route_get($info['dirname'].'/');
-		list($fileMimeType) = explode('; ',finfo_file($finfo,$path));
+		$fileMimeType = '';
+		if($finfo){list($fileMimeType) = explode('; ',finfo_file($finfo,$path));}
 		if($fileMimeType == 'directory'){$fileMimeType = 'folder';}
+		if(isset($info['extension'])){switch($info['extension']){
+			case 'deb':if($fileMimeType == 'application/octet-stream'){$fileMimeType = 'application/x-debian-package';}break;
+		}}
 		return array('fileName'=>$info['basename'],'fileRoute'=>$fileRoute,'fileMime'=>$fileMimeType,'fileSize'=>$stat['size'],'fileDateM'=>$stat['mtime']);
 	}
 
