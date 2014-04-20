@@ -1,20 +1,11 @@
 <?php
-if(!isset($GLOBALS['userPath'])){exit;}
+if(!isset($GLOBALS['userPath'])){echo 'error userPath '.__FILE__;exit;}
 	$GLOBALS['tables']['trash'] = array('_fileHash_'=>'TEXT NOT NULL','fileRoute'=>'TEXT NOT NULL','fileName'=>'TEXT NOT NULL',
 	'fileMime'=>'TEXT NOT NULL','fileSize'=>'INTEGER NOT NULL','filePermissions'=>'TEXT NOT NULL','fileChilds'=>'INTEGER NOT NULL','fileOwner'=>'TEXT NOT NULL','fileGroup'=>'TEXT NOT NULL',
 	'fileDate'=>'TEXT NOT NULL','fileTime'=>'TEXT NOT NULL');
 	$GLOBALS['api']['fs'] = array('root'=>$GLOBALS['userPath'].'drive/','trash'=>$GLOBALS['userPath'].'trash/','tmp'=>$GLOBALS['userPath'].'tmp/','trashdb'=>$GLOBALS['userPath'].'trash.db',
 		'file.mime'=>'../db/magic.mgc',
 		'serverCage'=>true);
-
-	if(isset($_POST['command'])){
-		$command = $_POST['command'];unset($_POST['command']);
-		header('Content-type: text/json');
-		switch($command){
-			case 'transfer_unify':$r = fs_transfer_fragment($_POST['base64string_sum']);echo json_encode($r);break;
-		}
-		exit;
-	}
 
 	function fs_protocol($fileRoute,$functionName = '',$functionArgs = array()){
 		$funcName = substr($functionName,3);
@@ -252,85 +243,6 @@ if(!isset($GLOBALS['userPath'])){exit;}
 		$finfo = finfo_open(FILEINFO_MIME,$GLOBALS['api']['fs']['file.mime']);list($fileMimeType) = explode('; ',finfo_file($finfo,$targetFile));finfo_close($finfo);
 		header('Content-type: '.$fileMimeType);
 		readfile($targetFile);exit;
-	}
-
-	function fs_transfer_fragment($fileName,$filePath,$base64string_sum,$base64string_len,$fragment_string,$fragment_num,$fragment_sum){
-		$tmpPath = $GLOBALS['api']['fs']['tmp'];
-		$tmpPath = $tmpPath.$base64string_sum.'/';if(!file_exists($tmpPath)){$oldmask = umask(0);$r = @mkdir($tmpPath,0777,1);umask($oldmask);}
-		if(!file_exists($tmpPath)){return array('errorCode'=>3,'errorDescription'=>'NO_TMP_FOLDER','file'=>__FILE__,'line'=>__LINE__);}
-
-		$sourceFile = $tmpPath.'source';
-		if(!file_exists($sourceFile)){
-			/* Check filePath */
-			if(strpos($filePath,'native:drive:') === 0){$filePath = substr($filePath,13);}
-			$filePath = fs_helper_parsePath($filePath);
-			if($filePath === false){return array('errorDescription'=>'PATH_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-			if(!is_dir($filePath)){return array('errorDescription'=>'PATH_IS_NOT_DIRECTORY','file'=>__FILE__,'line'=>__LINE__);}
-			$fileName = str_replace(array('/'),'',$fileName);
-			if(empty($fileName)){return array('errorDescription'=>'FILE_NAME_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-			$targetFile = $filePath.$fileName;
-			if(file_exists($targetFile)){return array('errorDescription'=>'FILE_ALREADY_EXISTS','file'=>__FILE__,'line'=>__LINE__);}
-			$r = @file_put_contents($sourceFile,$targetFile,LOCK_EX);
-			if(!$r){return array('errorDescription'=>'NOT_WRITABLE','file'=>__FILE__,'line'=>__LINE__);}
-		}
-
-		$base64string_sum = preg_replace('/[^a-zA-Z0-9]*/','',$base64string_sum);
-		if(strlen($base64string_sum) != 32){return array('errorDescription'=>'MD5_SUM_ERROR','file'=>__FILE__,'line'=>__LINE__);}
-		/* Es posible que la llamada sea solo de cortesía, es decir, que el fichero ya esté subida pero se haya 
-		 * cortado el procesamiento de dicho fichero */
-		$totalSize = 0;$files = array();if($handle = opendir($tmpPath)){while(false !== ($file = readdir($handle))){if($file[0]=='0'){$files[] = $file;$totalSize += filesize($tmpPath.$file);}}closedir($handle);}
-		if($totalSize == $base64string_len){return fs_transfer_unify($base64string_sum);}
-
-		$fragment_num = preg_replace('/[^0-9]*/','',$fragment_num);
-		$fragmentName = str_pad($fragment_num,10,'0',STR_PAD_LEFT);
-		if(file_exists($tmpPath.$fragmentName)){
-//FIXME: imaginemos que solo faltase unificar
-			//FIXME: devolver los fragmentos que ya existen
-			return array('errorDescription'=>'FRAGMENT_ALREADY_EXISTS','file'=>__FILE__,'line'=>__LINE__);
-		}
-
-		/* Comprobaciones de la string que debemos almacenar */
-		$fragment_string = str_replace(' ','+',$fragment_string);
-		if(md5($fragment_string) != $fragment_sum){return array('errorDescription'=>'FRAGMENT_CORRUPT','file'=>__FILE__,'line'=>__LINE__);}
-
-		/* Si lleva una cabecera de imágen debemos eliminarla */
-		if(substr($fragment_string,0,11) == 'data:image/'){$comma = strpos($fragment_string,',');$imgType = substr($fragment_string,11,$comma-7-11);$fragment_string = substr($fragment_string,$comma+1);}
-		$fp = fopen($tmpPath.$fragmentName,'w');fwrite($fp,$fragment_string);fclose($fp);
-
-		/* Comprobamos si debemos unificar, tenemos en totalsize el valor total de los ficharos antes
-		 * de salvar este último fragmento, solo necesitamos sumarle el tamaño */
-		$fragmentSize = filesize($tmpPath.$fragmentName);
-		$totalSize += $fragmentSize;
-		if($totalSize == $base64string_len){return fs_transfer_unify($base64string_sum);}
-
-		return array('fragmentSize'=>$fragmentSize,'totalSize'=>$totalSize);
-	}
-	function fs_transfer_unify($base64string_sum){
-		$tmpPath = $GLOBALS['api']['fs']['tmp'];
-		$tmpPath = $tmpPath.$base64string_sum.'/';
-		if(!file_exists($tmpPath)){return array('errorDescription'=>'NO_TMP_FOLDER','file'=>__FILE__,'line'=>__LINE__);}
-
-		$files = array();if($handle = opendir($tmpPath)){while(false !== ($file = readdir($handle))){if($file[0]=='0'){$files[] = $file;}}closedir($handle);}
-		sort($files);$fp = fopen($tmpPath.'FILE_base64','w');foreach($files as $file){fwrite($fp,file_get_contents($tmpPath.$file));unlink($tmpPath.$file);}fclose($fp);
-		if(md5_file($tmpPath.'FILE_base64') != $base64string_sum){return array('errorDescription'=>'FILE_CORRUPT'.md5_file($tmpPath.'FILE_base64'),'file'=>__FILE__,'line'=>__LINE__);}
-		$totalSize = filesize($tmpPath.'FILE_base64');
-
-		$chunkSize = 1024;
-//FIXME: algunos umasks
-		$src = fopen($tmpPath.'FILE_base64','rb');$dst = fopen($tmpPath.'FILE_binary','wb');
-		while(!feof($src)){fwrite($dst,base64_decode(fread($src,$chunkSize)));}
-		fclose($dst);fclose($src);
-		unlink($tmpPath.'FILE_base64');
-
-		/* INI-Movemos la imagen */
-		$sourceFile = $tmpPath.'source';
-		$destPath = file_get_contents($sourceFile);
-		$r = rename($tmpPath.'FILE_binary',$destPath);
-		/* ahora debemos eliminar la ruta temporal $tmpPath */
-		$r = fs_helper_removeDir($tmpPath,true);
-		/* END-Movemos la imagen */
-
-		return array('totalSize'=>$totalSize);
 	}
 
 	function fs_file_stat($path){

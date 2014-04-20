@@ -5,6 +5,22 @@
 		include_once('api.drives.php');
 		include_once('api.fs.php');
 
+		if(isset($_POST['subcommand'])){switch($_POST['subcommand']){
+			case 'transfer.fragment':
+				include_once('inc.uploadchain.php');
+				$_params = array('file_name','file_size','file_parts','fragment_num','fragment_src','fragment_sum','fragment_len');
+				foreach($_params as $param){if(!isset($_POST[$param]) || $_POST[$param] === ''){print_r(array('errorDescription'=>'INVALID_PARAMS:'.$param,'file'=>__FILE__,'line'=>__LINE__));exit;}}
+				$r = uploadchain_fragment($_POST);if(isset($r['errorDescription'])){echo json_encode($r);exit;}
+				if(isset($r['filePath'])){
+					$oldmask = umask(0);
+					$m = rename($r['filePath'],$GLOBALS['api']['fs']['root'].$r['fileName']);
+					umask($oldmask);
+//FIXME: emitir actualización de fichero
+					echo json_encode(array('errorCode'=>'0'));exit;
+				}
+				echo json_encode($r);exit;
+		}}
+
 		//$r = fs_rename(array('fileName'=>'lololo.txt','fileRoute'=>'native:drive:/'),'test.txt');print_r($r);exit;
 		//$r = fs_rename(array('fileName'=>'','fileMime'=>'folder','fileRoute'=>'native:drive:/'),'nueva');print_r($r);exit;
 		//$r = fs_move(array('fileName'=>'as','fileMime'=>'folder','fileRoute'=>'native:drive:/'),'native:drive:/a/');print_r($r);exit;

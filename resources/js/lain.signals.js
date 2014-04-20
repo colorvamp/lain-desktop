@@ -61,6 +61,46 @@ _desktop.signals = {
 		var index = _desktop.vars.input_presedKeys.indexOf(e.keyCode);
 		while(index > -1){_desktop.vars.input_presedKeys.splice(index,1);var index = _desktop.vars.input_presedKeys.indexOf(e.keyCode);}
 	},
+	drag: {
+		over: function(e){e.preventDefault();return false;}
+	},
+	drop: function(e){
+		e.preventDefault();
+//FIXME: pasar todo esto a la librería de tasks
+		var h = $_('tray_desktop_progress');
+		var info = info_create('tray_desktop_progress',{},h);
+		var ddw = info.infoContainer;
+		if(!info.signals){info.signals = {};}
+
+		info.signals.uploadStart = addEventListener('upload.start',function(e){
+			var file = e.detail.file;
+			var fd = $C('DIV',{className:'uploadControl','.height':0},ddw);
+			var c = $C('DIV',{className:'fileTransferMargin'},fd);
+			$C('DIV',{className:'title',innerHTML:'Copying "'+file.name+'" to "Desktop"'},c);
+			var line = $C('DIV',{className:'size'},c);
+				var curS = $C('SPAN',{innerHTML:'0 bytes'},line);
+				//$C('SPAN',{innerHTML:' of '+uploadChain.helper_bytesToSize(file.size)+' - '},line);
+				var uplT = $C('SPAN',{innerHTML:''},line);//TODO: '6 minutes left'
+				var uplS = $C('SPAN',{innerHTML:'(0 KB/s)'},line);
+			$C('DIV',{className:'bar'},$C('DIV',{className:'progress'},c));
+			eEaseEnter(fd);
+		});
+		info.signals.uploadUpdate = addEventListener('upload.update',function(e){
+			var file = e.detail.file;
+			var progress = e.detail.progress;
+			var control = ddw.$L('uploadControl');if(!control){return false;}control = control[0];
+			var progBar = control.$L('bar');if(!progBar){return false;}progBar = progBar[0];
+			progBar.style.width = $round(progress*100)+'%';
+		});
+		info.signals.uploadEnd = addEventListener('upload.end',function(e){
+			eEaseLeave(info,{callback:function(){info.parentNode.removeChild(info);}});
+		});
+
+		var dt = e.dataTransfer;var files = dt.files;
+		if(files.length < 1){return;}
+		$each(files,function(k,v){upload.chain.file.append(v,{});});
+		upload.chain.start();
+	},
 	resize: function(e){if(window.resizeTimer){clearTimeout(window.resizeTimer);window.resizeTimer = false;}window.resizeTimer = setTimeout(function(){_desktop.signals.resize_end(e);},500);},
 	resize_end: function(e){
 		window.resizeTimer = false;

@@ -15,7 +15,7 @@ var _wodern = {
 
 			/* Trigger all focusable.focus element signals */
 			var triggers = w.querySelectorAll('.focusable');
-			$each(triggers,function(k,v){if($is.function(v.signals.focus)){v.signals.focus();}});
+			$each(triggers,function(k,v){if(v.signals && $is.function(v.signals.focus)){v.signals.focus();}});
 		},
 		get: function(w){return _wodern.vars.focus;}
 	},
@@ -81,7 +81,7 @@ var w = wodern;
 		b.addEventListener('mouse.up.left',function(e){wodern.close();});
 
 
-		if(wContainer){w.windowBorder.appendChild(wContainer);window_container_init(wContainer);}
+		if(wContainer){w.windowBorder.appendChild(wContainer);}
 		w.windowContainer = (wContainer) ? wContainer : window_container(w.windowBorder);
 		$C('DIV',{className:'btn-group'},w.windowBorder);
 		_wodern.position_get(w);
@@ -97,6 +97,10 @@ var w = wodern;
 //FIXME: usar API
 	window_findParent: function(el){while(el.parentNode && !el.className.match(/^wodern( |$)/)){el = el.parentNode;}if(!el.parentNode){return false;}return el;},
 	window: {
+		create: function(params){
+			if(!params){var params = {};}
+//FIXME: TODO
+		},
 		destroy: function(el,ev){
 			//FIXME: al cerrar una ventana, otra debe recoger el focus
 			//FIXME: usar API

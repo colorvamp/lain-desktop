@@ -8,6 +8,7 @@
 	<script type="text/javascript" src="{%baseURL%}r/js/widgets.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/widgets/wod.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/widgets/wod.icon.canvas.js"></script>
+	<script type="text/javascript" src="{%baseURL%}r/js/widgets/wod.text.canvas.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/widgets/wod.context.menu.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/widgets/wod.list.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/widgets/wod.section.js"></script>
@@ -24,6 +25,7 @@
 	<script type="text/javascript" src="{%baseURL%}r/js/littleDrag.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/base64.js"></script>
 	<script type="text/javascript" src="{%baseURL%}r/js/md5.js"></script>
+	<script type="text/javascript" src="{%baseURL%}r/js/upload.chain.js"></script>
 	{%BLOG_SCRIPTS%}
 </head>
 <body onload="if(window._desktop.init){window._desktop.init();}">{%MAIN%}</body>
